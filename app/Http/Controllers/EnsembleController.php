@@ -383,6 +383,6 @@ class EnsembleController extends Controller
             return redirect()->back()->withErrors(['member'=>"Link not allowed"]);
         }
 
-        //return redirect()->route('ensemble.dashboard');
+        return redirect()->route('ensemble.dashboard');
     }
 }

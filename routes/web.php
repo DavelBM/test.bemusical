@@ -23,6 +23,7 @@ Route::get('/blocked', 'HomeController@blocked')->name('user.blocked');
 Route::put('/user/{user}/image', 'HomeController@updateImage')->name('user.updateImage');
 Route::put('/user/pass/{user}', 'HomeController@updatePassUser')->name('user.updatePassUser');
 Route::get('/user/image/destroy/{image}', 'HomeController@destroyImageUser')->name('user.image.destroy');
+Route::get('/user/ask/review/{id}', 'HomeController@ask_review')->name('user.ask.review');
 Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'store', 'show', 'edit', 'destroy']]);
 
 //Verification

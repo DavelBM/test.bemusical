@@ -13,11 +13,19 @@
             <div class="panel panel-default">
                 
                 @if($info->first_name == 'null' or $info->first_name == 'null')
-                    <div class="panel-heading">Soloist dashboard</div>
+                    <div class="panel-heading">Soloist dashboard,
                 @else
-                    <div class="panel-heading">Welcome {{$info->first_name}}</div>
+                    <div class="panel-heading">Welcome {{$info->first_name}},
                 @endif
-
+                
+                @if($info->user->visible == 0 and $info->user->ask_review == 0)
+                    your profile is not available to watch until you fill with your data correctly<a href="{{ route('user.ask.review', $info->user->id) }}" class="btn btn-danger">Ask to the admin if my profile is ready</a></div>
+                @elseif($info->user->visible == 0 and $info->user->ask_review == 1)
+                    our team are reviewing your perfil, wait for our response. In case everything is okay, we will active you account automaticatly</div>
+                @else
+                    </div>
+                @endif
+        
                 <div class="panel-body">
                     <div class="row">
 

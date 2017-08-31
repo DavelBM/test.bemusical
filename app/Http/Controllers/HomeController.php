@@ -503,4 +503,10 @@ class HomeController extends Controller
         return redirect()->route('user.dashboard');
     }
 
+    public function ask_review($id)
+    {
+        User::where('id', $id)->update(['ask_review' => 1]);
+        return redirect()->route('user.dashboard');
+    }
+
 }

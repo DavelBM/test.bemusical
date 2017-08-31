@@ -21,6 +21,7 @@
                                 <th>email</th>
                                 <th>block users</th>
                                 <th>public</th>
+                                <th>Asking Reviews</th>
                             </thead>
                             <tbody>
                                 @foreach($users as $user)
@@ -51,6 +52,20 @@
                                         @else
                                             <td>
                                                 <a href="{{ route('admin.visible', $user->id) }}" class="btn btn-success">Visible</a>
+                                            </td>
+                                        @endif
+
+                                        @if($user->ask_review == 1 and $user->visible == 0)
+                                            <td>
+                                                CHECK<br> PROFILE
+                                            </td>
+                                        @elseif($user->ask_review == 1 and $user->visible == 1)
+                                            <td>
+                                                ALREADY<br> CHECKED
+                                            </td>
+                                        @elseif($user->ask_review == 0 and $user->visible == 0)
+                                            <td>
+                                                WAITING
                                             </td>
                                         @endif
                                     </tr>
