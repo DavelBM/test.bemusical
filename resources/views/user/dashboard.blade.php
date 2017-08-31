@@ -49,7 +49,7 @@
                             <strong>Location:</strong> {{$info->location}}<br>
                             <strong>Degree:</strong> {{$info->degree}}<br>
                             <strong>Mile Radius:</strong> {{$info->mile_radious}} miles<br>
-                            <strong>About Me:</strong> {{$info->about}}<br>
+                            <strong>About Me:</strong> {!!$info->about!!}<br>
                             <!-- /Displaying data -->
 
                             <!-- Form for upload profile picture -->
