@@ -104,6 +104,7 @@ Route::get('/ensemble/delete/repertoir/{id}', 'EnsembleController@destroy_repert
 Route::get('/ensemble/update/repertoir/{id}', 'EnsembleController@update_repertoir')->name('ensemble.repertoir.update');
 
 Route::post('/ensemble/add/member', 'EnsembleController@member')->name('ensemble.member');
+Route::post('/ensemble/add/not/member', 'EnsembleController@notmember')->name('ensemble.not.member');
 Route::get('/ensemble/destroy/member/{id}', 'EnsembleController@destroy_member')->name('ensemble.member.destroy');
 //Ensembles
 

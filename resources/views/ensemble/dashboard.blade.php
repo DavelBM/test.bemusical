@@ -116,7 +116,7 @@
                         
                     {!! Form::close() !!}
                     OR
-                    {!! Form::open(['route' => 'ensemble.instrument', 'method' => 'POST']) !!}
+                    {!! Form::open(['route' => 'ensemble.not.member', 'method' => 'POST']) !!}
                         <br>
                         <div class="row form-group">
                             <label for="notmember" class="col-md-2 control-label">email:</label>

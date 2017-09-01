@@ -428,4 +428,63 @@ class EnsembleController extends Controller
         $member = Member::find($id)->delete();
         return redirect()->route('ensemble.dashboard');
     }
+
+    public function notmember(Request $request)
+    {
+        // if(strpos($request->member, 'bemusical.us/') !== false) {
+        //     $display = explode("bemusical.us/", $request->member);
+        //     $slug_member = end($display);
+            
+        //     if (Ensemble::where('slug', '=', $slug_member)->exists()) {
+        //         return redirect()->back()->withErrors(['member'=>"You cannot add ensembles in this ensemble"]);
+        //     }elseif(User_info::where('slug', '=', $slug_member)->exists()){
+        //         $num_code = str_random(50);
+        //         $token = $num_code.time();
+        //         $user = User_info::where('slug', '=', $slug_member)->firstOrFail();
+
+        //         $ensemble = Ensemble::select('id', 'name')
+        //                             ->where('user_id', Auth::user()->id)
+        //                             ->firstOrFail();
+
+        //         if(   Member::where('ensemble_id', '=', $ensemble->id)
+        //                     ->where('user_id', '=', $user->user->id)
+        //                     ->exists()
+        //           )
+        //         {
+        //             return redirect()->back()->withErrors(['member'=>"This user is part of your ensemble already"]);
+        //         }
+
+        //         $member = new Member;
+        //         $member->ensemble_id  = $ensemble->id;
+        //         $member->user_id      = $user->user->id;
+        //         $member->name         = $user->first_name.' '.$user->last_name;
+        //         $member->instrument   = 'null';
+        //         $member->slug         = $slug_member;
+        //         $member->token        = $token;
+        //         $member->email        = $user->user->email;
+        //         $member->confirmation = 0;
+        //         $member->save();
+                
+        //         $data = [  
+        //                     'token'           => $token,
+        //                     'ensemble_name'   => $ensemble->name,
+        //                     'name'            => $user->first_name,
+        //                 ];
+
+        //         Mail::send('email.member_request', $data, function($message) use ($user){
+        //             $message->from('support@bemusical.us');
+        //             $message->to($user->user->email);
+        //             $message->subject('You have an invitation');
+        //         });
+        //     }else{
+        //         return redirect()->back()->withErrors(['member'=>"The user does not exist"]);
+        //     }
+
+        // }else{
+        //     return redirect()->back()->withErrors(['member'=>"Link not allowed"]);
+        // }
+
+        // return redirect()->route('ensemble.dashboard');
+        dd('notmember, welcome');
+    }
 }
