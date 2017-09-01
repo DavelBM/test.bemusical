@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Mail;
+use Illuminate\Support\Facades\Input;
 use App\User;
 use App\User_info;
 use App\Ensemble;
@@ -133,6 +135,11 @@ class RegisterController extends Controller
             $ensemble->save();
 
         }
+
+        Mail::send('email.verify', ['token' => $user->token], function($message) {
+            $message->to(Input::get('email'), Input::get('id'))
+                ->subject('Verify your email address');
+        });
 
         return $user;
     }

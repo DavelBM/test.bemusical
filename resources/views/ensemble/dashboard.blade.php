@@ -101,7 +101,7 @@
                             <label for="member" class="col-md-2 control-label">member url:</label>
 
                             <div class="col-md-6">
-                                <input id="member" type="text" class="form-control" name="member" placeholder="bemusical.us/exaple-here" required>
+                                <input id="member" type="text" class="form-control" name="member" placeholder="bemusical.us/exaple-here-REQUEST" required>
                             </div>
 
                             <div class="form-group">
@@ -122,12 +122,17 @@
                             <label for="notmember" class="col-md-2 control-label">email:</label>
 
                             <div class="col-md-6">
-                                <input id="notmember" type="text" class="form-control" name="notmember" required>
+                                <input id="notmember" type="email" class="form-control" name="notmember" placeholder="not-bemusical-user@example.com-REQUEST" required>
                             </div>
 
                             <div class="form-group">
                                 {!! Form::submit('Add member', ['class' => 'btn btn-primary']) !!}
                             </div>
+                         @if($errors->has('notmember'))
+                            <span class="help-block">
+                                <strong style="color: red;">{{ $errors->first('notmember') }}</strong>
+                            </span>
+                        @endif
                         </div>
                     {!! Form::close() !!}
                 </div>

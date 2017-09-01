@@ -27,9 +27,9 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    protected $events = [
-        'created' => Events\NewUser::class
-    ];
+    // protected $events = [
+    //     'created' => Events\NewUser::class
+    // ];
 
     public function info()
     {

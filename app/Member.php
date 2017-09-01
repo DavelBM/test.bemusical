@@ -9,7 +9,7 @@ class Member extends Model
     protected $table = "members";
 
     protected $fillable = [
-    	'instrument', 'name'
+    	'user_id', 'name', 'instrument', 'slug', 'token', 'email', 'confirmation' 
     ];
 
     public function ensemble()
