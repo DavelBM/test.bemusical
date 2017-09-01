@@ -104,7 +104,12 @@ Route::get('/ensemble/delete/repertoir/{id}', 'EnsembleController@destroy_repert
 Route::get('/ensemble/update/repertoir/{id}', 'EnsembleController@update_repertoir')->name('ensemble.repertoir.update');
 
 Route::post('/ensemble/add/member', 'EnsembleController@member')->name('ensemble.member');
+Route::get('/ensemble/destroy/member/{id}', 'EnsembleController@destroy_member')->name('ensemble.member.destroy');
 //Ensembles
 
+//PUBLIC **This routes does not need to be log-in**
 Route::get('/{slug}', 'PublicController@view');
 Route::get('/review/{slug}', 'PublicController@review_for_slug')->name('review.slug');
+Route::get('/ensemble/invitation/{code}', 'PublicController@member_invitation')->name('ensemble.invitation');
+Route::post('/member/add/instrument', 'PublicController@add_instrument_to_member')->name('member.add.instrument');
+//PUBLIC

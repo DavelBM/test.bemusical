@@ -14,11 +14,11 @@ class Member extends Model
 
     public function ensemble()
     {
-        return $this->belongsTo('App\Member');
+        return $this->belongsTo('App\Ensemble');
     }
 
-    public function user()
-    {
-        return $this->hasOne('App\User');
-    }
+    // public function user()
+    // {
+    //     return $this->hasOne('App\User');
+    // }
 }

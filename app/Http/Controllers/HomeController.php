@@ -20,6 +20,7 @@ use App\UserInstrument;
 use App\User_image;
 use App\User_video;
 use App\User_song;
+use App\Member;
 use Hash;
 use Auth;
 
@@ -74,6 +75,7 @@ class HomeController extends Controller
             $videos = User_video::where('user_id', $user)->get();
             $repertoires = $IDuser->user_repertoires->all();
             $total_repertoires = UserRepertoir::where('user_id', $user)->where('visible', 1)->count();
+            $member_request = Member::where('user_id', $user)->get();
 
             return view('user.dashboard')
                    ->with('info', $info)
@@ -87,7 +89,8 @@ class HomeController extends Controller
                    ->with('videos', $videos)
                    ->with('songs', $songs)
                    ->with('repertoires', $repertoires)
-                   ->with('total_repertoires', $total_repertoires);
+                   ->with('total_repertoires', $total_repertoires)
+                   ->with('member_requests', $member_request);
         }
     }
 

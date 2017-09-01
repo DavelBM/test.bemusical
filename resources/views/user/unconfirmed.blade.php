@@ -16,7 +16,8 @@
     @endif
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                PLEASE CONFIRM YOUR ACCOUNT, WE ALREADY SENT YOU AN EMAIL TO {{$info->email}}
+                PLEASE CONFIRM YOUR ACCOUNT, WE ALREADY SENT YOU AN EMAIL TO {{$info->email}}<br>
+                This mail can delay 3 minutos or more, please be cool with us.
             </div>
         </div>
     </div>

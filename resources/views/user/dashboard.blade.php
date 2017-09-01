@@ -28,6 +28,49 @@
         
                 <div class="panel-body">
                     <div class="row">
+                        @if(!empty($member_requests))
+                            @foreach($member_requests as $request)
+                                @if($request->confirmation == 0)
+                                    <strong>Requests for ensembles</strong>
+                                    <br>You have a request from "<a class="btn" href="{{ URL::to('/'.$request->ensemble->slug) }}">{{$request->ensemble->name}}</a>"
+                                    <br>
+                                    <form class="form-horizontal" method="POST" action="{{ route('member.add.instrument') }}">
+                                        {{ csrf_field() }}
+
+                                        <div class="form-group{{ $errors->has('instrument') ? ' has-error' : '' }}">
+                                            <label for="instrument" class="col-md-4 control-label">Instrument</label>
+
+                                            <div class="col-md-6">
+                                                <input id="instrument" type="instrument" class="form-control" name="instrument" value="{{ old('instrument') }}" placeholder="example: piano, guitar, bass, microphone." required>
+
+                                                @if ($errors->has('instrument'))
+                                                    <span class="help-block">
+                                                        <strong>{{ $errors->first('instrument') }}</strong>
+                                                    </span>
+                                                @endif
+
+                                        </div>
+
+                                        <input id="id" type="hidden" class="form-control" name="id" value="{{$request->id}}">
+
+                                        <div class="form-group">
+                                            <div class="col-md-6 col-md-offset-4">
+                                                <button type="submit" class="btn btn-success">
+                                                    Accept
+                                                </button><a href="{{ route('ensemble.member.destroy', $request->id) }}" class="btn btn-danger">Decline</a>
+                                            </div>
+                                        </div>
+                                        <p class="mute"><i>We already sent you an email. If you accept this request, you do not need to open that email.</i></p>
+                                    </form>
+                                    <hr>
+                                @else
+                                    Your ensembles:<br>
+                                    "<a class="btn" href="{{ URL::to('/'.$request->ensemble->slug) }}">{{$request->ensemble->name}}</a>"<a href="{{ route('ensemble.member.destroy', $request->id) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                                @endif
+                            @endforeach
+                        @endif
+                    </div>
+                    <div class="row">
 
                         @if($errors->has('token'))
                             <span class="help-block">

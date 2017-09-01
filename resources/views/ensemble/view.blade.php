@@ -30,6 +30,16 @@
                     </div>
                 </div>
                 <div class="panel-body">
+                    @if(!empty($ensemble->members))
+                        <strong>Members</strong><br>
+                        @foreach($ensemble->members as $member)
+                            @if($member->confirmation == 1)
+                            <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a>
+                            @endif
+                        @endforeach
+                    @endif
+                </div>
+                <div class="panel-body">
                     <div class="col-md-4">
                         <strong>TAGS</strong><br>
                         @foreach($ensemble->ensemble_tags as $tag)

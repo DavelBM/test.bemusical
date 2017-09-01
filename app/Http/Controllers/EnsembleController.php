@@ -20,6 +20,7 @@ use App\Ensemble_video;
 use App\Ensemble_song;
 use App\User_info;
 use App\EnsembleRepertoire;
+use App\Member;
 use Hash;
 use Mail;
 
@@ -73,7 +74,9 @@ class EnsembleController extends Controller
             $songs = $ensemble->ensemble_songs->all();
 
             $repertoires = $ensemble->ensemble_repertoires->all();
-            $total_repertoires = EnsembleRepertoire::where('ensemble_id', $ensemble->id)->where('visible', 1)->count();            
+            $total_repertoires = EnsembleRepertoire::where('ensemble_id', $ensemble->id)->where('visible', 1)->count(); 
+
+            $members = Member::where('ensemble_id', $ensemble->id)->get();          
 
             return view('ensemble.dashboard')
                    ->with('ensemble', $ensemble)
@@ -87,7 +90,8 @@ class EnsembleController extends Controller
                    ->with('videos', $videos)
                    ->with('songs', $songs)
                    ->with('repertoires', $repertoires)
-                   ->with('total_repertoires', $total_repertoires);
+                   ->with('total_repertoires', $total_repertoires)
+                   ->with('members', $members);
         }
     }
 
@@ -362,6 +366,7 @@ class EnsembleController extends Controller
 
     public function member(Request $request)
     {
+
         if(strpos($request->member, 'bemusical.us/') !== false) {
             $display = explode("bemusical.us/", $request->member);
             $slug_member = end($display);
@@ -369,8 +374,40 @@ class EnsembleController extends Controller
             if (Ensemble::where('slug', '=', $slug_member)->exists()) {
                 return redirect()->back()->withErrors(['member'=>"You cannot add ensembles in this ensemble"]);
             }elseif(User_info::where('slug', '=', $slug_member)->exists()){
+                $num_code = str_random(50);
+                $token = $num_code.time();
                 $user = User_info::where('slug', '=', $slug_member)->firstOrFail();
-                Mail::send('email.member_request', ['email' => $user->user->email], function($message) use ($user){
+
+                $ensemble = Ensemble::select('id', 'name')
+                                    ->where('user_id', Auth::user()->id)
+                                    ->firstOrFail();
+
+                if(   Member::where('ensemble_id', '=', $ensemble->id)
+                            ->where('user_id', '=', $user->user->id)
+                            ->exists()
+                  )
+                {
+                    return redirect()->back()->withErrors(['member'=>"This user is part of your ensemble already"]);
+                }
+
+                $member = new Member;
+                $member->ensemble_id  = $ensemble->id;
+                $member->user_id      = $user->user->id;
+                $member->name         = $user->first_name.' '.$user->last_name;
+                $member->instrument   = 'null';
+                $member->slug         = $slug_member;
+                $member->token        = $token;
+                $member->email        = $user->user->email;
+                $member->confirmation = 0;
+                $member->save();
+                
+                $data = [  
+                            'token'           => $token,
+                            'ensemble_name'   => $ensemble->name,
+                            'name'            => $user->first_name,
+                        ];
+
+                Mail::send('email.member_request', $data, function($message) use ($user){
                     $message->from('support@bemusical.us');
                     $message->to($user->user->email);
                     $message->subject('You have an invitation');
@@ -383,6 +420,12 @@ class EnsembleController extends Controller
             return redirect()->back()->withErrors(['member'=>"Link not allowed"]);
         }
 
+        return redirect()->route('ensemble.dashboard');
+    }
+
+    public function destroy_member($id)
+    {
+        $member = Member::find($id)->delete();
         return redirect()->route('ensemble.dashboard');
     }
 }

@@ -131,6 +131,19 @@
                         </div>
                     {!! Form::close() !!}
                 </div>
+                <div class="panel-body">
+                    <strong>Members</strong>
+                    @foreach($members as $member)
+                        <br>
+                        <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a> and plays {{$member->instrument}}
+                        @if($member->confirmation == 0)
+                            <p style="color: red;">This user does not confirm yet.</p>
+                        @else
+                            <a href="{{ route('ensemble.member.destroy', $member->id) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            <p style="color: green;">OK</p>
+                        @endif
+                    @endforeach
+                </div>
                 <hr>
                 <div class="panel-body">
                     <div class="row">

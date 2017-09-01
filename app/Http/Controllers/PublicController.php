@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Ensemble;
 use App\User_info;
 use App\User;
+use App\Member;
 
 class PublicController extends Controller
 {
@@ -63,5 +64,30 @@ class PublicController extends Controller
             $flag = false;
         }
         return array($slug, $flag);
+    }
+
+    public function member_invitation($code)
+    {
+        if(Member::where('token', '=', $code)->where('confirmation', '=', 0)->exists()){
+            $member = Member::select('id')->where('token', '=', $code)->firstOrFail();
+            return view('user.request_member')->with('id', $member->id);
+        }
+        elseif (Member::where('token', '=', $code)->where('confirmation', '=', 1)->exists()) {
+            dd('This token was already used');
+        }
+        else{
+            dd('We have troubles looking for your request');
+        }
+        
+    }
+
+    public function add_instrument_to_member(Request $request)
+    {
+        Member::where('id', $request->id)
+        ->update([
+            'instrument'   => $request->instrument,
+            'confirmation' => 1,
+        ]);
+        return redirect()->route('user.dashboard'); 
     }
 }
