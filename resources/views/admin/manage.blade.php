@@ -18,6 +18,7 @@
                     <table class="table table-striped">
                             <thead>
                                 <th>ID</th>
+                                <th>slug</th>
                                 <th>email</th>
                                 <th>block users</th>
                                 <th>public</th>
@@ -27,6 +28,11 @@
                                 @foreach($users as $user)
                                     <tr>
                                         <td>{{ $user->id }}</td>
+                                        @if($user->type == 'soloist')
+                                            <td>bemusical.us/{{ $user->info->slug }}</td>
+                                        @elseif($user->type == 'ensemble')
+                                            <td>bemusical.us/{{ $user->ensemble->slug }}</td>
+                                        @endif
                                         <td>{{ $user->email }}</td>
 
                                         @if($user->active == 1)

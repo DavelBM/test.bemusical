@@ -114,4 +114,6 @@ Route::get('/review/{slug}', 'PublicController@review_for_slug')->name('review.s
 Route::get('/ensemble/invitation/{code}', 'PublicController@member_invitation')->name('ensemble.invitation');
 Route::post('/member/add/instrument', 'PublicController@add_instrument_to_member')->name('member.add.instrument');
 Route::post('/member/new', 'PublicController@member_new')->name('member.new');
+Route::post('/specific/request', 'PublicController@specific_request')->name('specific.request');
+Route::get('/specified/request/invitation/{token}', 'PublicController@asking_request')->name('specific.request.response');
 //PUBLIC

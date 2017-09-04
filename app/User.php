@@ -86,9 +86,9 @@ class User extends Authenticatable
         return $this->hasMany('App\Review');
     }
 
-    public function requests()
+    public function asks()
     {
-        return $this->hasMany('App\Request');
+        return $this->hasMany('App\Ask');
     }
 
     public function gigs()

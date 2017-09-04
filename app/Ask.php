@@ -4,12 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Request extends Model
+class Ask extends Model
 {
     protected $table = "requests";
 
     protected $fillable = [
-    	'date', 'address', 'duration', 'available'
+    	'date', 'address', 'duration', 'available', 'name', 'email', 'phone', 'event_type'
     ];
 
     public function user()

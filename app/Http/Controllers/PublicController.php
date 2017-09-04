@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\newMemberRequest;
+use App\Http\Requests\specificRequest;
+use Laracasts\Flash\Flash;
+use Carbon\Carbon;
 use App\Ensemble;
 use App\User_info;
 use App\User;
 use App\Member;
+use App\Ask;
 use Auth;
+use Mail;
 
 class PublicController extends Controller
 {
@@ -30,7 +35,7 @@ class PublicController extends Controller
 
     	}elseif(User_info::where('slug', '=', $slug)->exists()){
     		$user = User_info::select('user_id')->where('slug', $slug)->firstOrFail();
-        $info = User::where('id', $user->user_id)->firstOrFail();
+            $info = User::where('id', $user->user_id)->firstOrFail();
 
     		if (!$info->visible) {
    				return view('admin.notReady');
@@ -89,7 +94,6 @@ class PublicController extends Controller
         
     }
 
-    //REQUEST NO SPACES//
     public function add_instrument_to_member(Request $request)
     {
         Member::where('id', $request->id)
@@ -102,7 +106,6 @@ class PublicController extends Controller
 
     public function member_new(newMemberRequest $request)
     {
-        //dd($request);
         $name = $request->first_name.' '.$request->last_name;
         $slug = str_slug($name, "-");
 
@@ -157,6 +160,95 @@ class PublicController extends Controller
 
         if (Auth::attempt(['email' => $member->email, 'password' => $request->password])) {
             return redirect()->route('user.dashboard');
+        }
+    }
+
+    public function specific_request(specificRequest $request)
+    {
+        $user = User::where('id', $request->user_id)->firstOrFail();
+        
+        $num_code = str_random(50);
+        $token = $num_code.time();
+        $date_timestamp = $request->day.' '.$request->time.':00';
+
+        $year = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->year;
+        $month = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->month;
+        $day = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->day;
+        $hour = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->hour;
+        $minute = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->minute;
+        $dt = Carbon::create($year, $month, $day, $hour, $minute, 0);
+        $date = $dt->toDayDateTimeString();
+
+        $ask              = new Ask();
+        $ask->user_id     = $request->user_id;
+        $ask->name        = $request->name;
+        $ask->email       = $request->email;
+        $ask->phone       = $request->phone;
+        $ask->event_type  = $request->event_type;
+        $ask->date        = $date_timestamp.'|'.$date;
+        $ask->address     = $request->address;
+        $ask->duration    = $request->duration;
+        $ask->token       = $token;
+        $ask->available   = 0;
+        $ask->nonavailable= 0;
+        $ask->save();
+
+        $data = [ 
+                    'token'    => $token, 
+                    'email'    => $user->email, 
+                    'name'     => $ask->name,
+                    'email_c'  => $ask->email,
+                    'phone_c'  => $ask->phone,
+                    'address'  => $ask->address,
+                    'event'    => $ask->event_type,
+                    'date'     => $date,
+                    'duration' => $ask->duration,
+                    'user_name'=> $user->info->first_name.' '.$user->info->last_name,
+                ];
+
+        Mail::send('email.request_specified', $data, function($message) use ($user){
+            $message->from('support@bemusical.us');
+            $message->to($user->email);
+            $message->subject('Congratulations, you have a new request');
+        });
+
+        Mail::send('email.admin.request_specified', $data, function($message) use ($user){
+            $message->from('support@bemusical.us');
+            $message->to('david@bemusic.al');
+            $message->subject('Somebody has a request for '.$user->email);
+        });
+
+        Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->info->first_name.' asking for availability. You will hear soon about your request.');
+        return redirect()->back();
+    }
+
+    public function asking_request($get_token)
+    {
+        $available = substr($get_token, -1);
+        $token = substr($get_token, 0, -1);
+
+        $review = Ask::select('available', 'nonavailable')->where('token', $token)->firstOrFail();
+        if($review->available == 1 or $review->nonavailable == 1){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            if($available == 1){
+                Ask::where('token', $token)
+                ->update([
+                    'available'   => 1,
+                    'nonavailable'=> 0,
+                ]);
+                Flash::success('You accept the request, you can find all the info in your dashboard');
+                return redirect()->route('login');
+            }elseif ($available == 0) {
+                Ask::where('token', $token)
+                ->update([
+                    'available'   => 0,
+                    'nonavailable'=> 1,
+                ]);
+                Flash::warning('You did not accept the request, we will contact you to know what happend.');
+                return redirect()->route('login');                
+            }
         }
     }
 }

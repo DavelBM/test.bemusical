@@ -179,6 +179,8 @@ return [
 
         //Form
         Collective\Html\HtmlServiceProvider::class,
+        //Flash
+        Laracasts\Flash\FlashServiceProvider::class,
 
     ],
 
