@@ -32,12 +32,13 @@
                                 <p>
                                 Name: <strong>{{$name}}</strong><br>
                                 Email Client: <strong>{{$email_c}}</strong><br> 
+                                Company: <strong>{{$company}}</strong><br> 
                                 @if($phone_c != null)
                                     Phone Client:
                                     <strong>{{$phone_c}}</strong><br>
                                 @endif
                                 At: <strong>{{$address}}</strong><br>
-                                Type of event: <strong>{{$event}}</strong><br>
+                                Type of music: <strong>{{$event}}</strong><br>
                                 On: <strong>{{$date}}</strong><br>
                                 For : <strong>{{$duration}} minutes</strong><br>
                                 </p>

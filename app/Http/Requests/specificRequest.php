@@ -26,7 +26,8 @@ class specificRequest extends FormRequest
         return [
             'name'         => 'min:3|max:120|required',
             'email'        => 'required|string|email|max:255',
-            'event_type'   => 'min:5|required',
+            'company'      => 'min:5|max:120|required',
+            'event_type'   => 'min:5|max:191|required',
             'day'          => 'date_format:"Y-m-d"|required',
             'time'         => 'date_format:"H:i"|required',
             'address'      => 'min:4|max:191|required',

@@ -24,6 +24,7 @@ Route::put('/user/{user}/image', 'HomeController@updateImage')->name('user.updat
 Route::put('/user/pass/{user}', 'HomeController@updatePassUser')->name('user.updatePassUser');
 Route::get('/user/image/destroy/{image}', 'HomeController@destroyImageUser')->name('user.image.destroy');
 Route::get('/user/ask/review/{id}', 'HomeController@ask_review')->name('user.ask.review');
+Route::get('/details/request/{id}', 'HomeController@details_request')->name('details.request');
 Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'store', 'show', 'edit', 'destroy']]);
 
 //Verification

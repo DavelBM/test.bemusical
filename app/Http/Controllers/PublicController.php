@@ -179,18 +179,22 @@ class PublicController extends Controller
         $dt = Carbon::create($year, $month, $day, $hour, $minute, 0);
         $date = $dt->toDayDateTimeString();
 
+        $address = 'id:'.$request->place_id.'|address:'.$request->place_address;
+
         $ask              = new Ask();
         $ask->user_id     = $request->user_id;
         $ask->name        = $request->name;
         $ask->email       = $request->email;
+        $ask->company     = $request->company;
         $ask->phone       = $request->phone;
         $ask->event_type  = $request->event_type;
         $ask->date        = $date_timestamp.'|'.$date;
-        $ask->address     = $request->address;
+        $ask->address     = $address;
         $ask->duration    = $request->duration;
         $ask->token       = $token;
         $ask->available   = 0;
         $ask->nonavailable= 0;
+        $ask->read        = 0;
         $ask->save();
 
         $data = [ 
@@ -198,6 +202,7 @@ class PublicController extends Controller
                     'email'    => $user->email, 
                     'name'     => $ask->name,
                     'email_c'  => $ask->email,
+                    'company'  => $ask->company,
                     'phone_c'  => $ask->phone,
                     'address'  => $ask->address,
                     'event'    => $ask->event_type,

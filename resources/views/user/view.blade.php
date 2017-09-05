@@ -13,9 +13,14 @@
             <div class="panel panel-default">
                 
                 <div class="panel-heading">public USER page</div>
-                @include('flash::message')
 
                 <div class="panel-body">
+                    @if(!$errors->isEmpty())
+                        <span class="help-block">
+                            <strong style="color: red;">We had a problem while we was send your request, check again</strong>
+                        </span>
+                    @endif
+                    @include('flash::message')
                     <div class="col-md-5">
                         
                         @php
@@ -135,6 +140,20 @@
                                 </div>
                             </div>
 
+                            <div class="row form-group{{ $errors->has('company') ? ' has-error' : '' }}">
+                                <label for="company" class="col-md-4 control-label">Company</label>
+
+                                <div class="col-md-6">
+                                    <input id="company" type="text" class="form-control" name="company" required>
+
+                                    @if ($errors->has('company'))
+                                        <span class="help-block">
+                                            <strong>{{ $errors->first('company') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
                             <div class="row form-group">
                                 <label for="phone" class="col-md-4 control-label">Phone (optional)</label>
 
@@ -149,7 +168,7 @@
                             </div>
 
                             <div class="row form-group">
-                                <label for="event_type" class="col-md-4 control-label">Type of event</label>
+                                <label for="event_type" class="col-md-4 control-label">Music</label>
 
                                 <div class="col-md-6">
                                     <input id="event_type" type="text" class="form-control" name="event_type" required>
@@ -162,7 +181,7 @@
                             </div>
 
                             <div class="row form-group">
-                                <label for="day" class="col-md-4 control-label">Day</label>
+                                <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                                 <div class="col-md-6">
                                     <input id="day" type="date" class="form-control" min="2017-06-01" name="day" required>
@@ -175,7 +194,7 @@
                             </div>
 
                             <div class="row form-group">
-                                <label for="time" class="col-md-4 control-label">Time</label>
+                                <label for="time" class="col-md-4 control-label">Time of performance</label>
 
                                 <div class="col-md-6">
                                     <input id="time" type="time" class="form-control" name="time" required>
@@ -188,20 +207,7 @@
                             </div>
 
                             <div class="row form-group">
-                                <label for="address" class="col-md-4 control-label">Address</label>
-
-                                <div class="col-md-6">
-                                    <input id="address" type="text" class="form-control" name="address" required>
-                                    @if ($errors->has('address'))
-                                        <span class="help-block">
-                                            <strong>{{ $errors->first('address') }}</strong>
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="row form-group">
-                                <label for="duration" class="col-md-4 control-label">Duration(minutes)</label>
+                                <label for="duration" class="col-md-4 control-label">Length of performance(minutes)</label>
 
                                 <div class="col-md-6">
                                     <input id="duration" type="number" class="form-control" name="duration" required>
@@ -213,6 +219,25 @@
                                 </div>
                             </div>
 
+                            <div class="row form-group">
+                                <label for="address" class="col-md-4 control-label">Location of event</label>
+
+                                <div class="col-md-6">
+                                    <!-- <input id="pac-input" class="controls" type="text" placeholder="Search Box" name="address">
+                                    <div id="map"></div> -->
+                                    <input id="pac-input" class="controls" type="text" placeholder="Enter a location" name="address">
+                                    <div id="map"></div>
+
+                                    @if ($errors->has('address'))
+                                        <span class="help-block">
+                                            <strong>{{ $errors->first('address') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <input id="place-id" type="hidden" name="place_id">
+                            <input id="place-address" type="hidden" name="place_address">
                             <input id="user_id" type="hidden" class="form-control" name="user_id" value="{{$info->id}}">
 
                             <div class="form-group">
@@ -228,6 +253,16 @@
     </div>
 </div>
 
+@endsection
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+@endsection
+
+@section('js')
+    <script src="{{ asset('js/main.js') }}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&libraries=places&callback=initMap"
+        async defer></script>
 @endsection
 
 @section('script')

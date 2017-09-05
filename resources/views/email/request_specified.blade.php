@@ -31,7 +31,7 @@
                                 <br>
                                 <p>
                                 Name: <strong>{{$name}}</strong><br>
-                                Type of event: <strong>{{$event}}</strong><br>
+                                Type of music: <strong>{{$event}}</strong><br>
                                 On: <strong>{{$date}}</strong><br>
                                 For : <strong>{{$duration}} minutes</strong><br>
                                 </p>

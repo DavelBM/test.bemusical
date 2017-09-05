@@ -21,6 +21,7 @@ use App\User_image;
 use App\User_video;
 use App\User_song;
 use App\Member;
+use App\Ask;
 use Hash;
 use Auth;
 
@@ -76,6 +77,11 @@ class HomeController extends Controller
             $repertoires = $IDuser->user_repertoires->all();
             $total_repertoires = UserRepertoir::where('user_id', $user)->where('visible', 1)->count();
             $member_request = Member::where('user_id', $user)->get();
+            $asks = Ask::where('user_id', $user)->get();
+            $asks_count = Ask::where('user_id', $user)
+                             ->where('read', 0)
+                             //->where('available', 0)
+                             ->count();
 
             return view('user.dashboard')
                    ->with('info', $info)
@@ -90,7 +96,9 @@ class HomeController extends Controller
                    ->with('songs', $songs)
                    ->with('repertoires', $repertoires)
                    ->with('total_repertoires', $total_repertoires)
-                   ->with('member_requests', $member_request);
+                   ->with('member_requests', $member_request)
+                   ->with('asks', $asks)
+                   ->with('asks_count', $asks_count);
         }
     }
 
@@ -510,6 +518,18 @@ class HomeController extends Controller
     {
         User::where('id', $id)->update(['ask_review' => 1]);
         return redirect()->route('user.dashboard');
+    }
+
+    public function details_request($id)
+    {
+        $ask = Ask::where('id', $id)->firstOrFail();
+        if ($ask->read == 0) {
+            Ask::where('id', $id)
+                ->update([
+                    'read' => 1,
+                ]);
+        }
+        return view('user.details')->with('request', $ask);
     }
 
 }
