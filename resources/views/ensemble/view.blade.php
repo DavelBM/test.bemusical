@@ -117,8 +117,6 @@
     </div>
 </div>
 
-@endsection
-
 <!-- ModalForm -->
 <div id="formRequest" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -286,6 +284,7 @@
     </div>
 </div>
 <!-- /ModalForm -->
+@endsection
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
