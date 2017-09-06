@@ -52,6 +52,10 @@
                                                 <span class="badge">
                                                     new!
                                                 </span>
+                                            @else
+                                                <span class="badge">
+                                                    not answered!
+                                                </span>
                                             @endif
                                             On {{$dt[1]}}<span class="glyphicon glyphicon-menu-right">
                                         </a>

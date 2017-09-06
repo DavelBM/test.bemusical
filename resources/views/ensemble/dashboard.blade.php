@@ -23,8 +23,49 @@
                 @elseif($ensemble->user->visible == 0 and $ensemble->user->ask_review == 1)
                     our team are reviewing your perfil, wait for our response. In case everything is okay, we will active you account automaticatly</div>
                 @else
+                        <div class="btn-group pull-right">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Requests <span class="badge">
+                                    {{$asks_count}}
+                                </span><span class="caret">
+                            </button>
+                            <ul class="dropdown-menu">
+                                @foreach($asks as $ask)
+                                    @php
+                                        $dt = explode("|", $ask->date);
+                                    @endphp
+                                    <li>
+                                        <a href="{{ route('details.request', $ask->id) }}">
+                                            @if($ask->read == 0)
+                                                <span class="badge">
+                                                    new!
+                                                </span> 
+                                            @elseif($ask->available == 0 and $ask->nonavailable != 0 and $ask->read == 1)
+                                                <span class="badge">
+                                                    not accepted!
+                                                </span>
+                                            @elseif($ask->available != 0 and $ask->nonavailable == 0 and $ask->read == 1)
+                                                <span class="badge">
+                                                    accepted!
+                                                </span>
+                                            @elseif($ask->available != 0 or $ask->nonavailable != 0)
+                                                <span class="badge">
+                                                    new!
+                                                </span>
+                                            @else
+                                                <span class="badge">
+                                                    not answered!
+                                                </span>
+                                            @endif
+                                            On {{$dt[1]}}<span class="glyphicon glyphicon-menu-right">
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 @endif
+                @include('flash::message')
 
                 <div class="panel-body">
                     <div class="row">

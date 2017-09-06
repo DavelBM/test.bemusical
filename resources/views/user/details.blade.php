@@ -18,6 +18,8 @@
                     $address = explode("|", $request->address);
                     $addrID = explode(":", $address[0]);
                     $addrNAME = explode(":", $address[1]);
+                    $addrLAT = explode(":", $address[2]);
+                    $addrLNG = explode(":", $address[3]);
                 @endphp
                 <a class="btn btn-primary btn-block" type="button" href="{{ URL::to('/dashboard') }}">Return Dashboard</a>
                 <div class="panel-body">
@@ -63,7 +65,7 @@
 
     function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: -33.866, lng: 151.196},
+          center: {lat: {{$addrLAT[1]}}, lng: {{$addrLNG[1]}}},
           zoom: 15
         });
 

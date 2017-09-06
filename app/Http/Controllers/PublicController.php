@@ -164,12 +164,13 @@ class PublicController extends Controller
     }
 
     public function specific_request(specificRequest $request)
-    {
+    {   
         $user = User::where('id', $request->user_id)->firstOrFail();
         
         $num_code = str_random(50);
         $token = $num_code.time();
-        $date_timestamp = $request->day.' '.$request->time.':00';
+        $request_time = explode(" ", $request->time);
+        $date_timestamp = $request->day.' '.$request_time[0].':00';
 
         $year = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->year;
         $month = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->month;
@@ -179,7 +180,12 @@ class PublicController extends Controller
         $dt = Carbon::create($year, $month, $day, $hour, $minute, 0);
         $date = $dt->toDayDateTimeString();
 
-        $address = 'id:'.$request->place_id.'|address:'.$request->place_address;
+        $geometry = substr($request->place_geometry, 1, -1);
+        $get_geometry_trimed = explode(", ", $geometry);
+        $lat = $get_geometry_trimed[0];
+        $lng = $get_geometry_trimed[1];
+
+        $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
 
         $ask              = new Ask();
         $ask->user_id     = $request->user_id;
@@ -197,19 +203,35 @@ class PublicController extends Controller
         $ask->read        = 0;
         $ask->save();
 
-        $data = [ 
+        if($user->type == "soloist") {
+            $data = [ 
                     'token'    => $token, 
                     'email'    => $user->email, 
                     'name'     => $ask->name,
                     'email_c'  => $ask->email,
                     'company'  => $ask->company,
                     'phone_c'  => $ask->phone,
-                    'address'  => $ask->address,
+                    'address'  => $request->place_address,
                     'event'    => $ask->event_type,
                     'date'     => $date,
                     'duration' => $ask->duration,
                     'user_name'=> $user->info->first_name.' '.$user->info->last_name,
                 ];
+        } elseif($user->type == "ensemble") {
+             $data = [ 
+                    'token'    => $token, 
+                    'email'    => $user->email, 
+                    'name'     => $ask->name,
+                    'email_c'  => $ask->email,
+                    'company'  => $ask->company,
+                    'phone_c'  => $ask->phone,
+                    'address'  => $request->place_address,
+                    'event'    => $ask->event_type,
+                    'date'     => $date,
+                    'duration' => $ask->duration,
+                    'user_name'=> $user->ensemble->name,
+                ];
+        }
 
         Mail::send('email.request_specified', $data, function($message) use ($user){
             $message->from('support@bemusical.us');
@@ -223,8 +245,14 @@ class PublicController extends Controller
             $message->subject('Somebody has a request for '.$user->email);
         });
 
-        Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->info->first_name.' asking for availability. You will hear soon about your request.');
-        return redirect()->back();
+
+        if($user->type == "soloist") {
+            Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->info->first_name.' asking for availability. You will hear soon about your request.');
+            return redirect()->back();
+        } elseif($user->type == "ensemble") {
+             Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->ensemble->name.' asking for availability. You will hear soon about your request.');
+            return redirect()->back();
+        }
     }
 
     public function asking_request($get_token)

@@ -21,6 +21,7 @@ use App\Ensemble_song;
 use App\User_info;
 use App\EnsembleRepertoire;
 use App\Member;
+use App\Ask;
 use Hash;
 use Mail;
 
@@ -76,7 +77,11 @@ class EnsembleController extends Controller
             $repertoires = $ensemble->ensemble_repertoires->all();
             $total_repertoires = EnsembleRepertoire::where('ensemble_id', $ensemble->id)->where('visible', 1)->count(); 
 
-            $members = Member::where('ensemble_id', $ensemble->id)->get();          
+            $members = Member::where('ensemble_id', $ensemble->id)->get(); 
+            $asks = Ask::where('user_id', $user)->get();
+            $asks_count = Ask::where('user_id', $user)
+                             ->where('read', 0)
+                             ->count();         
 
             return view('ensemble.dashboard')
                    ->with('ensemble', $ensemble)
@@ -91,7 +96,9 @@ class EnsembleController extends Controller
                    ->with('songs', $songs)
                    ->with('repertoires', $repertoires)
                    ->with('total_repertoires', $total_repertoires)
-                   ->with('members', $members);
+                   ->with('members', $members)
+                   ->with('asks', $asks)
+                   ->with('asks_count', $asks_count);
         }
     }
 
