@@ -11,7 +11,6 @@
         </div>
     </div>
 </div>
-@endsection
 
 <!-- ModalForm -->
 <div id="formRequest" class="modal fade" role="dialog">
@@ -180,6 +179,7 @@
     </div>
 </div>
 <!-- /ModalForm -->
+@endsection
 
 @section('css')
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
