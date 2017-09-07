@@ -50,17 +50,28 @@
                                     assign to 
 
                                     <div class="col-md-6">
+                                        <!-- {!! Form::open(['route' => 'user.instrument', 'method' => 'POST']) !!}
+                                            <div class="form-group col-md-12">
+                                                {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
+
+                                                {!! Form::select('emails[]', $emails, $emails, ['id'=>'select-instrument','class'=>'form-control', 'multiple', 'required']) !!}
+                                            </div>
+
+                                            <div class="form-group">
+                                                    {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
+                                            </div>
+                                        {!! Form::close() !!} -->
                                         {!! Form::open(['route' => 'user.instrument', 'method' => 'POST']) !!}
-                                <div class="form-group col-md-12">
-                                    {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
+                                            <div class="form-group col-md-12">
+                                                {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
 
-                                    {!! Form::select('emails[]', $emails, $emails, ['id'=>'select-instrument','class'=>'form-control', 'multiple', 'required']) !!}
-                                </div>
+                                                {!! Form::select('emails[]', $emails, $emails, ['id'=>'select'.$ask->id,'class'=>'form-control', 'multiple', 'required']) !!}
+                                            </div>
 
-                                <div class="form-group">
-                                        {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
-                                </div>
-                            {!! Form::close() !!}
+                                            <div class="form-group">
+                                                    {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
+                                            </div>
+                                        {!! Form::close() !!}
                                     </div>
                                 </div>
                             </div>
@@ -77,15 +88,19 @@
 
 @section('script')
     
-    $("#select-instrument").chosen({
-            placeholder_text_multiple: 'Choose 5 instruments',
-            max_selected_options: '5',
-            disable_search_threshold: 10
-    });
+    //$("#select-instrument").chosen({
+    //        placeholder_text_multiple: 'ASSIGN TO',
+    //        max_selected_options: '1'
+    //});
    
 
     $(document).ready(function(){
         @foreach($general_asks as $ask)
+            $("#select{{$ask->id}}").chosen({
+                    placeholder_text_multiple: 'ASSIGN TO',
+                    max_selected_options: '1'
+            });
+
             $("#details{{$ask->id}}").hide();
             $("#trigger{{$ask->id}}").click(function(){
                 $("#details{{$ask->id}}").slideToggle();
