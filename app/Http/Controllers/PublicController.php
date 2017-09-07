@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\newMemberRequest;
 use App\Http\Requests\specificRequest;
+use App\Http\Requests\generalRequest;
 use Laracasts\Flash\Flash;
 use Carbon\Carbon;
 use App\Ensemble;
@@ -12,6 +13,7 @@ use App\User_info;
 use App\User;
 use App\Member;
 use App\Ask;
+use App\GeneralAsk;
 use Auth;
 use Mail;
 
@@ -283,5 +285,67 @@ class PublicController extends Controller
                 return redirect()->route('login');                
             }
         }
+    }
+
+    public function general_request(generalRequest $request)
+    {   
+        $date_timestamp = $request->day.' '.$request->time.':00';
+
+        $year = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->year;
+        $month = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->month;
+        $day = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->day;
+        $hour = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->hour;
+        $minute = Carbon::createFromFormat('Y-m-d H:i:s', $date_timestamp)->minute;
+        $dt = Carbon::create($year, $month, $day, $hour, $minute, 0);
+        $date = $dt->toDayDateTimeString();
+
+        $geometry = substr($request->place_geometry, 1, -1);
+        $get_geometry_trimed = explode(", ", $geometry);
+        $lat = $get_geometry_trimed[0];
+        $lng = $get_geometry_trimed[1];
+
+        $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
+        
+        if ($request->comment == null) {
+            $comment = ' ';
+        } else {
+            $comment = $request->comment;
+        }
+
+        $general_ask           = new GeneralAsk();
+        $general_ask->name     = $request->name;
+        $general_ask->email    = $request->email;
+        $general_ask->company  = $request->company;
+        $general_ask->phone    = $request->phone;
+        $general_ask->date     = $date_timestamp.'|'.$date;
+        $general_ask->address  = $address;
+        $general_ask->duration = $request->duration;
+        $general_ask->comment  = $comment;
+        $general_ask->type     = $request->type;
+        $general_ask->read     = 0;
+        $general_ask->save();
+
+        $data = [  
+                    'name'     => $general_ask->name,
+                    'email'    => $general_ask->email,
+                    'company'  => $general_ask->company,
+                    'phone'    => $general_ask->phone,
+                    'address'  => $request->place_address,
+                    'date'     => $date,
+                    'duration' => $general_ask->duration,
+                    'type'     => $general_ask->type,
+                    'comment'  => $comment,
+                ];
+
+        Mail::send('email.admin.request_general', $data, function($message) {
+            $message->from('support@bemusical.us');
+            $message->to('david@bemusic.al');
+            $message->subject('Somebody has a GENERAL request for a service');
+        });
+
+
+         Flash::success('Thanks '.$request->name.', we already sent a message to the admin page asking for availability. You will hear soon about your request.');
+        return redirect()->back();
+
     }
 }

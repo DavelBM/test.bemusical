@@ -132,7 +132,8 @@
                         <div class="col-md-7">
                             <!-- Displaying data -->
                             <strong>Name:</strong> {{$info->first_name." ".$info->last_name}}<br>
-                            <strong>url*:</strong> bemusical.us/{{$info->slug}}<br>
+                            <strong>username*:</strong> {{$info->slug}}<br>
+                            <strong>url*:</strong> <a href="{{URL::to('/'.$info->slug)}}">bemusical.us/{{$info->slug}}</a><br>
                             <strong>e-mail*:</strong> {{$info->user->email}}<br>
                             <strong>Bio summary:</strong> {{$info->bio}}<br>
                             <strong>My Address:</strong> {{$info->address}}<br>

@@ -18,7 +18,7 @@ class CreateGeneralRequestsTable extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('company');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('date');
             $table->string('address');
             $table->string('duration');

@@ -3,6 +3,12 @@
 @section('content')
 <div class="flex-center position-ref full-height">
     <div class="content">
+        @if(!$errors->isEmpty())
+            <span class="help-block">
+                <strong style="color: red;">We had a problem while we was sending your request, check again</strong>
+            </span>
+        @endif
+        @include('flash::message')
         <div class="title m-b-md">
             BeMusical.us
             <div class="row col-md-6 col-md-offset-3">
@@ -22,7 +28,7 @@
                 <h4 class="modal-title">Fill the spaces please.</h4>
             </div>
             <div class="modal-body">
-                {!! Form::open(['route' => 'specific.request', 'method' => 'POST']) !!}
+                {!! Form::open(['route' => 'general.request', 'method' => 'POST']) !!}
 
                     <div class="row form-group{{ $errors->has('name') ? ' has-error' : '' }}">
                         <label for="name" class="col-md-4 control-label">Name</label>
@@ -80,23 +86,11 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="event_type" class="col-md-4 control-label">Music</label>
-
-                        <div class="col-md-6">
-                            <input id="event_type" type="text" class="form-control" name="event_type" placeholder="What kind of music do you require?" required>
-                            @if ($errors->has('event_type'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('event_type') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="row form-group">
                         <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                         <div class="col-md-6">
-                            <input id="day" type="text" class="form-control" placeholder="Select date" class="textbox-n"  onfocus="(this.type='date')" name="day"> 
+                            <!-- <input id="day" type="text" class="form-control" placeholder="Select date" class="textbox-n"  onfocus="(this.type='date')" name="day">  -->
+                            <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day">
                             @if ($errors->has('day'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('day') }}</strong>
@@ -109,7 +103,67 @@
                         <label for="time" class="col-md-4 control-label">Time of performance</label>
 
                         <div class="col-md-6">
-                            <input id="time" type="text" class="time form-control" name="time" placeholder="Select time" required>
+                            <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
+                            <select id="time" class="time form-control" name="time" required>
+                                <option value="0:00">Select time</option>
+                                <option value="8:00">8:00AM</option>
+                                <option value="8:15">8:15AM</option>
+                                <option value="8:30">8:30AM</option>
+                                <option value="8:45">8:45AM</option>
+                                <option value="9:00">9:00AM</option>
+                                <option value="9:15">9:15AM</option>
+                                <option value="9:30">9:30AM</option>
+                                <option value="9:45">9:45AM</option>
+                                <option value="10:00">10:00AM</option>
+                                <option value="10:15">10:15AM</option>
+                                <option value="10:30">10:30AM</option>
+                                <option value="10:45">10:45AM</option>
+                                <option value="11:00">11:00AM</option>
+                                <option value="11:15">11:15AM</option>
+                                <option value="11:30">11:30AM</option>
+                                <option value="11:45">11:45AM</option>
+                                <option value="12:00">12:00PM</option>
+                                <option value="12:15">12:15PM</option>
+                                <option value="12:30">12:30PM</option>
+                                <option value="12:45">12:45PM</option>
+                                <option value="13:00">1:00PM</option>
+                                <option value="13:15">1:15PM</option>
+                                <option value="13:30">1:30PM</option>
+                                <option value="13:45">1:45PM</option>
+                                <option value="14:00">2:00PM</option>
+                                <option value="14:15">2:15PM</option>
+                                <option value="14:30">2:30PM</option>
+                                <option value="14:45">2:45PM</option>
+                                <option value="15:00">3:00PM</option>
+                                <option value="15:15">3:15PM</option>
+                                <option value="15:30">3:30PM</option>
+                                <option value="15:45">3:45PM</option>
+                                <option value="16:00">4:00PM</option>
+                                <option value="16:15">4:15PM</option>
+                                <option value="16:30">4:30PM</option>
+                                <option value="16:45">4:45PM</option>
+                                <option value="17:00">5:00PM</option>
+                                <option value="17:15">5:15PM</option>
+                                <option value="17:30">5:30PM</option>
+                                <option value="17:45">5:45PM</option>
+                                <option value="18:00">6:00PM</option>
+                                <option value="18:15">6:15PM</option>
+                                <option value="18:30">6:30PM</option>
+                                <option value="18:45">6:45PM</option>
+                                <option value="19:00">7:00PM</option>
+                                <option value="19:15">7:15PM</option>
+                                <option value="19:30">7:30PM</option>
+                                <option value="19:45">7:45PM</option>
+                                <option value="20:00">8:00PM</option>
+                                <option value="20:15">8:15PM</option>
+                                <option value="20:30">8:30PM</option>
+                                <option value="20:45">8:45PM</option>
+                                <option value="21:00">9:00PM</option>
+                                <option value="21:15">9:15PM</option>
+                                <option value="21:30">9:30PM</option>
+                                <option value="21:45">9:45PM</option>
+                                <option value="22:00">10:00PM</option>
+                            </select>
                             @if ($errors->has('time'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('time') }}</strong>
@@ -125,7 +179,6 @@
 
                             <select id="duration" class="form-control" name="duration" placeholder="Minutes" required>
                                 <option value="0">Select the duration</option>
-                                <option value="30">30 min</option>
                                 <option value="60">1 hr</option>
                                 <option value="90">1 hr 30 min</option>
                                 <option value="120">2 hrs</option>
@@ -163,14 +216,40 @@
                         </div>
                     </div>
 
+                    <div class="row form-group">
+                        <label for="type" class="col-md-4 control-label">Type</label>
+
+                        <div class="col-md-6">
+                            <label class="radio-inline"><input type="radio" name="type" value="soloist">Soloist</label>
+                            <label class="radio-inline"><input type="radio" name="type" value="ensemble">Ensemble</label>
+                            @if ($errors->has('type'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('type') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="comment" class="col-md-4 control-label">Comments</label>
+
+                        <div class="col-md-6">
+                            <textarea id="comment" type="text" class="form-control" name="comment" placeholder="Do you have any special requirement?"  rows="10" ></textarea>
+                            @if ($errors->has('comment'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('comment') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
                     <input id="place-id" type="hidden" name="place_id" required>
                     <input id="place-address" type="hidden" name="place_address" required>
                     <input id="place-geometry" type="hidden" name="place_geometry" required>
-                    <input id="user_id" type="hidden" class="form-control" name="user_id" value="0">
 
-                    <!-- <div class="form-group">
+                    <div class="form-group">
                         {!! Form::submit('Ask for service', ['class' => 'btn btn-primary']) !!}
-                    </div> -->
+                    </div>
 
                 {!! Form::close() !!}
             </div>
@@ -184,7 +263,8 @@
 @section('css')
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}">
+    <!-- <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}"> -->
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.css') }}">
     <style>
             .full-height {
                 height: 100vh;
@@ -238,7 +318,8 @@
 
 @section('js')
     <script src="{{ asset('js/main.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
+    <!-- <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 @endsection
 
@@ -263,58 +344,11 @@
 
     google.maps.event.addDomListener(window, 'load', initialize);
     //////////////----////////////////////
-    //////////////Getting Date////////////////////
-    var currentdate = new Date(); 
 
-    var todaymonth = (currentdate.getMonth()+1);
-    if(todaymonth == "1"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "2"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "3"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "4"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "5"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "6"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "7"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "8"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "9"){
-        var newmonth = '0'+todaymonth;
-    }
-
-    var todayday = currentdate.getDate();
-    if(todayday == "1"){
-        var newday = '0'+todayday;
-    }else if(todayday == "2"){
-        var newday = '0'+todayday;
-    }else if(todayday == "3"){
-        var newday = '0'+todayday;
-    }else if(todayday == "4"){
-        var newday = '0'+todayday;
-    }else if(todayday == "5"){
-        var newday = '0'+todayday;
-    }else if(todayday == "6"){
-        var newday = '0'+todayday;
-    }else if(todayday == "7"){
-        var newday = '0'+todayday;
-    }else if(todayday == "8"){
-        var newday = '0'+todayday;
-    }else if(todayday == "9"){
-        var newday = '0'+todayday;
-    }
-
-    var datetime =  currentdate.getFullYear()+"-"+newmonth+"-"+newday;
-    document.getElementById('day').setAttribute("min", datetime);
-    //////////////------------////////////////////
     $(function() {
-        $('#time').timepicker({ 
-            'timeFormat': 'H:i',
-            'step': 15, 
+        $('#day').datepicker({
+            'format': 'yyyy-mm-dd',
+            'autoclose': true,
         });
     });
 @endsection
