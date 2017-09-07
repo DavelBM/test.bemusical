@@ -17,7 +17,7 @@
                     members
                 </a>
                 @if($asks_count != 0)
-                    <a href="{{ route('admin.general.request.update') }}" class="btn btn-primary">
+                    <a href="{{ route('admin.general.request') }}" class="btn btn-primary">
                         general requests <span class="badge">{{$asks_count}}</span>
                     </a>
                 @else

@@ -38,6 +38,7 @@ Route::post('/admin/login', 'Auth\AdminLoginController@login')->name('admin.logi
 Route::get('/admin/logout', 'Auth\AdminLoginController@logout')->name('admin.logout');
 //Login Logout//
 
+Route::get('/admin/maps/{address}', 'AdminController@display_map')->name('admin.maps');
 Route::resource('/admin', 'AdminController');
 Route::get('admin/{id}/destroy', 'AdminController@destroy')->name('admin.destroy');
 Route::get('/admin', 'AdminController@index')->name('admin.dashboard');

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreNewAdmin;
 use App\Admin;
 use App\User;
+use App\User_info;
+use App\Ensemble;
 use App\Tag;
 use App\Instrument;
 use App\Style;
@@ -35,7 +37,6 @@ class AdminController extends Controller
         $instruments = Instrument::orderBy('id', 'DES')->get();
         $styles = Style::orderBy('id', 'DES')->get();
         $number_of_members = User::all()->count();
-        $general_asks = GeneralAsk::get();
         $general_asks_count = GeneralAsk::where('read', 0)->count();
 
         return view('admin.dashboard')
@@ -44,7 +45,6 @@ class AdminController extends Controller
                         ->with('instruments', $instruments)
                         ->with('styles', $styles)
                         ->with('number_of_members', $number_of_members)
-                        ->with('asks', $general_asks)
                         ->with('asks_count', $general_asks_count);
     }
 
@@ -168,11 +168,37 @@ class AdminController extends Controller
 
     public function general_requests()
     {
-        return view('admin.general_requests');
+        $users = User::select('id', 'email')->get();
+        $emails = [];
+        foreach ($users as $user) {
+            array_push($emails, $user->email);
+        }
+        $general_asks = GeneralAsk::orderBy('id', 'desc')->get();
+
+        return view('admin.general_requests')
+                        ->with('general_asks', $general_asks)
+                        ->with('emails', $emails);
+    }
+
+    public function display_map($address)
+    {
+        $get_data = explode('&', $address);
+        $id_place = explode('id=', $get_data[0]);
+        $lat_place = explode('lat=', $get_data[1]);
+        $lng_place = explode('lng=', $get_data[2]);
+        return view('admin.maps')
+            ->with('id', $id_place[1])
+            ->with('lat', $lat_place[1])
+            ->with('lng', $lng_place[1]);
     }
 
     public function general_requests_update()
     {
+        // User::where('id', $id)
+        //     ->update([
+        //         'visible' => 1
+        //     ]);
+        return redirect()->route('admin.manage_user');
         dd('hola mundo');
     }
 }
