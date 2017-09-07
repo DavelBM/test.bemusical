@@ -63,7 +63,7 @@
                                         {!! Form::close() !!} -->
                                         {!! Form::open(['route' => 'user.instrument', 'method' => 'POST']) !!}
                                             <div class="form-group col-md-12">
-                                                {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
+                                                {!! Form::label('users', 'Users', ['class' => 'control-label']) !!}<br>
 
                                                 {!! Form::select('emails[]', $emails, $emails, ['id'=>'select'.$ask->id,'class'=>'form-control', 'multiple', 'required']) !!}
                                             </div>
