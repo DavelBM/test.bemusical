@@ -13,9 +13,18 @@
             <div class="panel panel-default">
                 
                 <div class="panel-heading">Welcome {{ Auth::user()->name }}, currently we have {{$number_of_members}} 
-                <a href="{{ route('admin.manage_user') }}" class="btn">
-                members
+                <a href="{{ route('admin.manage_user') }}" class="btn btn-primary">
+                    members
                 </a>
+                @if($asks_count != 0)
+                    <a href="{{ route('admin.general.request.update') }}" class="btn btn-primary">
+                        general requests <span class="badge">{{$asks_count}}</span>
+                    </a>
+                @else
+                    <a href="{{ route('admin.general.request') }}" class="btn btn-primary">
+                        general requests
+                    </a>
+                @endif
                 </div>
 
                     <div class="row panel-body">

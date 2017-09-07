@@ -9,6 +9,7 @@ use App\User;
 use App\Tag;
 use App\Instrument;
 use App\Style;
+use App\GeneralAsk;
 
 class AdminController extends Controller
 {
@@ -34,13 +35,17 @@ class AdminController extends Controller
         $instruments = Instrument::orderBy('id', 'DES')->get();
         $styles = Style::orderBy('id', 'DES')->get();
         $number_of_members = User::all()->count();
+        $general_asks = GeneralAsk::get();
+        $general_asks_count = GeneralAsk::where('read', 0)->count();
 
         return view('admin.dashboard')
                         ->with('admins', $admins)
                         ->with('tags', $tags)
                         ->with('instruments', $instruments)
                         ->with('styles', $styles)
-                        ->with('number_of_members', $number_of_members);
+                        ->with('number_of_members', $number_of_members)
+                        ->with('asks', $general_asks)
+                        ->with('asks_count', $general_asks_count);
     }
 
     public function create()
@@ -159,5 +164,15 @@ class AdminController extends Controller
                 'visible' => 1
             ]);
         return redirect()->route('admin.manage_user');
+    }
+
+    public function general_requests()
+    {
+        return view('admin.general_requests');
+    }
+
+    public function general_requests_update()
+    {
+        dd('hola mundo');
     }
 }

@@ -46,6 +46,8 @@ Route::get('/admin/{id}/block', 'AdminController@blockuser')->name('admin.blocku
 Route::get('/admin/{id}/unlock', 'AdminController@unlockuser')->name('admin.unlockuser');
 Route::get('/admin/{id}/nonvisible', 'AdminController@nonvisible')->name('admin.nonvisible');
 Route::get('/admin/{id}/visible', 'AdminController@visible')->name('admin.visible');
+Route::get('/admin/general/requests', 'AdminController@general_requests')->name('admin.general.request');
+Route::get('/admin/general/requests/update', 'AdminController@general_requests_update')->name('admin.general.request.update');
 
 //Reset Passwords//
 Route::post('/admin/password/email', 'Auth\AdminForgotPasswordController@sendResetLinkEmail')->name('admin.password.email');
