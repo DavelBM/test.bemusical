@@ -323,6 +323,7 @@ class PublicController extends Controller
         $general_ask->comment  = $comment;
         $general_ask->type     = $request->type;
         $general_ask->read     = 0;
+        $general_ask->assined  = 0;
         $general_ask->save();
 
         $data = [  

@@ -7,8 +7,9 @@
             <div class="panel panel-default">
                 
                 <div class="panel-heading">Requests</div>
-
+                @include('flash::message')
                 <div class="panel-body">
+                    @if(!empty($general_asks))
                     @foreach($general_asks as $ask)
                         @php
                             $dt = explode("|", $ask->date);
@@ -18,9 +19,9 @@
                             $lat_place = explode("lat:", $get_data_address[2]);
                             $lng_place = explode("long:", $get_data_address[3]);
                         @endphp
-                        @if($ask->assigned == 0)
+                        @if($ask->assined == 0)
                             @if($ask->read == 0)
-                            <button id="trigger{{$ask->id}}" class="btn btn-block btn-default">
+                            <button id="trigger{{$ask->id}}" class="btn btn-block btn-default" onclick="update(this)">
                                 <span class="badge">
                                     new!
                                 </span>
@@ -47,29 +48,26 @@
                                 <p>Comments: <strong>{{$ask->comment}}</strong></p>
 
                                 <div>
-                                    assign to 
-
                                     <div class="col-md-6">
-                                        <!-- {!! Form::open(['route' => 'user.instrument', 'method' => 'POST']) !!}
-                                            <div class="form-group col-md-12">
-                                                {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
-
-                                                {!! Form::select('emails[]', $emails, $emails, ['id'=>'select-instrument','class'=>'form-control', 'multiple', 'required']) !!}
-                                            </div>
-
-                                            <div class="form-group">
-                                                    {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
-                                            </div>
-                                        {!! Form::close() !!} -->
-                                        {!! Form::open(['route' => 'user.instrument', 'method' => 'POST']) !!}
+                                        {!! Form::open(['route' => 'admin.assign_user', 'method' => 'POST']) !!}
                                             <div class="form-group col-md-12">
                                                 {!! Form::label('users', 'Users', ['class' => 'control-label']) !!}<br>
 
-                                                {!! Form::select('emails[]', $emails, $emails, ['id'=>'select'.$ask->id,'class'=>'form-control', 'multiple', 'required']) !!}
+                                                <input type="text" name="email" list="email">
+                                                <datalist id="email">
+                                                    @for($i=0; $i < count($emails); $i++)
+                                                        <option value="{{$emails[$i]}}">
+                                                    @endfor
+                                                </datalist>
+                                                <!-- {!! Form::select('emails[]', $emails, $emails, ['id'=>'select'.$ask->id,'class'=>'form-control', 'multiple', 'required']) !!} -->
                                             </div>
+                                            <div class="form-group col-md-12">
+                                                <input id="type" type="text" class="form-control" name="type" placeholder="type of music" required>
+                                            </div>
+                                            <input type="hidden" name="id_request" value="{{$ask->id}}">
 
                                             <div class="form-group">
-                                                    {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
+                                                    {!! Form::submit('Assign', ['class' => 'btn btn-primary btn-block']) !!}
                                             </div>
                                         {!! Form::close() !!}
                                     </div>
@@ -77,6 +75,7 @@
                             </div>
                         @endif
                     @endforeach
+                    @endif
                 </div>
 
             </div>
@@ -87,19 +86,12 @@
 @endsection
 
 @section('script')
-    
-    //$("#select-instrument").chosen({
-    //        placeholder_text_multiple: 'ASSIGN TO',
-    //        max_selected_options: '1'
-    //});
-   
-
     $(document).ready(function(){
         @foreach($general_asks as $ask)
-            $("#select{{$ask->id}}").chosen({
-                    placeholder_text_multiple: 'ASSIGN TO',
-                    max_selected_options: '1'
-            });
+            //$("#select{{$ask->id}}").chosen({
+            //        placeholder_text_multiple: 'ASSIGN TO',
+            //        max_selected_options: '1'
+            //});
 
             $("#details{{$ask->id}}").hide();
             $("#trigger{{$ask->id}}").click(function(){
@@ -107,4 +99,11 @@
             });
         @endforeach
     });
+
+    function update(data) {
+        var request_id = data.id;
+        var id_split = request_id.split("trigger");
+        var id = id_split[1];
+        $.get('/admin/general/requests/update/' + id);
+    }
 @endsection

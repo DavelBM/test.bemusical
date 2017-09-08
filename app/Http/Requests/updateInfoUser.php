@@ -24,15 +24,16 @@ class updateInfoUser extends FormRequest
     public function rules()
     {
         return [
-            'first_name'            => 'min:3|max:120|required',
-            'last_name'             => 'min:3|max:120|required',
-            'about'                 => 'min:10|max:2000|required',
-            'bio'                   => 'min:10|max:191|required',
-            'phone'                 => 'digits:10|required',
-            'address'               => 'min:4|max:191|required',
-            'degree'                => 'min:3|max:191|required',
-            'location'              => 'min:2|max:191|required',
-            'mile_radious'          => 'digits_between:0,3|required'
+            'first_name'   => 'min:3|max:120|required',
+            'last_name'    => 'min:3|max:120|required',
+            'about'        => 'min:10|max:2000|required',
+            'bio'          => 'min:10|max:191|required',
+            'phone'        => 'digits:10|required',
+            'address'      => 'min:4|max:191|required',
+            'degree'       => 'min:3|max:191|required',
+            'location'     => 'min:2|max:191|required',
+            'mile_radious' => 'digits_between:0,3|required',
+            'place_id'     => 'required',
         ];
     }
 }

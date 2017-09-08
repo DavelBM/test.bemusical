@@ -111,6 +111,13 @@ class HomeController extends Controller
      */
     public function update(updateInfoUser $request, $id)
     {
+        $geometry = substr($request->place_geometry, 1, -1);
+        $get_geometry_trimed = explode(", ", $geometry);
+        $lat = $get_geometry_trimed[0];
+        $lng = $get_geometry_trimed[1];
+
+        $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
+        
         $user = Auth::user()->id;
         User_info::where('user_id', $user)
         ->update([
@@ -120,7 +127,7 @@ class HomeController extends Controller
             'bio'          => $request->bio,
             'phone'        => $request->phone,
             'degree'       => $request->degree,
-            'address'      => $request->address,
+            'address'      => $address,
             'location'     => $request->location,
             'mile_radious' => $request->mile_radious
         ]);

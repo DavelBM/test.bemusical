@@ -131,12 +131,16 @@
                         </div>
                         <div class="col-md-7">
                             <!-- Displaying data -->
+                            @php
+                                $data = explode("|", $info->address);
+                                $data_address = explode("address:", $data[1]);
+                            @endphp
                             <strong>Name:</strong> {{$info->first_name." ".$info->last_name}}<br>
                             <strong>username*:</strong> {{$info->slug}}<br>
                             <strong>url*:</strong> <a href="{{URL::to('/'.$info->slug)}}">bemusical.us/{{$info->slug}}</a><br>
                             <strong>e-mail*:</strong> {{$info->user->email}}<br>
                             <strong>Bio summary:</strong> {{$info->bio}}<br>
-                            <strong>My Address:</strong> {{$info->address}}<br>
+                            <strong>My Address:</strong> {{$data_address[1]}}<br>
                             <strong>My phone:</strong> {{$info->phone}}<br>
                             <strong>Location:</strong> {{$info->location}}<br>
                             <strong>Degree:</strong> {{$info->degree}}<br>
@@ -404,13 +408,30 @@
                             @endif
                         </div>
                     </div>
-                    <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
+                    <!-- <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
                         {!! Form::label('address', 'Address', ['class' => 'col-md-4 control-label']) !!}
                         <div class="col-md-6">
                             {!! Form::text('address', $info->address, ['class'=>'form-control', 'placeholder'=>'Tell us something amazing', 'required']) !!}
                             @if ($errors->has('address'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('address') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div> -->
+                    <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
+                        <label for="address" class="col-md-4 control-label">My address<p class="text-muted">Powered by google</p></label>
+
+                        <div class="col-md-6">
+                            <input id="searchTextField" type="text" class="form-control" name="address" value="{{$data_address[1]}}" required>
+                            @if ($errors->has('address'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('address') }}</strong>
+                                </span>
+                            @endif
+                            @if ($errors->has('place_id'))
+                                <span class="help-block">
+                                    <strong style="color: red;">Please pick a place with google suggestions</strong>
                                 </span>
                             @endif
                         </div>
@@ -470,6 +491,9 @@
                             @endif
                         </div>
                     </div>
+                    <input id="place-id" type="hidden" name="place_id" required>
+                    <input id="place-address" type="hidden" name="place_address" required>
+                    <input id="place-geometry" type="hidden" name="place_geometry" required>
                 {!! Form::close() !!}
             </div>
             <div class="modal-footer">
@@ -553,6 +577,10 @@
 
 @endsection
 
+@section('js')
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
+@endsection
+
 @section('script')
     //Api(choosen) for display and select tags
     $("#select-tag").chosen({
@@ -603,4 +631,25 @@
             }
         };
     //--Dropzone is for dropping images--//
+
+    //////////////Maps////////////////////
+    function initialize() {
+
+    var input = document.getElementById('searchTextField');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+            return;
+        }
+
+        document.getElementById('place-id').value = place.place_id;
+        document.getElementById('place-geometry').value = place.geometry.location;
+        document.getElementById('place-address').value = place.formatted_address;
+      });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+    //////////////----////////////////////
 @endsection

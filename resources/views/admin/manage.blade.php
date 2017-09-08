@@ -29,9 +29,9 @@
                                     <tr>
                                         <td>{{ $user->id }}</td>
                                         @if($user->type == 'soloist')
-                                            <td>bemusical.us/{{ $user->info->slug }}</td>
+                                            <td><a href="{{ URL::to('/'.$user->info->slug) }}">bemusical.us/{{ $user->info->slug }}</a></td>
                                         @elseif($user->type == 'ensemble')
-                                            <td>bemusical.us/{{ $user->ensemble->slug }}</td>
+                                            <td><a href="{{ URL::to('/'.$user->ensemble->slug) }}">bemusical.us/{{ $user->ensemble->slug }}</a></td>
                                         @endif
                                         <td>{{ $user->email }}</td>
 

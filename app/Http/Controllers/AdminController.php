@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreNewAdmin;
+use Laracasts\Flash\Flash;
 use App\Admin;
 use App\User;
 use App\User_info;
@@ -12,6 +13,8 @@ use App\Tag;
 use App\Instrument;
 use App\Style;
 use App\GeneralAsk;
+use App\Ask;
+use Mail;
 
 class AdminController extends Controller
 {
@@ -192,13 +195,62 @@ class AdminController extends Controller
             ->with('lng', $lng_place[1]);
     }
 
-    public function general_requests_update()
+    public function general_requests_update($id)
     {
-        // User::where('id', $id)
-        //     ->update([
-        //         'visible' => 1
-        //     ]);
-        return redirect()->route('admin.manage_user');
-        dd('hola mundo');
+        GeneralAsk::where('id', $id)
+                  ->update([
+                        'read' => 1
+                    ]);
+    }
+
+    public function assign_user(Request $request)
+    {
+        $user = User::select('id', 'email')->where('email', $request->email)->first();
+        $general_ask = GeneralAsk::where('id', $request->id_request)->firstOrFail();
+        
+        if (empty($user)) {
+            Flash::error('This user does not exist in the database');
+            return redirect()->back();
+        }
+
+        $ask              = new Ask();
+        $ask->user_id     = $user->id;
+        $ask->name        = $general_ask->name;
+        $ask->email       = $general_ask->email;
+        $ask->company     = $general_ask->company;
+        $ask->phone       = $general_ask->phone;
+        $ask->event_type  = $request->type;
+        $ask->date        = $general_ask->date;
+        $ask->address     = $general_ask->address;
+        $ask->duration    = $general_ask->duration;
+        $ask->token       = ' ';
+        $ask->available   = 1;
+        $ask->nonavailable= 0;
+        $ask->read        = 0;
+        $ask->created_at  = $general_ask->created_at;
+        $ask->save();
+
+        $date = explode('|', $ask->date);
+
+        GeneralAsk::where('id', $request->id_request)
+                  ->update([
+                        'assined' => 1
+                    ]);
+
+        $data = [  
+                    'name'     => $user->info->first_name,
+                    'name_c'   => $ask->name,
+                    'event'    => $ask->event_type,
+                    'date'     => $date[1],
+                    'duration' => $general_ask->duration
+                ];
+
+        Mail::send('email.request_from_admin', $data, function($message) use($user) {
+            $message->from('support@bemusical.us');
+            $message->to($user->email);
+            $message->subject('Cogratulation you already accepted a new gig');
+        });
+        Flash::error('You already assigned the event to '.$user->info->first_name);
+        return redirect()->route('admin.general.request');
     }
 }

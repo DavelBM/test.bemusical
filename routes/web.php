@@ -38,6 +38,7 @@ Route::post('/admin/login', 'Auth\AdminLoginController@login')->name('admin.logi
 Route::get('/admin/logout', 'Auth\AdminLoginController@logout')->name('admin.logout');
 //Login Logout//
 
+Route::post('/admin/assign_user', 'AdminController@assign_user')->name('admin.assign_user');
 Route::get('/admin/maps/{address}', 'AdminController@display_map')->name('admin.maps');
 Route::resource('/admin', 'AdminController');
 Route::get('admin/{id}/destroy', 'AdminController@destroy')->name('admin.destroy');
@@ -48,7 +49,7 @@ Route::get('/admin/{id}/unlock', 'AdminController@unlockuser')->name('admin.unlo
 Route::get('/admin/{id}/nonvisible', 'AdminController@nonvisible')->name('admin.nonvisible');
 Route::get('/admin/{id}/visible', 'AdminController@visible')->name('admin.visible');
 Route::get('/admin/general/requests', 'AdminController@general_requests')->name('admin.general.request');
-Route::get('/admin/general/requests/update', 'AdminController@general_requests_update')->name('admin.general.request.update');
+Route::get('/admin/general/requests/update/{id}', 'AdminController@general_requests_update')->name('admin.general.request.update');
 
 //Reset Passwords//
 Route::post('/admin/password/email', 'Auth\AdminForgotPasswordController@sendResetLinkEmail')->name('admin.password.email');
