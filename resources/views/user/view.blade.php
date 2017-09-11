@@ -6,11 +6,11 @@
     @endif
 @endsection
 
-@php
+<?php
     $get_data = explode("|", $info->info->address);
     $get_address_place = explode("address:", $get_data[1]);
     $address_place = $get_address_place[1];
-@endphp
+?>
 
 @section('content')
 <div class="container">
