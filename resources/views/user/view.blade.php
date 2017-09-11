@@ -345,9 +345,9 @@
     </div>
 </div>
 @php
-    $get_data = explode("|", $info->info->address);
-    $get_address_place = explode("address:", $get_data[1]);
-    $address_place = $get_address_place[1];
+    $get_data = explode("|" , $info->info->address);
+    //$get_address_place = explode("address:", $get_data[1]);
+    //$address_place = $get_address_place[1];
 @endphp
 <!-- /ModalForm -->
 @endsection
@@ -385,7 +385,8 @@
             var distanceService = new google.maps.DistanceMatrixService();
             distanceService.getDistanceMatrix({
                 origins: [place.formatted_address],
-                destinations: ['{{$address_place}}'],
+                //destinations: ['$address_place'],
+                destinations: ['hola'],
                 travelMode: google.maps.TravelMode.DRIVING,
                 unitSystem: google.maps.UnitSystem.IMPERIAL
             },
