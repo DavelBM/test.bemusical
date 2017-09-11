@@ -168,7 +168,19 @@ class PublicController extends Controller
     public function specific_request(specificRequest $request)
     {   
         $user = User::where('id', $request->user_id)->firstOrFail();
-        
+        if (strpos($request->distance_google, ',')) {
+            $exploded = explode(",", $request->distance_google);
+            $gd = $exploded[0].$exploded[1];
+            $distance = (int)$gd;
+        }else{
+            $distance = (int)$request->distance_google;
+        }
+
+        if($user->info->mile_radious <= $distance){
+            Flash::error("This musician does not live or travel to that area (".$user->info->mile_radious." miles max. and you picked a place to ".$distance." miles of distance).");
+            return redirect()->back();
+        }
+
         $num_code = str_random(50);
         $token = $num_code.time();
         $request_time = explode(" ", $request->time);
@@ -216,6 +228,7 @@ class PublicController extends Controller
                     'address'  => $request->place_address,
                     'event'    => $ask->event_type,
                     'date'     => $date,
+                    'distance' => $distance,
                     'duration' => $ask->duration,
                     'user_name'=> $user->info->first_name.' '.$user->info->last_name,
                 ];
@@ -230,6 +243,7 @@ class PublicController extends Controller
                     'address'  => $request->place_address,
                     'event'    => $ask->event_type,
                     'date'     => $date,
+                    'distance' => $distance,
                     'duration' => $ask->duration,
                     'user_name'=> $user->ensemble->name,
                 ];
@@ -255,6 +269,11 @@ class PublicController extends Controller
              Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->ensemble->name.' asking for availability. You will hear soon about your request.');
             return redirect()->back();
         }
+    }
+
+    public function sent_price(Request $request)
+    {
+        dd($request);
     }
 
     public function asking_request($get_token)

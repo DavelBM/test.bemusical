@@ -34,8 +34,14 @@
                                 Type of music: <strong>{{$event}}</strong><br>
                                 On: <strong>{{$date}}</strong><br>
                                 For : <strong>{{$duration}} minutes</strong><br>
+                                Distance : <strong>{{$distance}} miles</strong><br>
+                                <form class="form-horizontal" method="POST" action="{{ URL::to('/price/') }}">
+                                    {{ csrf_field() }}
+                                    <input id="price" type="text" class="form-control" name="price" placeholder="how much do you charge">
+                                    <input class="btn btn-default" type="submit" value="Submit">
+                                </form>
                                 </p>
-                                Do you want to accept? Are you available? 
+                                <!-- Do you want to accept? Are you available? 
                                 <p>
                                 <a class="btn btn-primary" type="button" href="{{ URL::to('/specified/request/invitation/'.$token.'1') }}">Yes, I am</a> <br> or follow this link <br>
                                 {{ URL::to('/specified/request/invitation/'.$token.'1') }}<br>
@@ -43,7 +49,7 @@
                                 <p>
                                 <a class="btn btn-primary" type="button" href="{{ URL::to('/specified/request/invitation/'.$token.'0') }}">No, I am not</a> <br> or follow this link <br>
                                 {{ URL::to('/specified/request/invitation/'.$token.'0') }}
-                                </p>
+                                </p> -->
                             </td>
                         </tr>
                         <tr>
