@@ -132,6 +132,10 @@
                         <div class="col-md-7">
                             <!-- Displaying data -->
                             @php
+
+                                if (!strpos($info->info->address, 'id:') and !strpos($info->info->address, 'address:') and !strpos($info->info->address, 'lat:') and !strpos($info->info->address, 'long:')) {
+                                    $info->address = 'id:no-addres|address:no-addres|lat:0|long:0';
+                                }
                                 $data = explode("|", $info->address);
                                 $data_address = explode("address:", $data[1]);
                             @endphp
