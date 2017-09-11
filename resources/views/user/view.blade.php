@@ -6,17 +6,7 @@
     @endif
 @endsection
 
-@php
-    $get_data = explode("|", $info->info->address);
-    $get_id_place = explode("id:", $get_data[0]);
-    $get_address_place = explode("address:", $get_data[1]);
-    $get_lat_place = explode("lat:", $get_data[2]);
-    $get_lng_place = explode("long:", $get_data[3]);
-    $id_place = $get_id_place[1];
-    $address_place = $get_address_place[1];
-    $lat_place = $get_lat_place[1];
-    $lng_place = $get_lng_place[1];
-@endphp
+
 
 @section('content')
 <div class="container">
