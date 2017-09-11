@@ -346,7 +346,7 @@
 </div>
 @php
     $get_data = explode("|" , $info->info->address);
-    $get_address_place = explode("address:", $get_data[1]);
+    $get_address_place = explode(":", $get_data[1]);
     //$address_place = $get_address_place[1];
 @endphp
 <!-- /ModalForm -->
