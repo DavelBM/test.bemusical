@@ -6,6 +6,15 @@
     @endif
 @endsection
 
+@php
+    if (!strpos($info->info->address, 'id:') and !strpos($info->info->address, 'address:') and !strpos($info->info->address, 'lat:') and !strpos($info->info->address, 'long:')) {
+        $info->info->address = 'id:no-addres|address:Ano-addres|lat:0|long:0';
+    }
+    $get_data = explode("|", $info->info->address);
+    $get_address_place = explode("address:", $get_data[1]);
+    $address_place = $get_address_place[1];
+@endphp
+
 @section('content')
 <div class="container">
     <div class="row">
@@ -344,11 +353,6 @@
 
     </div>
 </div>
-@php
-    $get_data = explode("|" , $info->info->address);
-    $get_address_place = explode(":", $get_data[1]);
-    //$address_place = $get_address_place[1];
-@endphp
 <!-- /ModalForm -->
 @endsection
 
@@ -385,8 +389,7 @@
             var distanceService = new google.maps.DistanceMatrixService();
             distanceService.getDistanceMatrix({
                 origins: [place.formatted_address],
-                //destinations: ['$address_place'],
-                destinations: ['hola'],
+                destinations: ['{{$address_place}}'],
                 travelMode: google.maps.TravelMode.DRIVING,
                 unitSystem: google.maps.UnitSystem.IMPERIAL
             },
