@@ -6,12 +6,6 @@
     @endif
 @endsection
 
-<?php
-    $get_data = explode("|", $info->info->address);
-    $get_address_place = explode("address:", $get_data[1]);
-    $address_place = $get_address_place[1];
-?>
-
 @section('content')
 <div class="container">
     <div class="row">
@@ -350,6 +344,11 @@
 
     </div>
 </div>
+@php
+    $get_data = explode("|", $info->info->address);
+    $get_address_place = explode("address:", $get_data[1]);
+    $address_place = $get_address_place[1];
+@endphp
 <!-- /ModalForm -->
 @endsection
 
