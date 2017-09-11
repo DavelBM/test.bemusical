@@ -132,7 +132,6 @@
                         <div class="col-md-7">
                             <!-- Displaying data -->
                             @php
-
                                 if ((!strpos($info->address, 'id:') and !strpos($info->address, 'address:') and !strpos($info->address, 'lat:') and !strpos($info->address, 'long:')) or $info->address==null) {
                                     $info->address = "id:no-addres|address:no-address|lat:0|long:0";
                                 }

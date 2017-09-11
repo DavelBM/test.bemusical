@@ -35,11 +35,8 @@
                                 On: <strong>{{$date}}</strong><br>
                                 For : <strong>{{$duration}} minutes</strong><br>
                                 Distance : <strong>{{$distance}} miles</strong><br>
-                                <form class="form-horizontal" method="POST" action="{{ URL::to('/price/') }}">
-                                    {{ csrf_field() }}
-                                    <input id="price" type="text" class="form-control" name="price" placeholder="how much do you charge">
-                                    <input class="btn btn-default" type="submit" value="Submit">
-                                </form>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/price/'.$token.'1') }}">Confirm availability and send my price</a><br>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/specified/request/invitation/'.$token.'0') }}">No, I can't assit</a> <br>
                                 </p>
                                 <!-- Do you want to accept? Are you available? 
                                 <p>

@@ -201,20 +201,21 @@ class PublicController extends Controller
 
         $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
 
-        $ask              = new Ask();
-        $ask->user_id     = $request->user_id;
-        $ask->name        = $request->name;
-        $ask->email       = $request->email;
-        $ask->company     = $request->company;
-        $ask->phone       = $request->phone;
-        $ask->event_type  = $request->event_type;
-        $ask->date        = $date_timestamp.'|'.$date;
-        $ask->address     = $address;
-        $ask->duration    = $request->duration;
-        $ask->token       = $token;
-        $ask->available   = 0;
-        $ask->nonavailable= 0;
-        $ask->read        = 0;
+        $ask                 = new Ask();
+        $ask->user_id        = $request->user_id;
+        $ask->name           = $request->name;
+        $ask->email          = $request->email;
+        $ask->company        = $request->company;
+        $ask->phone          = $request->phone;
+        $ask->event_type     = $request->event_type;
+        $ask->date           = $date_timestamp.'|'.$date;
+        $ask->address        = $address;
+        $ask->duration       = $request->duration;
+        $ask->token          = $token;
+        $ask->accepted_price = 0;
+        $ask->available      = 0;
+        $ask->nonavailable   = 0;
+        $ask->read           = 0;
         $ask->save();
 
         if($user->type == "soloist") {
@@ -271,13 +272,45 @@ class PublicController extends Controller
         }
     }
 
-    public function sent_price(Request $request)
+    public function price($token)
+    {
+        return view('user.price_input')->with('token', $token);
+    }
+
+    public function send_price(Request $request)
     {
         dd($request);
+        // $available = substr($get_token, -1);
+        // $token = substr($get_token, 0, -1);
+
+        // $review = Ask::select('available', 'nonavailable')->where('token', $token)->firstOrFail();
+        // if($review->available == 1 or $review->nonavailable == 1){
+        //     Flash::error('This token already was used');
+        //     return redirect()->route('login');
+        // }else{
+        //     if($available == 1){
+        //         Ask::where('token', $token)
+        //         ->update([
+        //             'available'   => 1,
+        //             'nonavailable'=> 0,
+        //         ]);
+        //         Flash::success('You accept the request, you can find all the info in your dashboard');
+        //         return redirect()->route('login');
+        //     }elseif ($available == 0) {
+        //         Ask::where('token', $token)
+        //         ->update([
+        //             'available'   => 0,
+        //             'nonavailable'=> 1,
+        //         ]);
+        //         Flash::warning('You did not accept the request, we will contact you to know what happend.');
+        //         return redirect()->route('login');                
+        //     }
+        // }
     }
 
     public function asking_request($get_token)
     {
+        ///////////SEND MAIL TO CLIENT THAT THE USER CANT ASSIST TO THE EVENT
         $available = substr($get_token, -1);
         $token = substr($get_token, 0, -1);
 

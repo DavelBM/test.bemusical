@@ -122,5 +122,6 @@ Route::post('/member/new', 'PublicController@member_new')->name('member.new');
 Route::post('/specific/request', 'PublicController@specific_request')->name('specific.request');
 Route::post('/general/request', 'PublicController@general_request')->name('general.request');
 Route::get('/specified/request/invitation/{token}', 'PublicController@asking_request')->name('specific.request.response');
-Route::post('/price/', 'PublicController@sent_price')->name('request.price.sent');
+Route::get('/price/{token}', 'PublicController@price')->name('request.price');
+Route::post('/send/price', 'PublicController@send_price')->name('general.request.send_price');
 //PUBLIC
