@@ -133,8 +133,8 @@
                             <!-- Displaying data -->
                             @php
 
-                                if (!strpos($info->address, 'id:') and !strpos($info->address, 'address:') and !strpos($info->address, 'lat:') and !strpos($info->address, 'long:')) {
-                                    $info->address = 'id:no-addres|address:no-addres|lat:0|long:0';
+                                if ((!strpos($info->address, 'id:') and !strpos($info->address, 'address:') and !strpos($info->address, 'lat:') and !strpos($info->address, 'long:')) or $info->address==null) {
+                                    $info->address = "id:no-addres|address:no-address|lat:0|long:0";
                                 }
                                 $data = explode("|", $info->address);
                                 $data_address = explode("address:", $data[1]);

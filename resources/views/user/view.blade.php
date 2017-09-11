@@ -8,7 +8,7 @@
 
 @php
     if (!strpos($info->info->address, 'id:') and !strpos($info->info->address, 'address:') and !strpos($info->info->address, 'lat:') and !strpos($info->info->address, 'long:')) {
-        $info->info->address = 'id:no-addres|address:no-addres|lat:0|long:0';
+        $info->info->address = 'id:no-addres|address:no-address|lat:0|long:0';
     }
     $get_data = explode("|", $info->info->address);
     $get_address_place = explode("address:", $get_data[1]);
