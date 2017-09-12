@@ -30,7 +30,11 @@
                     @endif
                     @include('flash::message')
                     <div class="col-md-5">
-                        <img src="{{ asset("images/ensemble/$ensemble->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="250" height="250">
+                        @if($ensemble->profile_picture != 'null')
+                            <img src="{{ asset("images/ensemble/$ensemble->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="250" height="250">
+                        @else
+                            <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
+                        @endif
                     </div>
                     <div class="col-md-7">
                         <!-- Displaying data -->
@@ -54,7 +58,11 @@
                                         $img_member = $each->where('user_id','=',$member->user_id)->first();
                                     @endphp
                                 @endforeach
-                                <img src="{{ asset("images/profile/$img_member->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="80" height="80">
+                                @if($img_member != 'null')
+                                    <img src="{{ asset("images/profile/$img_member->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="80" height="80">
+                                @else
+                                    <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
+                                @endif
                                 <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a>
                             </p>
                             @endif
@@ -84,7 +92,7 @@
                 <div class="panel-body">
                     <div class="col-md-12">
                         @foreach($ensemble->ensemble_images as $image)
-                                <img src="{{ asset("images/general/$image->name") }}" class="img-rounded" alt="{{$image->name}}" width="304" height="236">
+                            <img src="{{ asset("images/general/$image->name") }}" class="img-rounded" alt="{{$image->name}}" width="304" height="236">
                         @endforeach
                     </div>
                 </div>
@@ -234,7 +242,7 @@
                         <label for="time" class="col-md-4 control-label">Time of performance</label>
 
                         <div class="col-md-6">
-                        
+
                             <select id="time" class="time form-control" name="time" required>
                                 <option value="00:00">Select time</option>
                                 <option value="08:00">8:00AM</option>

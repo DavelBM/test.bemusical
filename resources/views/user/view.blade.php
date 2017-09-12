@@ -35,7 +35,11 @@
                         @php
                            $image = $info->info->profile_picture; 
                         @endphp
-                        <img src="{{ asset("images/profile/$image") }}" class="img-circle float-left" alt="{{$info->info->profile_picture}}" width="250" height="250">
+                        @if($image != 'null')
+                            <img src="{{ asset("images/profile/$image") }}" class="img-circle float-left" alt="{{$info->info->profile_picture}}" width="250" height="250">
+                        @else
+                            <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
+                        @endif
                         
                     </div>
                     <div class="col-md-7">
