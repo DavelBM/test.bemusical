@@ -32,7 +32,8 @@ class updateInfoEnsemble extends FormRequest
             'phone'        => 'digits:10|required',
             'address'      => 'min:4|max:191|required',
             'location'     => 'min:2|max:191|required',
-            'mile_radious' => 'digits_between:0,3|required'
+            'mile_radious' => 'digits_between:0,3|required',
+            'place_id'     => 'required',
         ];
     }
 }

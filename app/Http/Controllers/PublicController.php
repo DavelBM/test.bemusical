@@ -24,6 +24,7 @@ class PublicController extends Controller
 
    		if (Ensemble::where('slug', '=', $slug)->exists()) {
    			$ensemble = Ensemble::where('slug', $slug)->firstOrFail();
+            $all = User_info::all();
    			
    			if (!$ensemble->user->visible) {
    				return view('admin.notReady');
@@ -31,7 +32,7 @@ class PublicController extends Controller
    				if (!$ensemble->user->active) {
 	   				return view('admin.blockedUser');
 	   			}else{
-	   				return view('ensemble.view')->with('ensemble', $ensemble);
+	   				return view('ensemble.view')->with('ensemble', $ensemble)->with('all', $all);
 	   			}
    			}
 
@@ -168,6 +169,7 @@ class PublicController extends Controller
     public function specific_request(specificRequest $request)
     {   
         $user = User::where('id', $request->user_id)->firstOrFail();
+        
         if (strpos($request->distance_google, ',')) {
             $exploded = explode(",", $request->distance_google);
             $gd = $exploded[0].$exploded[1];
@@ -176,9 +178,17 @@ class PublicController extends Controller
             $distance = (int)$request->distance_google;
         }
 
-        if($user->info->mile_radious <= $distance){
-            Flash::error("This musician does not live or travel to that area (".$user->info->mile_radious." miles max. and you picked a place to ".$distance." miles of distance).");
-            return redirect()->back();
+        if ($user->type == 'soloist') {
+            if($user->info->mile_radious <= $distance){
+                Flash::error("This musician does not live or travel to that area (".$user->info->mile_radious." miles max. and you picked a place to ".$distance." miles of distance).");
+                return redirect()->back();
+            }   
+        }
+        elseif ($user->type == 'ensemble') {
+            if($user->ensemble->mile_radious <= $distance){
+                Flash::error("This ensemble does not live or travel to that area (".$user->ensemble->mile_radious." miles max. and you picked a place to ".$distance." miles of distance).");
+                return redirect()->back();
+            }   
         }
 
         $num_code = str_random(50);
@@ -279,33 +289,93 @@ class PublicController extends Controller
 
     public function send_price(Request $request)
     {
-        dd($request);
-        // $available = substr($get_token, -1);
-        // $token = substr($get_token, 0, -1);
+        $available = substr($request->token, -1);
+        $token = substr($request->token, 0, -1);
 
-        // $review = Ask::select('available', 'nonavailable')->where('token', $token)->firstOrFail();
-        // if($review->available == 1 or $review->nonavailable == 1){
-        //     Flash::error('This token already was used');
-        //     return redirect()->route('login');
-        // }else{
-        //     if($available == 1){
-        //         Ask::where('token', $token)
-        //         ->update([
-        //             'available'   => 1,
-        //             'nonavailable'=> 0,
-        //         ]);
-        //         Flash::success('You accept the request, you can find all the info in your dashboard');
-        //         return redirect()->route('login');
-        //     }elseif ($available == 0) {
-        //         Ask::where('token', $token)
-        //         ->update([
-        //             'available'   => 0,
-        //             'nonavailable'=> 1,
-        //         ]);
-        //         Flash::warning('You did not accept the request, we will contact you to know what happend.');
-        //         return redirect()->route('login');                
-        //     }
-        // }
+        $review = Ask::where('token', $token)->firstOrFail();
+        $user = User::where('id', $review->user_id)->firstOrFail();
+
+        if($user->type == "soloist") {
+            $info = User_info::select('first_name', 'last_name')->where('user_id', $review->user_id)->firstOrFail();
+        } elseif($user->type == "ensemble") {
+             $ensemble = Ensemble::select('name')->where('user_id', $review->user_id)->firstOrFail();
+        }
+        
+        if($review->available == 1 or $review->nonavailable == 1 or $review->price != null or $review->accepted_price == 1){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            if($available == 1){
+                Ask::where('token', $token)
+                ->update([
+                    'price'       => $request->price,
+                    'available'   => 1,
+                    'nonavailable'=> 0,
+                ]);
+
+                $dt = explode("|", $review->date);
+                $address = explode("|", $review->address);
+                $addrNAME = explode("address:", $address[1]);
+                
+                if($user->type == "soloist") {
+                    $data = [
+                        'name'    => $review->name,
+                        'name_use'=> $info->first_name.' '.$info->last_name,
+                        'email'   => $review->email,
+                        'phone'   => $review->phone,
+                        'date'    => $dt[1],
+                        'address' => $addrNAME[1],
+                        'duration'=> $review->duration,
+                        'price'   => $request->price,
+                        'token'   => $review->token,
+                    ];
+                } elseif($user->type == "ensemble") {
+                     $data = [
+                        'name'    => $review->name,
+                        'name_use'=> $ensemble->name,
+                        'email'   => $review->email,
+                        'phone'   => $review->phone,
+                        'date'    => $dt[1],
+                        'address' => $addrNAME[1],
+                        'duration'=> $review->duration,
+                        'price'   => $request->price,
+                        'token'   => $review->token,
+                    ];
+                }
+
+                Mail::send('email.request_send_price_client', $data, function($message) use ($review){
+                    $message->from('support@bemusical.us');
+                    $message->to($review->email);
+                    $message->subject("Hi, we have a price proposal for your event");
+                });
+
+                if($user->type == "soloist") {
+                    Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $info){
+                        $message->from('support@bemusical.us');
+                        $message->to('david@bemusic.al');
+                        $message->subject('Admin, '.$info->first_name.' '.$info->last_name.' is available and gives the price to '.$review->name);
+                    });
+                } elseif($user->type == "ensemble") {
+                    Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $ensemble){
+                        $message->from('support@bemusical.us');
+                        $message->to('david@bemusic.al');
+                        $message->subject('Admin, '.$ensemble->name.' is available and gives the price to '.$review->name);
+                    }); 
+                }
+
+                Flash::success('You accept the request, you can find all the info in your dashboard');
+                return redirect()->route('login');
+            }elseif($available == 0){
+                Ask::where('token', $token)
+                ->update([
+                    'price'       => $request->price,
+                    'available'   => 0,
+                    'nonavailable'=> 1,
+                ]);
+                Flash::warning('You did not accept the request, we will contact you to know what happend.');
+                return redirect()->route('login');                
+            }
+        }
     }
 
     public function asking_request($get_token)
@@ -335,6 +405,67 @@ class PublicController extends Controller
                 ]);
                 Flash::warning('You did not accept the request, we will contact you to know what happend.');
                 return redirect()->route('login');                
+            }
+        }
+    }
+
+    public function return_answer_price($get_token)
+    {
+        $available = substr($get_token, -1);
+        $token = substr($get_token, 0, -1);
+        $review = Ask::select('available', 'nonavailable', 'user_id', 'accepted_price', 'price')->where('token', $token)->firstOrFail();
+        $user = User::select('type', 'id')->where('id', $review->user_id)->firstOrFail();
+
+        if ($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price != 0) {
+            if($user->type == 'soloist')
+            {
+                $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
+            }
+            elseif($user->type == 'ensemble')
+            {
+                $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
+            }
+            Flash::warning('This token was already used');
+            return redirect()->route('index.public', $info->slug);
+        }
+        elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
+            if($user->type == 'soloist')
+            {
+                $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
+                if($available == 1){
+                    Ask::where('token', $token)
+                    ->update([
+                        'accepted_price'   => 1,
+                    ]);
+                    Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                    return redirect()->route('index.public', $info->slug);
+                }elseif ($available == 0) {
+                    Ask::where('token', $token)
+                    ->update([
+                        'accepted_price'   => 0,
+                    ]);
+                    Flash::error('You did no accept the price, and it was sent it to the user.');
+                    return redirect()->route('index.public', $info->slug);              
+                }
+            }
+            elseif ($user->type == 'ensemble') 
+            {
+                $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
+                if($available == 1){
+                    Ask::where('token', $token)
+                    ->update([
+                        'accepted_price'   => 1,
+                    ]);
+                    Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                    return redirect()->route('index.public', $info->slug);
+                }elseif ($available == 0) {
+                    Ask::where('token', $token)
+                    ->update([
+                        'accepted_price'   => 0,
+                    ]);
+                    Flash::success('You did no accept the price, and it was sent it to the user.');
+                    return redirect()->route('index.public', $info->slug);              
+                }
             }
         }
     }

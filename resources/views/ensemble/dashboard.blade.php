@@ -88,14 +88,22 @@
                             @endif
                         </div>
                         <div class="col-md-7">
+                            @php
+                                if ((!strpos($ensemble->address, 'id:') and !strpos($ensemble->address, 'address:') and !strpos($ensemble->address, 'lat:') and !strpos($ensemble->address, 'long:')) or $ensemble->address==null) {
+                                    $ensemble->address = "id:no-addres|address:no-address|lat:0|long:0";
+                                }
+                                $data = explode("|", $ensemble->address);
+                                $data_address = explode("address:", $data[1]);
+                            @endphp
                             <!-- Displaying data -->
                             <strong>Ensemble:</strong> {{$ensemble->name}}<br>
-                            <strong>url*:</strong> bemusical.us/{{$ensemble->slug}}<br>
+                            <strong>username*:</strong> {{$ensemble->slug}}<br>
+                            <strong>url*:</strong> <a href="{{URL::to('/'.$ensemble->slug)}}">bemusical.us/{{$ensemble->slug}}</a><br>
                             <strong>e-mail*:</strong> {{$ensemble->user->email}}<br>
                             <strong>Manager name:</strong> {{$ensemble->manager_name}}<br>
                             <strong>Type of ensemble:</strong> {{$ensemble->type}}<br>
                             <strong>Bio summary:</strong> {{$ensemble->summary}}<br>
-                            <strong>My Address:</strong> {{$ensemble->address}}<br>
+                            <strong>My Address:</strong> {{$data_address[1]}}<br>
                             <strong>My phone:</strong> {{$ensemble->phone}}<br>
                             <strong>Location:</strong> {{$ensemble->location}}<br>
                             <strong>Mile Radius:</strong> {{$ensemble->mile_radious}} miles<br>
@@ -431,12 +439,18 @@
                         </div>
                     </div>
                     <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
-                        {!! Form::label('address', "Ensemble's address", ['class' => 'col-md-4 control-label']) !!}
+                        <label for="address" class="col-md-4 control-label">My address<p class="text-muted">Powered by google</p></label>
+
                         <div class="col-md-6">
-                            {!! Form::text('address', $ensemble->address, ['class'=>'form-control', 'placeholder'=>'Tell us something amazing', 'required']) !!}
+                            <input id="searchTextField" type="text" class="form-control" name="address" value="{{$data_address[1]}}" required>
                             @if ($errors->has('address'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('address') }}</strong>
+                                </span>
+                            @endif
+                            @if ($errors->has('place_id'))
+                                <span class="help-block">
+                                    <strong style="color: red;">Please pick a place with google suggestions</strong>
                                 </span>
                             @endif
                         </div>
@@ -485,6 +499,10 @@
                             @endif
                         </div>
                     </div>
+
+                    <input id="place-id" type="hidden" name="place_id" required>
+                    <input id="place-address" type="hidden" name="place_address" required>
+                    <input id="place-geometry" type="hidden" name="place_geometry" required>
                 {!! Form::close() !!}
             </div>
             <div class="modal-footer">
@@ -568,6 +586,10 @@
 
 @endsection
 
+@section('js')
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
+@endsection
+
 @section('script')
 
     //Api(choosen) for display and select tags
@@ -613,10 +635,29 @@
                     myDropzone.removeFile(file);
                 });
  
-                this.on("success", 
-                    myDropzone.processQueue.bind(myDropzone)
-                );
+                this.on("success", myDropzone.processQueue.bind(myDropzone));
             }
         };
     //--Dropzone is for dropping images--//
+
+    //////////////Maps////////////////////
+    function initialize() {
+
+    var input = document.getElementById('searchTextField');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+            return;
+        }
+
+        document.getElementById('place-id').value = place.place_id;
+        document.getElementById('place-geometry').value = place.geometry.location;
+        document.getElementById('place-address').value = place.formatted_address;
+      });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+    //////////////----////////////////////
 @endsection

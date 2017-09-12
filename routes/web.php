@@ -114,7 +114,7 @@ Route::get('/ensemble/destroy/member/{id}', 'EnsembleController@destroy_member')
 //Ensembles
 
 //PUBLIC **This routes does not need to be log-in**
-Route::get('/{slug}', 'PublicController@view');
+Route::get('/{slug}', 'PublicController@view')->name('index.public');
 Route::get('/review/{slug}', 'PublicController@review_for_slug')->name('review.slug');
 Route::get('/ensemble/invitation/{code}', 'PublicController@member_invitation')->name('ensemble.invitation');
 Route::post('/member/add/instrument', 'PublicController@add_instrument_to_member')->name('member.add.instrument');
@@ -124,4 +124,5 @@ Route::post('/general/request', 'PublicController@general_request')->name('gener
 Route::get('/specified/request/invitation/{token}', 'PublicController@asking_request')->name('specific.request.response');
 Route::get('/price/{token}', 'PublicController@price')->name('request.price');
 Route::post('/send/price', 'PublicController@send_price')->name('general.request.send_price');
+Route::get('/return/answer/price/{token}', 'PublicController@return_answer_price')->name('general.return.answer.price');
 //PUBLIC

@@ -6,6 +6,15 @@
     @endif
 @endsection
 
+@php
+    if (!strpos($ensemble->address, 'id:') and !strpos($ensemble->address, 'address:') and !strpos($ensemble->address, 'lat:') and !strpos($ensemble->address, 'long:')) {
+        $ensemble->address = 'id:no-addres|address:no-address|lat:0|long:0';
+    }
+    $get_data = explode("|", $ensemble->address);
+    $get_address_place = explode("address:", $get_data[1]);
+    $address_place = $get_address_place[1];
+@endphp
+
 @section('content')
 <div class="container">
     <div class="row">
@@ -39,7 +48,15 @@
                         <strong>Members</strong><br>
                         @foreach($ensemble->members as $member)
                             @if($member->confirmation == 1)
-                            <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a>
+                            <p>
+                                @foreach($all as $each)
+                                    @php
+                                        $img_member = $each->where('user_id','=',$member->user_id)->first();
+                                    @endphp
+                                @endforeach
+                                <img src="{{ asset("images/profile/$img_member->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="80" height="80">
+                                <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a>
+                            </p>
                             @endif
                         @endforeach
                     @endif
@@ -133,7 +150,7 @@
                         <label for="name" class="col-md-4 control-label">Name</label>
 
                         <div class="col-md-6">
-                            <input id="name" type="text" class="form-control" name="name" placeholder="Your full name" required>
+                            <input id="name" type="text" class="form-control" name="name" placeholder="Your full name" value="{{ old('name') }}" required>
 
                             @if ($errors->has('name'))
                                 <span class="help-block">
@@ -147,7 +164,7 @@
                         <label for="email" class="col-md-4 control-label">Email</label>
 
                         <div class="col-md-6">
-                            <input id="email" type="email" class="form-control" name="email" placeholder="Your email" required>
+                            <input id="email" type="email" class="form-control" name="email" placeholder="Your email" value="{{ old('email') }}" required>
 
                             @if ($errors->has('email'))
                                 <span class="help-block">
@@ -161,7 +178,7 @@
                         <label for="company" class="col-md-4 control-label">Company</label>
 
                         <div class="col-md-6">
-                            <input id="company" type="text" class="form-control" name="company" placeholder="Your company" required>
+                            <input id="company" type="text" class="form-control" name="company" placeholder="Your company" value="{{ old('company') }}" required>
 
                             @if ($errors->has('company'))
                                 <span class="help-block">
@@ -175,7 +192,7 @@
                         <label for="phone" class="col-md-4 control-label">Phone (optional)</label>
 
                         <div class="col-md-6">
-                            <input id="phone" type="number" class="form-control" name="phone" placeholder="This makes the process faster">
+                            <input id="phone" type="number" class="form-control" name="phone" placeholder="This makes the process faster" value="{{ old('phone') }}">
                             @if ($errors->has('phone'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('phone') }}</strong>
@@ -188,7 +205,7 @@
                         <label for="event_type" class="col-md-4 control-label">Music</label>
 
                         <div class="col-md-6">
-                            <input id="event_type" type="text" class="form-control" name="event_type" placeholder="What kind of music do you require?" required>
+                            <input id="event_type" type="text" class="form-control" name="event_type" placeholder="What kind of music do you require?" value="{{ old('event_type') }}" required>
                             @if ($errors->has('event_type'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('event_type') }}</strong>
@@ -201,10 +218,8 @@
                         <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                         <div class="col-md-6">
-                            <!-- <input id="day" type="text" class="form-control" placeholder="Select date" class="textbox-n"  onfocus="(this.type='date')" name="day"> --> 
-                            <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day">
-                            <!-- <input id="day" type="text" class="form-control" placeholder="Select date" name="day">
-                            <select id="day" type="text" class="form-control" placeholder="Select date" name="day" required> -->
+
+                            <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}">
 
                             </select>
                             @if ($errors->has('day'))
@@ -219,17 +234,17 @@
                         <label for="time" class="col-md-4 control-label">Time of performance</label>
 
                         <div class="col-md-6">
-                            <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
+                        
                             <select id="time" class="time form-control" name="time" required>
-                                <option value="0:00">Select time</option>
-                                <option value="8:00">8:00AM</option>
-                                <option value="8:15">8:15AM</option>
-                                <option value="8:30">8:30AM</option>
-                                <option value="8:45">8:45AM</option>
-                                <option value="9:00">9:00AM</option>
-                                <option value="9:15">9:15AM</option>
-                                <option value="9:30">9:30AM</option>
-                                <option value="9:45">9:45AM</option>
+                                <option value="00:00">Select time</option>
+                                <option value="08:00">8:00AM</option>
+                                <option value="08:15">8:15AM</option>
+                                <option value="08:30">8:30AM</option>
+                                <option value="08:45">8:45AM</option>
+                                <option value="09:00">9:00AM</option>
+                                <option value="09:15">9:15AM</option>
+                                <option value="09:30">9:30AM</option>
+                                <option value="09:45">9:45AM</option>
                                 <option value="10:00">10:00AM</option>
                                 <option value="10:15">10:15AM</option>
                                 <option value="10:30">10:30AM</option>
@@ -315,7 +330,7 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="address" class="col-md-4 control-label">Location of event</label>
+                        <label for="address" class="col-md-4 control-label">Location of event<p class="text-muted">Powered by google</p></label>
 
                         <div class="col-md-6">
                             <input id="searchTextField" type="text" class="form-control" name="address" required>
@@ -335,10 +350,11 @@
                     <input id="place-id" type="hidden" name="place_id" required>
                     <input id="place-address" type="hidden" name="place_address" required>
                     <input id="place-geometry" type="hidden" name="place_geometry" required>
+                    <input id="distance-google" type="hidden" name="distance_google" required>
                     <input id="user_id" type="hidden" class="form-control" name="user_id" value="{{$ensemble->user->id}}">
 
                     <div class="form-group">
-                        {!! Form::submit('Ask availability', ['class' => 'btn btn-primary']) !!}
+                        {!! Form::submit('Ask availability', ['class' => 'btn btn-primary', 'id' => 'btn-status']) !!}
                     </div>
 
                 {!! Form::close() !!}
@@ -367,23 +383,40 @@
     //////////////Maps////////////////////
     function initialize() {
 
-    var input = document.getElementById('searchTextField');
-    var autocomplete = new google.maps.places.Autocomplete(input);
+        var input = document.getElementById('searchTextField');
+        var autocomplete = new google.maps.places.Autocomplete(input);
 
-    autocomplete.addListener('place_changed', function() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-            return;
-        }
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
 
-        document.getElementById('place-id').value = place.place_id;
-        document.getElementById('place-geometry').value = place.geometry.location;
-        document.getElementById('place-address').value = place.formatted_address;
-      });
+            document.getElementById('place-id').value = place.place_id;
+            document.getElementById('place-geometry').value = place.geometry.location;
+            document.getElementById('place-address').value = place.formatted_address;
+
+            var distanceService = new google.maps.DistanceMatrixService();
+            distanceService.getDistanceMatrix({
+                origins: [place.formatted_address],
+                destinations: ['{{$address_place}}'],
+                travelMode: google.maps.TravelMode.DRIVING,
+                unitSystem: google.maps.UnitSystem.IMPERIAL
+            },
+            function (response, status) {
+                if (status !== google.maps.DistanceMatrixStatus.OK) {
+                    console.log('Error:', status);
+                } else {
+                    document.getElementById('distance-google').value = response.rows[0].elements[0].distance.text;
+                    document.getElementById("btn-status").disabled = false;
+                }
+            });
+        });
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
     //////////////----////////////////////
+
     //////////////Getting Date////////////////////
     var currentdate = new Date(); 
 
@@ -429,12 +462,16 @@
         var newday = '0'+todayday;
     }
 
+    document.getElementById("btn-status").disabled = true;
+
     var datetime =  currentdate.getFullYear()+"-"+newmonth+"-"+newday;
     document.getElementById('day').setAttribute("min", datetime);
     //////////////------------////////////////////
+
     $('#day').datepicker({
         'format': 'yyyy-mm-dd',
         'autoclose': true,
     });
+
 
 @endsection

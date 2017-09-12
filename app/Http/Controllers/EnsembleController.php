@@ -111,6 +111,13 @@ class EnsembleController extends Controller
      */
     public function update(updateInfoEnsemble $request, $id)
     {
+        $geometry = substr($request->place_geometry, 1, -1);
+        $get_geometry_trimed = explode(", ", $geometry);
+        $lat = $get_geometry_trimed[0];
+        $lng = $get_geometry_trimed[1];
+
+        $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
+
         $user = \Auth::user()->id;
         Ensemble::where('user_id', $user)
         ->update([
@@ -120,7 +127,7 @@ class EnsembleController extends Controller
             'about'        => $request->about,
             'summary'      => $request->summary,
             'phone'        => $request->phone,
-            'address'      => $request->address,
+            'address'      => $address,
             'location'     => $request->location,
             'mile_radious' => $request->mile_radious
         ]);

@@ -16,10 +16,10 @@
                 @php
                     $dt = explode("|", $request->date);
                     $address = explode("|", $request->address);
-                    $addrID = explode(":", $address[0]);
-                    $addrNAME = explode(":", $address[1]);
-                    $addrLAT = explode(":", $address[2]);
-                    $addrLNG = explode(":", $address[3]);
+                    $addrID = explode("id:", $address[0]);
+                    $addrNAME = explode("address:", $address[1]);
+                    $addrLAT = explode("lat:", $address[2]);
+                    $addrLNG = explode("long:", $address[3]);
                 @endphp
                 <a class="btn btn-primary btn-block" type="button" href="{{ URL::to('/dashboard') }}">Return Dashboard</a>
                 <div class="panel-body">
@@ -30,16 +30,48 @@
                         Length of performance : <strong>{{$request->duration}} minutes</strong><br>
                         Location of event : <strong>{{$addrNAME[1]}}</strong><br>
                     </div>
+
                     <div class="col-md-4">
-                        @if($request->available == 0 and $request->nonavailable == 0)
-                            <a class="btn btn-success" type="button" href="{{ URL::to('/specified/request/invitation/'.$request->token.'1') }}">Accept</a>
+                        @if($request->available == 0 and $request->nonavailable == 0 and $request->price == null and $request->accepted_price == 0)
+                            <form class="form-horizontal" method="POST" action="{{ route('general.request.send_price') }}">
+                            {{ csrf_field() }}
+                                If you take this, the price will be send it to your next client
+                                <div class="form-group{{ $errors->has('price') ? ' has-error' : '' }}">
+
+                                    <label for="price" class="col-md-2 control-label">$</label>
+
+                                    <div class="col-md-10">
+                                        <input id="price" type="number" step="0.01" class="form-control" name="price" required>
+                                        @if ($errors->has('price'))
+                                            <span class="help-block">
+                                                <strong>{{ $errors->first('price') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <input id="token" type="hidden" class="form-control" name="token" value="{{$request->token}}1">
+
+                                <div class="form-group">
+                                    <div class="col-md-6 col-md-offset-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            Send information
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </form>
                             <a class="btn btn-danger" type="button" href="{{ URL::to('/specified/request/invitation/'.$request->token.'0') }}">Decline</a>
-                        @else
-                            @if($request->available == 1)
-                                <p style="color:green;">ACCEPTED!</p>
-                            @elseif($request->nonavailable == 1)
-                                <p style="color:red;">DENIED!</p>
-                            @endif
+                        @elseif($request->available != 0 and $request->nonavailable == 0 and $request->price != null and $request->accepted_price == 0)
+                            <p style="color:green;">ACCEPTED!</p>
+                            <p>For ${{$request->price}}</p>
+                            <p><strong>The client does not answer yet</strong></p>
+                        @elseif($request->available == 0 and $request->nonavailable != 0 and $request->accepted_price == 0)
+                            <p style="color:red;">DENIED!</p>
+                        @elseif($request->available != 0 and $request->nonavailable == 0 and $request->price != null and $request->accepted_price != 0)
+                            <p style="color:green;">CONFIRMED BY CLIENT!</p>
+                            <p><strong>bemusical wish the best for you!</strong></p>
+                            <p>${{$request->price}}</p>
                         @endif
                     </div>
                     <div id="map"></div>
