@@ -61,7 +61,7 @@
                                 @if($img_member->profile_picture != 'null')
                                     <img src="{{ asset("images/profile/$img_member->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="80" height="80">
                                 @else
-                                    <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
+                                    <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image" width="80" height="80">
                                 @endif
                                 <a class="btn" href="{{ URL::to('/'.$member->slug) }}">{{$member->name}}</a>
                             </p>
