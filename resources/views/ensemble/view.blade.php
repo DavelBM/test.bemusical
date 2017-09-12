@@ -58,7 +58,7 @@
                                         $img_member = $each->where('user_id','=',$member->user_id)->first();
                                     @endphp
                                 @endforeach
-                                @if($img_member != 'null')
+                                @if($img_member->profile_picture != 'null')
                                     <img src="{{ asset("images/profile/$img_member->profile_picture") }}" class="img-circle float-left" alt="{{$ensemble->profile_picture}}" width="80" height="80">
                                 @else
                                     <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
