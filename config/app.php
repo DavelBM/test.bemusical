@@ -182,7 +182,7 @@ return [
         //Flash
         Laracasts\Flash\FlashServiceProvider::class,
         //Calendar
-        MaddHatter\LaravelFullcalendar\ServiceProvider::class,
+        //MaddHatter\LaravelFullcalendar\ServiceProvider::class,
     ],
 
     /*
@@ -233,7 +233,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Form' => Collective\Html\FormFacade::class,
         'Html' => Collective\Html\HtmlFacade::class,
-        'Calendar' => MaddHatter\LaravelFullcalendar\Facades\Calendar::class,
+        //'Calendar' => MaddHatter\LaravelFullcalendar\Facades\Calendar::class,
     ],
 
 ];
