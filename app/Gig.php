@@ -6,12 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Gig extends Model
 {
+	/**
+	 * 
+	 */
     protected $table = "gigs";
 
+    /**
+     * 
+     */
     protected $fillable = [
-    	'address', 'time', 'date', 'details', 'price', 'who', 'whos_company'
+    	'name', 'start_time', 'end_time', 'all_day', 'details'
     ];
 
+    /**
+     * 
+     */
     public function user()
     {
         return $this->belongsTo('App\User');

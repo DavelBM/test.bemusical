@@ -126,3 +126,11 @@ Route::get('/price/{token}', 'PublicController@price')->name('request.price');
 Route::post('/send/price', 'PublicController@send_price')->name('general.request.send_price');
 Route::get('/return/answer/price/{token}', 'PublicController@return_answer_price')->name('general.return.answer.price');
 //PUBLIC
+
+/**
+ * Here we manipulate all the data for calendar of users
+ */
+//CALENDAR 
+Route::get('/events/info', 'CalendarController@index')->name('index.calendar');
+Route::get('/events/data', 'CalendarController@get_calendar')->name('get_data.calendar');
+//CALENDAR
