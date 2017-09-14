@@ -257,9 +257,7 @@
                         document.getElementById("events-popover-content").innerHTML = date.format();
                         return $("#events-popover-content").html();
                     }
-                });
-
-                $(this).popover('show');
+                }).popover('show');
                 $(this).attr('tabindex', -1);
                 // $(this).popover({
                 //     html: true,
