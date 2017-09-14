@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\GigOption;
 use App\Gig;
+use Auth;
 
 class CalendarController extends Controller
 {
@@ -22,7 +24,9 @@ class CalendarController extends Controller
 	 */
     public function index()
     {
-    	return view('layouts.calendar');
+        $user = Auth::user()->id;
+        $option = GigOption::where('user_id', $user)->firstOrFail();
+    	return view('layouts.calendar')->with('option', $option);
     }
 
 	/**

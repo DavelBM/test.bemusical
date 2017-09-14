@@ -21,6 +21,7 @@ use App\Ensemble_song;
 use App\User_info;
 use App\EnsembleRepertoire;
 use App\Member;
+use App\GigOption;
 use App\Ask;
 use Hash;
 use Mail;
@@ -61,6 +62,17 @@ class EnsembleController extends Controller
             $user = \Auth::user()->id;
             //Relation many to many TAGS//
             $ensemble = Ensemble::where('user_id', $user)->firstOrFail();
+            $options = $ensemble->user->gig_option;
+            if ($options == null) {
+                $save_new_options = new GigOption;
+                $save_new_options->user_id = Auth::user()->id;
+                $save_new_options->listDay = 'listDay';
+                $save_new_options->listWeek = 'listWeek';
+                $save_new_options->month = 'month';
+                $save_new_options->start = '08:00';
+                $save_new_options->end = '22:00';
+                $save_new_options->save();
+            }
             $my_tags = $ensemble->ensemble_tags->pluck('id')->toArray();
             //Relation many to many STYLES//
             $my_styles = $ensemble->ensemble_styles->pluck('id')->toArray();

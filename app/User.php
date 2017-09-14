@@ -46,6 +46,11 @@ class User extends Authenticatable
         return $this->hasOne('App\Member');
     }
 
+    public function gig_option()
+    {
+        return $this->hasOne('App\GigOption');
+    }
+
     public function user_videos()
     {
         return $this->hasMany('App\User_video');

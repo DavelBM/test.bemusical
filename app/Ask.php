@@ -16,4 +16,9 @@ class Ask extends Model
     {
         return $this->belongsTo('App\User');
     }
+
+    public function gig()
+    {
+        return $this->hasOne('App\Gig');
+    }
 }

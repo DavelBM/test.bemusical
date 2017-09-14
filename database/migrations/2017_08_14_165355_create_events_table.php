@@ -33,33 +33,21 @@ class CreateEventsTable extends Migration
         Schema::create('gig_options', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
-            $table->string('views')->nullable();
-            // views: {
-            //     listDay: { buttonText: 'ToDos Today' },
-            //     listWeek: { buttonText: 'ToDos Week' },
-            //     month: { buttonText: 'Tmi mes' }
-            // }
-            $table->string('businessHours')->nullable();
-            // businessHours: {
-            //     // days of week. an array of zero-based day of week integers (0=Sunday)
-            //     dow: [ 1, 2, 3, 4, 5 ], // Monday - Thursday
-
-            //     start: '10:00', // a start time (10am in this example)
-            //     end: '18:00', // an end time (6pm in this example)
-            // }
-            $table->string('time_before_event');
-            $table->string('time_after_event');
-            $table->string('weekNumbers')->nullable();
-            // weekNumbers: true,
-            // weekNumbersWithinDays: true,
-            // weekNumberCalculation: 'ISO'
+            $table->string('listDay')->nullable();
+            $table->string('listWeek')->nullable();
+            $table->string('month')->nullable();
+            $table->boolean('monday')->default(1);
+            $table->boolean('tuesday')->default(1);
+            $table->boolean('wednesday')->default(1);
+            $table->boolean('thursday')->default(1);
+            $table->boolean('friday')->default(1);
+            $table->boolean('saturday')->default(1);
+            $table->boolean('sunday')->default(1);
+            $table->string('start')->nullable();
+            $table->string('end')->nullable();
+            $table->integer('time_before_event')->default(30);
+            $table->integer('time_after_event')->default(30);
             $table->enum('defaultView', ['listDay', 'listWeek', 'month'])->default('month');
-            // defaultView: 'month'
-            $table->string('defaultDate')->nullable();
-            // defaultDate: '2017-01-12',
-            $table->string('eventColor')->nullable();
-            // eventColor: '#A78036',
-
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->timestamps();

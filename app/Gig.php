@@ -15,7 +15,7 @@ class Gig extends Model
      * 
      */
     protected $fillable = [
-    	'name', 'start_time', 'end_time', 'all_day', 'details'
+    	'title', 'start', 'end', 'url', 'allDay'
     ];
 
     /**
@@ -24,5 +24,10 @@ class Gig extends Model
     public function user()
     {
         return $this->belongsTo('App\User');
+    }
+
+    public function request()
+    {
+        return $this->hasOne('App\Ask');
     }
 }

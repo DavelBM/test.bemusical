@@ -86,6 +86,7 @@ Route::post('/add/instrument', 'HomeController@storeInstruments')->name('user.in
 Route::post('/add/tag', 'HomeController@storeTags')->name('user.tag');
 Route::post('/add/style', 'HomeController@storeStyles')->name('user.style');
 Route::post('/add/image', 'HomeController@storeImages')->name('user.images');
+Route::get('/add/calendar/options/{option}', 'HomeController@calendarOptions')->name('user.calendar.options');
 //Associate to users//
 
 //Ensembles
