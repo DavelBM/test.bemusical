@@ -230,64 +230,29 @@
                         <div class="col-md-6">
                             <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
                             <select id="time" class="time form-control" name="time" required>
-                                <option value="00:00">Select time</option>
-                                <option value="08:00">8:00AM</option>
-                                <option value="08:15">8:15AM</option>
-                                <option value="08:30">8:30AM</option>
-                                <option value="08:45">8:45AM</option>
-                                <option value="09:00">9:00AM</option>
-                                <option value="09:15">9:15AM</option>
-                                <option value="09:30">9:30AM</option>
-                                <option value="09:45">9:45AM</option>
-                                <option value="10:00">10:00AM</option>
-                                <option value="10:15">10:15AM</option>
-                                <option value="10:30">10:30AM</option>
-                                <option value="10:45">10:45AM</option>
-                                <option value="11:00">11:00AM</option>
-                                <option value="11:15">11:15AM</option>
-                                <option value="11:30">11:30AM</option>
-                                <option value="11:45">11:45AM</option>
-                                <option value="12:00">12:00PM</option>
-                                <option value="12:15">12:15PM</option>
-                                <option value="12:30">12:30PM</option>
-                                <option value="12:45">12:45PM</option>
-                                <option value="13:00">1:00PM</option>
-                                <option value="13:15">1:15PM</option>
-                                <option value="13:30">1:30PM</option>
-                                <option value="13:45">1:45PM</option>
-                                <option value="14:00">2:00PM</option>
-                                <option value="14:15">2:15PM</option>
-                                <option value="14:30">2:30PM</option>
-                                <option value="14:45">2:45PM</option>
-                                <option value="15:00">3:00PM</option>
-                                <option value="15:15">3:15PM</option>
-                                <option value="15:30">3:30PM</option>
-                                <option value="15:45">3:45PM</option>
-                                <option value="16:00">4:00PM</option>
-                                <option value="16:15">4:15PM</option>
-                                <option value="16:30">4:30PM</option>
-                                <option value="16:45">4:45PM</option>
-                                <option value="17:00">5:00PM</option>
-                                <option value="17:15">5:15PM</option>
-                                <option value="17:30">5:30PM</option>
-                                <option value="17:45">5:45PM</option>
-                                <option value="18:00">6:00PM</option>
-                                <option value="18:15">6:15PM</option>
-                                <option value="18:30">6:30PM</option>
-                                <option value="18:45">6:45PM</option>
-                                <option value="19:00">7:00PM</option>
-                                <option value="19:15">7:15PM</option>
-                                <option value="19:30">7:30PM</option>
-                                <option value="19:45">7:45PM</option>
-                                <option value="20:00">8:00PM</option>
-                                <option value="20:15">8:15PM</option>
-                                <option value="20:30">8:30PM</option>
-                                <option value="20:45">8:45PM</option>
-                                <option value="21:00">9:00PM</option>
-                                <option value="21:15">9:15PM</option>
-                                <option value="21:30">9:30PM</option>
-                                <option value="21:45">9:45PM</option>
-                                <option value="22:00">10:00PM</option>
+                                <?php
+
+                                    $start = "";
+                                    $end = "";
+                                    if ($option->start == null or $option->end == null) {
+                                        $start = "8:00";
+                                        $end = "22:00";
+                                    }else{
+                                        $start = $option->start;
+                                        $end = $option->end;
+                                    }
+
+                                    $tStart = strtotime($start);
+                                    $tEnd = strtotime($end);
+                                    $tNow = $tStart;
+
+                                    while($tNow <= $tEnd){
+                                ?>
+                                        <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                                @php
+                                        $tNow = strtotime('+15 minutes',$tNow);
+                                    }
+                                @endphp
                             </select>
                             @if ($errors->has('time'))
                                 <span class="help-block">
@@ -363,17 +328,18 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <!-- <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}"> -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-datetimepicker.min.css') }}">
 @endsection
 
 @section('js')
     <script src="{{ asset('js/main.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
+    <!-- <script type="text/javascript" src="{{ asset('js/bootstrap-datepicker.js') }}"></script> -->
+    <script src="{{ asset('vendor/fullcalendar/lib/moment.min.js')}}"></script>
+    <script type="text/javascript" src="{{ asset('js/bootstrap-datetimepicker.min.js') }}"></script>
     <!-- <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-@endsection
 
-@section('script')
+    <script type="text/javascript">
     //////////////Maps////////////////////
     function initialize() {
 
@@ -462,10 +428,28 @@
     document.getElementById('day').setAttribute("min", datetime);
     //////////////------------////////////////////
 
-    $('#day').datepicker({
-        'format': 'yyyy-mm-dd',
-        'autoclose': true,
+    $('#day').datetimepicker({
+        // 'format': 'yyyy-mm-dd',
+        // 'autoclose': true,
+        'daysOfWeekDisabled': [0, 6],
+        'defaultDate': "11/1/2017",
+        'disabledDates': [
+            
+            "11/22/2017",
+            "11/23/2017",
+            "11/24/2017",
+
+        ],
     });
+    
+    //$(document).ready(function(){
 
+    //    $('#day').datepicker({
+    //        'format': 'yyyy-mm-dd',
+    //        'autoclose': true,
+    //    });
 
+    //});
+
+</script>
 @endsection

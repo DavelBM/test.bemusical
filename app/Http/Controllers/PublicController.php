@@ -14,8 +14,11 @@ use App\User;
 use App\Member;
 use App\Ask;
 use App\GeneralAsk;
+use App\Gig;
+use App\GigOption;
 use Auth;
 use Mail;
+use URL;
 
 class PublicController extends Controller
 {
@@ -39,6 +42,7 @@ class PublicController extends Controller
     	}elseif(User_info::where('slug', '=', $slug)->exists()){
     		$user = User_info::select('user_id')->where('slug', $slug)->firstOrFail();
             $info = User::where('id', $user->user_id)->firstOrFail();
+            $option = GigOption::where('user_id', $user->user_id)->first(); 
 
     		if (!$info->visible) {
    				return view('admin.notReady');
@@ -46,7 +50,7 @@ class PublicController extends Controller
 	    		if (!$info->active) {
 	   				return view('admin.blockedUser');
 	   			}else{
-	   				return view('user.view')->with('info', $info); 
+	   				return view('user.view')->with('info', $info)->with('option', $option); 
 	   			}  
 	   		}
 
@@ -433,8 +437,23 @@ class PublicController extends Controller
             {
                 $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
                 if($available == 1){
-                    Ask::where('token', $token)
-                    ->update([
+                    $ask = Ask::where('token', $token)->first();
+                
+                    $start_date = explode('|', $ask->date);
+                    $format_date =Carbon::parse($start_date[0]);
+                    $get_data_time = $format_date->addMinutes($ask->duration);
+                    $end_date = $get_data_time->toDateTimeString();
+
+                    $gig = new Gig();
+                    $gig->user_id    = $ask->user_id;
+                    $gig->request_id = $ask->id;
+                    $gig->title      = $ask->name.'-'.$ask->company;
+                    $gig->start      = $start_date[0];
+                    $gig->end        = $end_date;
+                    $gig->url        = URL::to('/details/request/'.$ask->id);
+                    $gig->save(); 
+
+                    $ask->update([
                         'accepted_price'   => 1,
                     ]);
                     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
@@ -452,8 +471,23 @@ class PublicController extends Controller
             {
                 $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
                 if($available == 1){
-                    Ask::where('token', $token)
-                    ->update([
+                    $ask = Ask::where('token', $token)->first();
+                    
+                    $start_date = explode('|', $ask->date);
+                    $format_date =Carbon::parse($start_date[0]);
+                    $get_data_time = $format_date->addMinutes($ask->duration);
+                    $end_date = $get_data_time->toDateTimeString();
+
+                    $gig = new Gig();
+                    $gig->user_id    = $ask->user_id;
+                    $gig->request_id = $ask->id;
+                    $gig->title      = $ask->name.'-'.$ask->company;
+                    $gig->start      = $start_date[0];
+                    $gig->end        = $end_date;
+                    $gig->url        = URL::to('/details/request/'.$ask->id);
+                    $gig->save(); 
+
+                    $ask->update([
                         'accepted_price'   => 1,
                     ]);
                     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');

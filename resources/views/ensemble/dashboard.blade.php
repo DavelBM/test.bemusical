@@ -24,6 +24,7 @@
                     our team are reviewing your perfil, wait for our response. In case everything is okay, we will active you account automaticatly</div>
                 @else
                         <div class="btn-group pull-right">
+                            <a class="btn btn-pimary" href="{{ route('index.calendar') }}">My calendar</a>
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Requests <span class="badge">
                                     {{$asks_count}}

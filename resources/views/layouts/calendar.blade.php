@@ -24,8 +24,6 @@
                 @include('flash::message')
                 <div class="panel-body">
                     <div id='calendar'></div>
-                    <div id="events-popover-head" class="hide"></div>
-                    <div id="events-popover-content" class="hide"></div>
                 </div>
             </div>
         </div>
@@ -133,6 +131,81 @@
         </div>
     </div>
 </div>
+
+<div id="calendarModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span> <span class="sr-only">close</span></button>
+                <h4 id="modalTitle" class="modal-title">Choose your option</h4>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <form class="form-horizontal" method="POST" action="{{ route('user.block.day') }}">
+                            {{ csrf_field() }}
+
+                    <div class="form-group">
+                        <div class="col-md-4 col-md-offset-4">
+                            <center>You picked <p id="date-format-fullcalendar"></p></center>      
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title" class="col-md-4 control-label">Name the event</label>
+                        <div class="col-md-6">
+                            <input class="form-control" name="title" type="text" id="title" placeholder="What are you going to do?" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="block" class="col-md-4 control-label">Block</label>
+
+                        <div class="col-md-8">
+                            <div class="col-md-6">
+                                <label>From:<input class="form-control" name="start" type="time" id="start" value="{{$option->start}}"></label>
+                            </div>
+                            <div class="col-md-6">
+                                <label>To:<input class="form-control" name="end" type="time" id="end" value="{{$option->end}}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-4 col-md-offset-4">
+                            <center>
+                                <button type="submit" class="btn btn-primary">
+                                    Continue
+                                </button><br>
+                                OR
+                            </center>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="user_id"  name="user_id" value="{{$user}}">
+                    <input type="hidden" id="dateFullcalendarPartDay" name="date" value="">
+                    <input type="hidden" id="fullOrPart" name="fullOrPart" value="part">
+
+                </form>
+
+                <form class="form-horizontal" method="POST" action="{{ route('user.block.day') }}">
+                            {{ csrf_field() }}
+                    <input type="hidden" id="user_id"  name="user_id" value="{{$user}}">
+                    <input type="hidden" id="dateFullcalendarFullDay" name="date" value="">
+                    <input type="hidden" id="fullOrPart" name="fullOrPart" value="full">
+                    <div class="form-group">
+                        <div class="col-md-4 col-md-offset-4">
+                            <center>
+                                <button type="submit" class="btn btn-danger">
+                                    Block all day
+                                </button>
+                            </center>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/fullcalendar/fullcalendar.min.css') }}">
     <style type="text/css">
@@ -191,20 +264,6 @@
 
     var urlcalendar = "{{ url('/') }}";
 
-    $('body').on('mouseup', function(e) {
-        if(!$(e.target).closest('.popover').length) {
-            $('.popover').each(function(){
-                $(this.previousSibling).popover('hide');
-            });
-        }
-    });
-// $('html').on('click', function(e) {
-//   $('.popover').each( function() {
-//     if( $(e.target).parents(".fc-day").get(0) !== $(this).prev().get(0) ) {
-//       $(this).popover('hide');
-//     }
-//   });
-// });
     $(document).ready(function() {
         
         $('#calendar').fullCalendar({
@@ -234,48 +293,17 @@
             weekNumberCalculation: 'ISO',
 
             dayClick: function(date, jsEvent, view) {
-                $(this).css('background-color', '#f3f3f3');
-           //      $(this).popover({
-           //  placement : 'bottom',
-           //  title : 'Appointment Actions',
-           //  html : true,
-           //  content :"test",
-           //  trigger : 'focus'
-           // }).popover('show');
-           //  $(this).attr('tabindex', -1);
-                $(this).popover({
-                    html: true,
-                    placement: 'right',
-                    container: 'body',
-                    animation: true,
-                    trigger: 'focus',
-                    title: function () {
-                        document.getElementById("events-popover-head").innerHTML = 'date you picked';
-                        return $("#events-popover-head").html();
-                    },
-                    content: function () {
-                        document.getElementById("events-popover-content").innerHTML = date.format();
-                        return $("#events-popover-content").html();
-                    }
-                }).popover('show');
-                $(this).attr('tabindex', -1);
-                // $(this).popover({
-                //     html: true,
-                //     placement: 'right',
-                //     container: 'body',
-                //     animation: true,
-                //     trigger: 'manual',
-                //     title: function () {
-                //         document.getElementById("events-popover-head").innerHTML = 'date you picked';
-                //         return $("#events-popover-head").html();
-                //     },
-                //     content: function () {
-                //         document.getElementById("events-popover-content").innerHTML = date.format();
-                //         return $("#events-popover-content").html();
-                //     }
-                // });
-
-                // $(this).popover('show');
+                //$(this).css('background-color', '#f3f3f3');
+                var date_picked = date.format();
+                var date_string = moment(date_picked).format('LL');
+                document.getElementById("date-format-fullcalendar").innerHTML = date_string;
+                document.getElementById("dateFullcalendarFullDay").value = date_picked;
+                document.getElementById("dateFullcalendarPartDay").value = date_picked;
+                
+                $('#modalTitle').html(event.title);
+                $('#modalBody').html(event.description);
+                $('#eventUrl').attr('href',event.url);
+                $('#calendarModal').modal();
 
             },
 

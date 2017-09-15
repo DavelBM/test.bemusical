@@ -86,7 +86,6 @@ Route::post('/add/instrument', 'HomeController@storeInstruments')->name('user.in
 Route::post('/add/tag', 'HomeController@storeTags')->name('user.tag');
 Route::post('/add/style', 'HomeController@storeStyles')->name('user.style');
 Route::post('/add/image', 'HomeController@storeImages')->name('user.images');
-Route::get('/add/calendar/options/{option}', 'HomeController@calendarOptions')->name('user.calendar.options');
 //Associate to users//
 
 //Ensembles
@@ -134,4 +133,6 @@ Route::get('/return/answer/price/{token}', 'PublicController@return_answer_price
 //CALENDAR 
 Route::get('/events/info', 'CalendarController@index')->name('index.calendar');
 Route::get('/events/data', 'CalendarController@get_calendar')->name('get_data.calendar');
+Route::get('/add/calendar/options/{option}', 'CalendarController@calendarOptions')->name('user.calendar.options');
+Route::post('/block/day', 'CalendarController@block_day')->name('user.block.day');
 //CALENDAR

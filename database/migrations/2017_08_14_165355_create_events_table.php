@@ -16,16 +16,14 @@ class CreateEventsTable extends Migration
         Schema::create('gigs', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
-            $table->integer('request_id')->unsigned();
+            $table->integer('request_id')->unsigned()->nullable();
             $table->string('title');
             $table->string('start');
-            // $dt->addMinutes(61); 
             $table->string('end');
             $table->string('url');
             $table->boolean('allDay')->default(0);
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('request_id')->references('id')->on('requests')->onDelete('cascade');
 
             $table->timestamps();
         });
@@ -48,6 +46,7 @@ class CreateEventsTable extends Migration
             $table->integer('time_before_event')->default(30);
             $table->integer('time_after_event')->default(30);
             $table->enum('defaultView', ['listDay', 'listWeek', 'month'])->default('month');
+            
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->timestamps();
