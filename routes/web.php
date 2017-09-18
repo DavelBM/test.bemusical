@@ -125,6 +125,7 @@ Route::get('/specified/request/invitation/{token}', 'PublicController@asking_req
 Route::get('/price/{token}', 'PublicController@price')->name('request.price');
 Route::post('/send/price', 'PublicController@send_price')->name('general.request.send_price');
 Route::get('/return/answer/price/{token}', 'PublicController@return_answer_price')->name('general.return.answer.price');
+Route::get('/allow/times/{day}', 'PublicController@allowtimes')->name('allow.times');
 //PUBLIC
 
 /**

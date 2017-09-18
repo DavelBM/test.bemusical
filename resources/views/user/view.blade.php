@@ -229,30 +229,37 @@
 
                         <div class="col-md-6">
                             <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
-                            <select id="time" class="time form-control" name="time" required>
+                            <select id="time" class="time form-control" name="time" required></select>
+                           <!--  <select id="time" class="time form-control" name="time" required> -->
                                 <?php
 
                                     $start = "";
                                     $end = "";
-                                    if ($option->start == null or $option->end == null) {
-                                        $start = "8:00";
-                                        $end = "22:00";
-                                    }else{
+                                    // if ($option->start == null or $option->end == null) {
+                                    //     $start = "08:00";
+                                    //     $end = "22:00";
+                                    //     $start_exploded = explode(':', $start);
+                                    //     $end_exploded = explode(':', $end);
+                                    // }else{
                                         $start = $option->start;
                                         $end = $option->end;
-                                    }
+                                        $start_exploded = explode(':', $start);
+                                        $end_exploded = explode(':', $end);
+                                    //}
 
-                                    $tStart = strtotime($start);
-                                    $tEnd = strtotime($end);
-                                    $tNow = $tStart;
+                                    // $tStart = strtotime($start);
+                                    // $tEnd = strtotime($end);
+                                    // $tNow = $tStart;
 
-                                    while($tNow <= $tEnd){
+                                    // while($tNow <= $tEnd){
                                 ?>
-                                        <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
-                                @php
-                                        $tNow = strtotime('+15 minutes',$tNow);
-                                    }
-                                @endphp
+                                <?php
+                                        // <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                                ?>
+                                <?php
+                                    //     $tNow = strtotime('+15 minutes',$tNow);
+                                    // }
+                                ?>
                             </select>
                             @if ($errors->has('time'))
                                 <span class="help-block">
@@ -315,11 +322,9 @@
                     <div class="form-group">
                         {!! Form::submit('Ask availability', ['class' => 'btn btn-primary', 'id' => 'btn-status']) !!}
                     </div>
-
                 {!! Form::close() !!}
             </div>
         </div>
-
     </div>
 </div>
 <!-- /ModalForm -->
@@ -428,28 +433,105 @@
     document.getElementById('day').setAttribute("min", datetime);
     //////////////------------////////////////////
 
+    var get_date = new Date();
+    var month = get_date.getMonth()+1;
+    var day = get_date.getDate();
+
+    var output_date = get_date.getFullYear()+'-'+(month<10 ? '0' : '')+month+'-'+(day<10 ? '0' : '')+day;
+
+    $("#day").val(output_date);
+
     $('#day').datetimepicker({
-        // 'format': 'yyyy-mm-dd',
-        // 'autoclose': true,
-        'daysOfWeekDisabled': [0, 6],
-        'defaultDate': "11/1/2017",
-        'disabledDates': [
-            
-            "11/22/2017",
-            "11/23/2017",
-            "11/24/2017",
+        'format' : 'YYYY-MM-DD',
+        'daysOfWeekDisabled': [@if($option->monday == 0)1,@endif @if($option->tuesday == 0)2,@endif @if($option->wednesday == 0)3,@endif @if($option->thursday == 0)4,@endif @if($option->friday == 0)5,@endif @if($option->saturday == 0)6,@endif @if($option->sunday == 0)0,@endif],
 
-        ],
+        'disabledDates': [@foreach($dates as $date)"{{$date}}",@endforeach],
+    }).on('changeDate', function(ev){                 
+        $('#day').datepicker('hide');
     });
-    
-    //$(document).ready(function(){
 
-    //    $('#day').datepicker({
-    //        'format': 'yyyy-mm-dd',
-    //        'autoclose': true,
-    //    });
 
-    //});
+    $("#time").attr("disabled", "disabled");
+    var selectList = $('#time');
+    selectList.append('<option>(Pick an hour)</option>');
+    var dates_getting = [];
+
+    $("#day").on("dp.change", function(e) {
+        $.get( "/allow/times/date="+$('#day').val()+"&id={{$info->id}}", function(data) {
+            console.log(data);
+            if (data.length > 0) { 
+                // $("#time").removeAttr("disabled");     
+                // $('#time').empty();
+
+                // // var select = document.getElementById('mySelect');
+                // // for(var i = 0; i < data.length; i++) {
+                // //     var option = document.createElement('option');
+                // //     var time_got = data[i].split(" to ");
+                // //     option.innerHTML = time_got[0];
+                // //     option.value = time_got[0];
+                // //     select.appendChild(option);
+                // // }
+
+                // for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
+                //     var ampmhour = ((hour + 11) % 12 + 1);
+                //     var a = hour > 11 ? "PM" : "AM";
+                //     for (var minute = 0; minute < 60; minute = minute+15){
+                //         if(hour == {{$end_exploded[0]}})
+                //         {
+                //             if (minute > {{$end_exploded[1]}}) {
+                //                 break;
+                //             }
+                //         }     
+                //         selectList.append('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                //     }        
+                // }
+
+                $("#time").removeAttr("disabled");     
+                $('#time').empty();
+
+                for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
+                    var ampmhour = ((hour + 11) % 12 + 1);
+                    var a = hour > 11 ? "PM" : "AM";
+                    for (var minute = 0; minute < 60; minute = minute+15){
+                        if(hour == {{$end_exploded[0]}})
+                        {
+                            if (minute > {{$end_exploded[1]}}) {
+                                break;
+                            }
+                        }     
+
+                        for(var i = 0; i < data.length; i++) {
+                            //var option = document.createElement('option');
+                            var time_got = data[i].split(" to ");
+                            //console.log(time_got[0]);
+                            //option.innerHTML = time_got[0];
+                            //option.value = time_got[0];
+                            //select.appendChild(option);
+
+                            if(time_got[0] != (aZero(hour)+':'+aZero(minute))){
+                                console.log(time_got[0]+' != '+aZero(hour)+':'+aZero(minute));
+                                
+                                dates_getting.push('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+
+                                selectList.append('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                            }                            
+                        }
+                    }        
+                }
+                var uniqueNames = [];
+                $.each(dates_getting, function(i, el){
+                    if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
+                });
+                console.log(uniqueNames);
+            }else{
+                $("#time").attr("disabled", "disabled"); 
+            }
+        });
+    });
+
+    function aZero(n) {
+      return n.toString().length == 1 ?  n = '0' + n: n;
+    }
 
 </script>
 @endsection

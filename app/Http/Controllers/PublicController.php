@@ -44,13 +44,26 @@ class PublicController extends Controller
             $info = User::where('id', $user->user_id)->firstOrFail();
             $option = GigOption::where('user_id', $user->user_id)->first(); 
 
+            $getting_dates = Gig::where('user_id', $user->user_id)->where('allDay', 1)->select('start')->get();
+            
+            $dates = [];
+            foreach ($getting_dates as $get_date) {
+                $date_exploded = explode(' ', $get_date->start);
+                $exploding_to_format = explode('-', $date_exploded[0]);
+                $formating_date = $exploding_to_format[1].'/'.$exploding_to_format[2].'/'.$exploding_to_format[0];
+                array_push($dates, $formating_date);   
+            }
+
     		if (!$info->visible) {
    				return view('admin.notReady');
    			}else{
 	    		if (!$info->active) {
 	   				return view('admin.blockedUser');
 	   			}else{
-	   				return view('user.view')->with('info', $info)->with('option', $option); 
+	   				return view('user.view')
+                        ->with('info', $info)
+                        ->with('option', $option)
+                        ->with('dates', $dates); 
 	   			}  
 	   		}
 
@@ -565,5 +578,44 @@ class PublicController extends Controller
          Flash::success('Thanks '.$request->name.', we already sent a message to the admin page asking for availability. You will hear soon about your request.');
         return redirect()->back();
 
+    }
+    public function allowtimes($get_data)
+    {
+        $data = explode('&', $get_data);
+        $date = explode('=', $data[0]);
+        $date_exploted = explode('-', $date[1]);
+        $day = $date_exploted[2];
+        $month = $date_exploted[1];
+        $year = $date_exploted[0];
+
+        $id = explode('=', $data[1]);
+        $gigs = Gig::select('start', 'end')->where('user_id', $id[1])->get();
+        $time_unavailable = [];
+        foreach ($gigs as $gig) {
+            $gig_date = explode(' ', $gig->start);
+            $gig_date_end = explode(' ', $gig->end);
+            $gig_date_exploted = explode('-', $gig_date[0]);
+            $gig_date_exploted_end = explode('-', $gig_date_end[0]);
+            $gig_day = $gig_date_exploted[2];
+            $gig_month = $gig_date_exploted[1];
+            $gig_year = $gig_date_exploted[0];
+            $gig_day_end = $gig_date_exploted_end[2];
+            $gig_month_end = $gig_date_exploted_end[1];
+            $gig_year_end = $gig_date_exploted_end[0];
+            if ($gig_day == $day) {
+                if ($gig_month == $month) {
+                    if ($gig_year == $year) {
+                        $time = explode(':', $gig_date[1]);
+                        $time_end = explode(':', $gig_date_end[1]);
+                        $time_sent = sprintf("%02d", $time[0]).':'.sprintf("%02d", $time[1]);
+                        $time_sent_end = sprintf("%02d", $time_end[0]).':'.sprintf("%02d", $time_end[1]);
+                        $full_time = $time_sent.' to '.$time_sent_end;
+                        array_push($time_unavailable, $full_time); 
+                    }
+                }
+            }
+        }
+
+        return $time_unavailable;
     }
 }
