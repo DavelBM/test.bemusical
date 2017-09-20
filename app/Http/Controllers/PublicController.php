@@ -28,6 +28,17 @@ class PublicController extends Controller
    		if (Ensemble::where('slug', '=', $slug)->exists()) {
    			$ensemble = Ensemble::where('slug', $slug)->firstOrFail();
             $all = User_info::all();
+            $option = GigOption::where('user_id', $ensemble->user_id)->first(); 
+
+            $getting_dates = Gig::where('user_id', $ensemble->user_id)->where('allDay', 1)->select('start')->get();
+            
+            $dates = [];
+            foreach ($getting_dates as $get_date) {
+                $date_exploded = explode(' ', $get_date->start);
+                $exploding_to_format = explode('-', $date_exploded[0]);
+                $formating_date = $exploding_to_format[1].'/'.$exploding_to_format[2].'/'.$exploding_to_format[0];
+                array_push($dates, $formating_date);   
+            }
    			
    			if (!$ensemble->user->visible) {
    				return view('admin.notReady');
@@ -35,7 +46,11 @@ class PublicController extends Controller
    				if (!$ensemble->user->active) {
 	   				return view('admin.blockedUser');
 	   			}else{
-	   				return view('ensemble.view')->with('ensemble', $ensemble)->with('all', $all);
+	   				return view('ensemble.view')
+                        ->with('ensemble', $ensemble)
+                        ->with('all', $all)
+                        ->with('option', $option)
+                        ->with('dates', $dates);
 	   			}
    			}
 
@@ -444,8 +459,7 @@ class PublicController extends Controller
             }
             Flash::warning('This token was already used');
             return redirect()->route('index.public', $info->slug);
-        }
-        elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
+        }elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
             if($user->type == 'soloist')
             {
                 $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
@@ -466,12 +480,14 @@ class PublicController extends Controller
                     $gig->url        = URL::to('/details/request/'.$ask->id);
                     $gig->save(); 
 
-                    $ask->update([
+                    Ask::where('token', $token)
+                    ->update([
                         'accepted_price'   => 1,
                     ]);
                     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
                     return redirect()->route('index.public', $info->slug);
                 }elseif ($available == 0) {
+
                     Ask::where('token', $token)
                     ->update([
                         'accepted_price'   => 0,
@@ -487,7 +503,7 @@ class PublicController extends Controller
                     $ask = Ask::where('token', $token)->first();
                     
                     $start_date = explode('|', $ask->date);
-                    $format_date =Carbon::parse($start_date[0]);
+                    $format_date = Carbon::parse($start_date[0]);
                     $get_data_time = $format_date->addMinutes($ask->duration);
                     $end_date = $get_data_time->toDateTimeString();
 
@@ -500,7 +516,8 @@ class PublicController extends Controller
                     $gig->url        = URL::to('/details/request/'.$ask->id);
                     $gig->save(); 
 
-                    $ask->update([
+                    Ask::where('token', $token)
+                    ->update([
                         'accepted_price'   => 1,
                     ]);
                     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
@@ -591,6 +608,7 @@ class PublicController extends Controller
         $id = explode('=', $data[1]);
         $gigs = Gig::select('start', 'end')->where('user_id', $id[1])->get();
         $time_unavailable = [];
+        $time_unavailable_end = [];
         foreach ($gigs as $gig) {
             $gig_date = explode(' ', $gig->start);
             $gig_date_end = explode(' ', $gig->end);
@@ -609,13 +627,15 @@ class PublicController extends Controller
                         $time_end = explode(':', $gig_date_end[1]);
                         $time_sent = sprintf("%02d", $time[0]).':'.sprintf("%02d", $time[1]);
                         $time_sent_end = sprintf("%02d", $time_end[0]).':'.sprintf("%02d", $time_end[1]);
-                        $full_time = $time_sent.' to '.$time_sent_end;
+                        $full_time = $time_sent;
+                        $full_time_end = $time_sent_end;
                         array_push($time_unavailable, $full_time); 
+                        array_push($time_unavailable_end, $full_time_end); 
                     }
                 }
             }
         }
 
-        return $time_unavailable;
+        return array($time_unavailable, $time_unavailable_end);
     }
 }

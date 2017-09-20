@@ -13,6 +13,13 @@
     $get_data = explode("|", $info->info->address);
     $get_address_place = explode("address:", $get_data[1]);
     $address_place = $get_address_place[1];
+
+    $start = "";
+    $end = "";
+    $start = $option->start;
+    $end = $option->end;
+    $start_exploded = explode(':', $start);
+    $end_exploded = explode(':', $end);
 @endphp
 
 @section('content')
@@ -233,18 +240,18 @@
                            <!--  <select id="time" class="time form-control" name="time" required> -->
                                 <?php
 
-                                    $start = "";
-                                    $end = "";
-                                    // if ($option->start == null or $option->end == null) {
-                                    //     $start = "08:00";
-                                    //     $end = "22:00";
+                                    // $start = "";
+                                    // $end = "";
+                                    // // if ($option->start == null or $option->end == null) {
+                                    // //     $start = "08:00";
+                                    // //     $end = "22:00";
+                                    // //     $start_exploded = explode(':', $start);
+                                    // //     $end_exploded = explode(':', $end);
+                                    // // }else{
+                                    //     $start = $option->start;
+                                    //     $end = $option->end;
                                     //     $start_exploded = explode(':', $start);
                                     //     $end_exploded = explode(':', $end);
-                                    // }else{
-                                        $start = $option->start;
-                                        $end = $option->end;
-                                        $start_exploded = explode(':', $start);
-                                        $end_exploded = explode(':', $end);
                                     //}
 
                                     // $tStart = strtotime($start);
@@ -443,6 +450,7 @@
 
     $('#day').datetimepicker({
         'format' : 'YYYY-MM-DD',
+        'minDate': output_date,
         'daysOfWeekDisabled': [@if($option->monday == 0)1,@endif @if($option->tuesday == 0)2,@endif @if($option->wednesday == 0)3,@endif @if($option->thursday == 0)4,@endif @if($option->friday == 0)5,@endif @if($option->saturday == 0)6,@endif @if($option->sunday == 0)0,@endif],
 
         'disabledDates': [@foreach($dates as $date)"{{$date}}",@endforeach],
@@ -454,81 +462,124 @@
     $("#time").attr("disabled", "disabled");
     var selectList = $('#time');
     selectList.append('<option>(Pick an hour)</option>');
-    var dates_getting = [];
+    var time_select;
+    var timeBeforeEvent = {{$option->time_before_event}};
+    var timeAfterEvent = {{$option->time_after_event}};
 
     $("#day").on("dp.change", function(e) {
+        /* Asking for information to db */
         $.get( "/allow/times/date="+$('#day').val()+"&id={{$info->id}}", function(data) {
-            console.log(data);
-            if (data.length > 0) { 
-                // $("#time").removeAttr("disabled");     
-                // $('#time').empty();
-
-                // // var select = document.getElementById('mySelect');
-                // // for(var i = 0; i < data.length; i++) {
-                // //     var option = document.createElement('option');
-                // //     var time_got = data[i].split(" to ");
-                // //     option.innerHTML = time_got[0];
-                // //     option.value = time_got[0];
-                // //     select.appendChild(option);
-                // // }
-
-                // for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
-                //     var ampmhour = ((hour + 11) % 12 + 1);
-                //     var a = hour > 11 ? "PM" : "AM";
-                //     for (var minute = 0; minute < 60; minute = minute+15){
-                //         if(hour == {{$end_exploded[0]}})
-                //         {
-                //             if (minute > {{$end_exploded[1]}}) {
-                //                 break;
-                //             }
-                //         }     
-                //         selectList.append('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
-                //     }        
-                // }
-
+            if (data[0].length > 0) { 
+                
+                var dates_getting = [];
+                var dates_deleting = [];
                 $("#time").removeAttr("disabled");     
                 $('#time').empty();
 
+                /* Creating hours for select dropdown */
                 for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
                     var ampmhour = ((hour + 11) % 12 + 1);
                     var a = hour > 11 ? "PM" : "AM";
+
+                    loopMinute:
+                    /* Creating minutes for select dropdown */
                     for (var minute = 0; minute < 60; minute = minute+15){
                         if(hour == {{$end_exploded[0]}})
                         {
                             if (minute > {{$end_exploded[1]}}) {
                                 break;
                             }
-                        }     
+                        }  
 
-                        for(var i = 0; i < data.length; i++) {
-                            //var option = document.createElement('option');
-                            var time_got = data[i].split(" to ");
-                            //console.log(time_got[0]);
-                            //option.innerHTML = time_got[0];
-                            //option.value = time_got[0];
-                            //select.appendChild(option);
+                        /* Helper variable */
+                        time_select = (aZero(hour)+':'+aZero(minute));   
+                        var currentTime= moment(time_select, "HH:mm");
 
-                            if(time_got[0] != (aZero(hour)+':'+aZero(minute))){
-                                console.log(time_got[0]+' != '+aZero(hour)+':'+aZero(minute));
-                                
-                                dates_getting.push('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                        loopDataLength:
+                        for(var i = 0; i < data[0].length; i++) {
+                            /*Here we compare tha start time and the end time of the evento to print it*/
+                            var startTime = moment(data[0][i], "HH:mm").subtract(timeBeforeEvent, 'm');
+                            var endTime = moment(data[1][i], "HH:mm").add(timeAfterEvent, 'm');
+                            var isBetween = currentTime.isBetween(startTime, endTime);
 
-                                selectList.append('<option value="'+aZero(hour)+':'+aZero(minute)+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
-                            }                            
+                            /* If time called "time_select" for select exist in array received from db called "data", we break this for. We have to wait to the next iteration.*/
+                            if (($.inArray(time_select, data[0]) > -1)) {break loopDataLength;}
+        
+                            /* We push to an array all data received */
+                            //if(data != time_select){
+                            dates_getting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+
+                            /*We select all the times busy to push them in a array*/
+                            if(isBetween){
+                                dates_deleting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                            }
+                            //}         
                         }
                     }        
                 }
-                var uniqueNames = [];
+
+                /* With this we ensure that the array does not contain any repited element */
+                var allTimes = [];
                 $.each(dates_getting, function(i, el){
-                    if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
+                    if($.inArray(el, allTimes) === -1) allTimes.push(el);
                 });
-                console.log(uniqueNames);
+
+                /* Times selected to create an array with blocked times */
+                var blockedTimes = [];
+                $.each(dates_deleting, function(i, el){
+                    if($.inArray(el, blockedTimes) === -1) blockedTimes.push(el);
+                });
+
+                /* Compare both arrays to create one, without the blocked times */
+                allTimes = allTimes.filter(function(val) {
+                  return blockedTimes.indexOf(val) == -1;
+                });
+                /* Printing the array in DOM with the values of data except the times that the user is not available */
+                selectList.append(allTimes);
+
             }else{
-                $("#time").attr("disabled", "disabled"); 
+
+                var dates_getting = [];
+                $("#time").removeAttr("disabled");     
+                $('#time').empty();
+
+                /* Creating hours for select dropdown */
+                for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
+                    var ampmhour = ((hour + 11) % 12 + 1);
+                    var a = hour > 11 ? "PM" : "AM";
+
+                    loopMinute:
+                    /* Creating minutes for select dropdown */
+                    for (var minute = 0; minute < 60; minute = minute+15){
+                        if(hour == {{$end_exploded[0]}})
+                        {
+                            if (minute > {{$end_exploded[1]}}) {
+                                break;
+                            }
+                        }  
+
+                        /* Helper variable */
+                        time_select = (aZero(hour)+':'+aZero(minute));   
+                        var currentTime= moment(time_select, "HH:mm");
+
+                        dates_getting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                    }        
+                }
+
+                /* With this we ensure that the array does not contain any repited element */
+                var allTimes = [];
+                $.each(dates_getting, function(i, el){
+                    if($.inArray(el, allTimes) === -1) allTimes.push(el);
+                });
+
+                /* Printing the array in DOM with the values of data except the times that the user is not available */
+                selectList.append(allTimes);
+
             }
         });
     });
 
+    /* helper function to add a zero to times */
     function aZero(n) {
       return n.toString().length == 1 ?  n = '0' + n: n;
     }

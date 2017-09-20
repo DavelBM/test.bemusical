@@ -13,6 +13,13 @@
     $get_data = explode("|", $ensemble->address);
     $get_address_place = explode("address:", $get_data[1]);
     $address_place = $get_address_place[1];
+
+    $start = "";
+    $end = "";
+    $start = $option->start;
+    $end = $option->end;
+    $start_exploded = explode(':', $start);
+    $end_exploded = explode(':', $end);
 @endphp
 
 @section('content')
@@ -242,8 +249,8 @@
                         <label for="time" class="col-md-4 control-label">Time of performance</label>
 
                         <div class="col-md-6">
-
-                            <select id="time" class="time form-control" name="time" required>
+                        <select id="time" class="time form-control" name="time" required></select></select>
+                            <!-- <select id="time" class="time form-control" name="time" required>
                                 <option value="00:00">Select time</option>
                                 <option value="08:00">8:00AM</option>
                                 <option value="08:15">8:15AM</option>
@@ -302,7 +309,7 @@
                                 <option value="21:30">9:30PM</option>
                                 <option value="21:45">9:45PM</option>
                                 <option value="22:00">10:00PM</option>
-                            </select>
+                            </select> -->
                             @if ($errors->has('time'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('time') }}</strong>
@@ -377,17 +384,17 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <!-- <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}"> -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-datetimepicker.min.css') }}">
 @endsection
 
 @section('js')
     <script src="{{ asset('js/main.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
+    <script src="{{ asset('vendor/fullcalendar/lib/moment.min.js')}}"></script>
+    <script type="text/javascript" src="{{ asset('js/bootstrap-datetimepicker.min.js') }}"></script>
     <!-- <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-@endsection
 
-@section('script')
+    <script type="text/javascript">
     //////////////Maps////////////////////
     function initialize() {
 
@@ -476,10 +483,148 @@
     document.getElementById('day').setAttribute("min", datetime);
     //////////////------------////////////////////
 
-    $('#day').datepicker({
-        'format': 'yyyy-mm-dd',
-        'autoclose': true,
+    var get_date = new Date();
+    var month = get_date.getMonth()+1;
+    var day = get_date.getDate();
+
+    var output_date = get_date.getFullYear()+'-'+(month<10 ? '0' : '')+month+'-'+(day<10 ? '0' : '')+day;
+
+    $("#day").val(output_date);
+
+    $('#day').datetimepicker({
+        'format' : 'YYYY-MM-DD',
+        'minDate': output_date,
+        'daysOfWeekDisabled': [@if($option->monday == 0)1,@endif @if($option->tuesday == 0)2,@endif @if($option->wednesday == 0)3,@endif @if($option->thursday == 0)4,@endif @if($option->friday == 0)5,@endif @if($option->saturday == 0)6,@endif @if($option->sunday == 0)0,@endif],
+
+        'disabledDates': [@foreach($dates as $date)"{{$date}}",@endforeach],
+    }).on('changeDate', function(ev){                 
+        $('#day').datepicker('hide');
     });
 
+    $("#time").attr("disabled", "disabled");
+    var selectList = $('#time');
+    selectList.append('<option>(Pick an hour)</option>');
+    var time_select;
+    var timeBeforeEvent = {{$option->time_before_event}};
+    var timeAfterEvent = {{$option->time_after_event}};
 
+    $("#day").on("dp.change", function(e) {
+        /* Asking for information to db */
+        $.get( "/allow/times/date="+$('#day').val()+"&id={{$ensemble->user_id}}", function(data) {
+            if (data[0].length > 0) { 
+                
+                var dates_getting = [];
+                var dates_deleting = [];
+                $("#time").removeAttr("disabled");     
+                $('#time').empty();
+
+                /* Creating hours for select dropdown */
+                for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
+                    var ampmhour = ((hour + 11) % 12 + 1);
+                    var a = hour > 11 ? "PM" : "AM";
+
+                    loopMinute:
+                    /* Creating minutes for select dropdown */
+                    for (var minute = 0; minute < 60; minute = minute+15){
+                        if(hour == {{$end_exploded[0]}})
+                        {
+                            if (minute > {{$end_exploded[1]}}) {
+                                break;
+                            }
+                        }  
+
+                        /* Helper variable */
+                        time_select = (aZero(hour)+':'+aZero(minute));   
+                        var currentTime= moment(time_select, "HH:mm");
+
+                        loopDataLength:
+                        for(var i = 0; i < data[0].length; i++) {
+                            /*Here we compare tha start time and the end time of the evento to print it*/
+                            var startTime = moment(data[0][i], "HH:mm").subtract(timeBeforeEvent, 'm');
+                            var endTime = moment(data[1][i], "HH:mm").add(timeAfterEvent, 'm');
+                            var isBetween = currentTime.isBetween(startTime, endTime);
+
+                            /* If time called "time_select" for select exist in array received from db called "data", we break this for. We have to wait to the next iteration.*/
+                            if (($.inArray(time_select, data[0]) > -1)) {break loopDataLength;}
+        
+                            /* We push to an array all data received */
+                            //if(data != time_select){
+                            dates_getting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+
+                            /*We select all the times busy to push them in a array*/
+                            if(isBetween){
+                                dates_deleting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                            }
+                            //}         
+                        }
+                    }        
+                }
+
+                /* With this we ensure that the array does not contain any repited element */
+                var allTimes = [];
+                $.each(dates_getting, function(i, el){
+                    if($.inArray(el, allTimes) === -1) allTimes.push(el);
+                });
+
+                /* Times selected to create an array with blocked times */
+                var blockedTimes = [];
+                $.each(dates_deleting, function(i, el){
+                    if($.inArray(el, blockedTimes) === -1) blockedTimes.push(el);
+                });
+
+                /* Compare both arrays to create one, without the blocked times */
+                allTimes = allTimes.filter(function(val) {
+                  return blockedTimes.indexOf(val) == -1;
+                });
+                /* Printing the array in DOM with the values of data except the times that the user is not available */
+                selectList.append(allTimes);
+
+            }else{
+
+                var dates_getting = [];
+                $("#time").removeAttr("disabled");     
+                $('#time').empty();
+
+                /* Creating hours for select dropdown */
+                for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
+                    var ampmhour = ((hour + 11) % 12 + 1);
+                    var a = hour > 11 ? "PM" : "AM";
+
+                    loopMinute:
+                    /* Creating minutes for select dropdown */
+                    for (var minute = 0; minute < 60; minute = minute+15){
+                        if(hour == {{$end_exploded[0]}})
+                        {
+                            if (minute > {{$end_exploded[1]}}) {
+                                break;
+                            }
+                        }  
+
+                        /* Helper variable */
+                        time_select = (aZero(hour)+':'+aZero(minute));   
+                        var currentTime= moment(time_select, "HH:mm");
+
+                        dates_getting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                    }        
+                }
+
+                /* With this we ensure that the array does not contain any repited element */
+                var allTimes = [];
+                $.each(dates_getting, function(i, el){
+                    if($.inArray(el, allTimes) === -1) allTimes.push(el);
+                });
+
+                /* Printing the array in DOM with the values of data except the times that the user is not available */
+                selectList.append(allTimes);
+
+            }
+        });
+    });
+
+    /* helper function to add a zero to times */
+    function aZero(n) {
+      return n.toString().length == 1 ?  n = '0' + n: n;
+    }
+
+    </script>
 @endsection
