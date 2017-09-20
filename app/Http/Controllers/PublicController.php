@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;//Exceptions for failOrFail
 use Illuminate\Http\Request;
 use App\Http\Requests\newMemberRequest;
 use App\Http\Requests\specificRequest;
@@ -637,5 +638,42 @@ class PublicController extends Controller
         }
 
         return array($time_unavailable, $time_unavailable_end);
+    }
+
+    public function query(Request $request){
+        $users = User_info::all();
+        $date = (new Carbon($request->day))->format('l jS \\of F Y');
+        $time = $request->time;
+        $address = $request->address;
+        $dayname = (new Carbon($request->day))->format('l');
+        foreach ($users as $user) {
+            try {
+                $option = GigOption::select('monday','tuesday','wednesday','thursday','friday','saturday','sunday','start','end','time_before_event','time_after_event')->where('user_id', $user->user_id)->firstOrFail();
+                echo $dayname.' '.$option->monday;
+                if($option->monday == 0 and $dayname == 'Monday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->tuesday == 0 and $dayname == 'Tuesday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->wednesday == 0 and $dayname == 'Wednesday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->thursday == 0 and $dayname == 'Thursday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->friday == 0 and $dayname == 'Friday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->saturday == 0 and $dayname == 'Saturday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }elseif($option->sunday == 0 and $dayname == 'Sunday'){
+                    echo 'usuario no disponible '.$user->slug.' <br>';
+                }else{
+                    echo 'DISPONIBLE '.$user->slug.' <br>';
+                }
+            } catch(ModelNotFoundException $e) {
+                echo 'hay un pedo<br>';
+            }
+        }
+        return view('layouts.query_results')
+            ->with('date', $date)
+            ->with('time', $time)
+            ->with('address', $address);
     }
 }

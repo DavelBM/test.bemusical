@@ -3,6 +3,60 @@
 @section('content')
 <div class="flex-center position-ref full-height">
     <div class="content">
+        <form class="navbar-form navbar-left" method="POST" action="{{ route('query.results') }}" role="search">
+            {{ csrf_field() }}
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="glyphicon glyphicon-map-marker input-group-addon" id="basic-addon1"> </span>
+                    <input id="searchTextFieldPrincipal" type="text" class="form-control" name="place" aria-describedby="basic-addon1" required>
+                </div>
+                <div class="input-group">
+                    <span class="glyphicon glyphicon-calendar input-group-addon" id="basic-addon2"> </span>
+                    <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}" aria-describedby="basic-addon2" required>
+                </div>
+                <div class="input-group">
+                    <span class="glyphicon glyphicon-time input-group-addon" id="basic-addon3"> </span>
+                    <select id="time" class="time form-control" name="time" aria-describedby="basic-addon3" required>
+                        <?php
+                            $start = "08:00";
+                            $end = "22:00";
+                            $tStart = strtotime($start);
+                            $tEnd = strtotime($end);
+                            $tNow = $tStart;
+
+                            while($tNow <= $tEnd){
+                        ?>
+                            <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                        <?php
+                                $tNow = strtotime('+15 minutes',$tNow);
+                            }
+                        ?>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <span class="glyphicon glyphicon-dashboard input-group-addon" id="basic-addon4">Duracion</span>
+                    <input id="duration" type="number" class="form-control" type="duration" name="duration" value="{{ old('duration') }}" aria-describedby="basic-addon4" required>
+                </div>
+                <div class="input-group">
+                    <div class="radio">
+                        <label><input type="radio" name="optradio">Soloist</label>
+                    </div>
+                    <div class="radio">
+                        <label><input type="radio" name="optradio">Ensemble</label>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
+                    <input id="text" type="number" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
+                </div>
+            </div>
+            <input id="place-id-principal" type="hidden" name="place_id" required>
+            <input id="place-address-principal" type="hidden" name="place_address" required>
+            <input id="place-geometry-principal" type="hidden" name="place_geometry" required>
+            <input id="distance-google-principal" type="hidden" name="distance_google" required>
+
+            <button type="submit" class="btn btn-default">Search</button>
+        </form>
         @if(!$errors->isEmpty())
             <span class="help-block">
                 <strong style="color: red;">We had a problem while we was sending your request, check again</strong>
@@ -264,7 +318,7 @@
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <!-- <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}"> -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-datetimepicker.min.css') }}">
     <style>
             .full-height {
                 height: 100vh;
@@ -318,37 +372,62 @@
 
 @section('js')
     <script src="{{ asset('js/main.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
+    <script src="{{ asset('vendor/fullcalendar/lib/moment.min.js')}}"></script>
+    <script type="text/javascript" src="{{ asset('js/bootstrap-datetimepicker.min.js') }}"></script>
     <!-- <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-@endsection
 
-@section('script')
+    <script type="text/javascript">
     //////////////Maps////////////////////
     function initialize() {
 
-    var input = document.getElementById('searchTextField');
-    var autocomplete = new google.maps.places.Autocomplete(input);
+        var input = document.getElementById('searchTextField');
+        var inputPrincipal = document.getElementById('searchTextFieldPrincipal');
+        var autocomplete = new google.maps.places.Autocomplete(input);
+        var autocompletePrincipal = new google.maps.places.Autocomplete(inputPrincipal);
 
-    autocomplete.addListener('place_changed', function() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-            return;
-        }
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
 
-        document.getElementById('place-id').value = place.place_id;
-        document.getElementById('place-geometry').value = place.geometry.location;
-        document.getElementById('place-address').value = place.formatted_address;
-      });
+            document.getElementById('place-id').value = place.place_id;
+            document.getElementById('place-geometry').value = place.geometry.location;
+            document.getElementById('place-address').value = place.formatted_address;
+        });
+        
+
+        autocompletePrincipal.addListener('place_changed', function() {
+            var placePrincipal = autocompletePrincipal.getPlace();
+            if (!placePrincipal.geometry) {
+                return;
+            }
+
+            document.getElementById('place-id-principal').value = placePrincipal.place_id;
+            document.getElementById('place-geometry-principal').value = placePrincipal.geometry.location;
+            document.getElementById('place-address-principal').value = placePrincipal.formatted_address;
+        });
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
     //////////////----////////////////////
 
     $(function() {
-        $('#day').datepicker({
-            'format': 'yyyy-mm-dd',
-            'autoclose': true,
+        var get_date = new Date();
+        var month = get_date.getMonth()+1;
+        var day = get_date.getDate();
+
+        var output_date = get_date.getFullYear()+'-'+(month<10 ? '0' : '')+month+'-'+(day<10 ? '0' : '')+day;
+
+        $("#day").val(output_date);
+
+        $('#day').datetimepicker({
+            'format' : 'YYYY-MM-DD',
+            'minDate': output_date,
+        }).on('changeDate', function(ev){                 
+            $('#day').datepicker('hide');
         });
     });
+    </script>
 @endsection

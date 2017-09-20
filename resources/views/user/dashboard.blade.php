@@ -498,6 +498,7 @@
                     <input id="place-id" type="hidden" name="place_id" required>
                     <input id="place-address" type="hidden" name="place_address" required>
                     <input id="place-geometry" type="hidden" name="place_geometry" required>
+                    <input id="place-city" type="hidden" name="place_city" required>
                 {!! Form::close() !!}
             </div>
             <div class="modal-footer">
