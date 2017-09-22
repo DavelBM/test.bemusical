@@ -18,11 +18,11 @@
                             <div class="form-group">
                                 <div class="input-group">
                                     <span class="glyphicon glyphicon-map-marker input-group-addon" id="basic-addon1"> </span>
-                                    <input id="searchTextFieldPrincipal" type="text" class="form-control" name="place" aria-describedby="basic-addon1" required>
+                                    <input id="searchTextFieldPrincipal" type="text" class="form-control" name="place" value="{{$place_r}}" aria-describedby="basic-addon1" required>
                                 </div>
                                 <div class="input-group">
                                     <span class="glyphicon glyphicon-calendar input-group-addon" id="basic-addon2"> </span>
-                                    <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}" aria-describedby="basic-addon2" required>
+                                    <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{$date_r}}" aria-describedby="basic-addon2" required>
                                 </div>
                                 <div class="input-group">
                                     <span class="glyphicon glyphicon-time input-group-addon" id="basic-addon3"> </span>
@@ -59,15 +59,11 @@
                                 </div>
                                 <div class="input-group">
                                     <div class="radio">
-                                        <label><input type="radio" name="typeOf" value="soloist">Soloist</label>
+                                        <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
                                     </div>
                                     <div class="radio">
-                                        <label><input type="radio" name="typeOf" value="ensemble">Ensemble</label>
+                                        <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
                                     </div>
-                                </div>
-                                <div class="input-group">
-                                    <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
-                                    <input id="text" type="text" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
                                 </div>
                             </div>
                             <input id="place-id-principal" type="hidden" name="place_id" required>
@@ -75,7 +71,7 @@
                             <input id="place-geometry-principal" type="hidden" name="place_geometry" required>
                             <input id="distance-google-principal" type="hidden" name="distance_google" required>
 
-                            <button type="submit" class="btn btn-default">Search</button>
+                            <button type="submit" class="btn btn-default">New Search</button>
                         </form>
                     </div>
                     <div class="row"><center>RESULTS for: {{$address}}. {{$date}}, {{$time}} hrs</center></div>
@@ -83,74 +79,49 @@
 
                 <div class="panel-body">
                     <div class="row">
-                        <div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
+                        @for($i=0; $i < count($users); $i++)
+                            <?php
+                                $user = \App\User::where('email','=',$users[$i])->first();
+                                if ($user->type == 'ensemble') {
+                                    $pic = $user->ensemble->profile_picture;
+                                }elseif ($user->type == 'soloist') {
+                                    $pic = $user->info->profile_picture;
+                                }                            ?>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="thumbnail">
+                                    @if($user->type == 'ensemble')
+                                        <a class="btn" href="{{ URL::to('/'.$user->ensemble->slug) }}">
+                                            <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                        </a>
+                                       
+                                    @elseif($user->type == 'soloist')
+                                        <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
+                                            <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                        </a>
+                                    @endif
+                                    <!-- <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;"> -->
+                                    <div class="caption">
+                                        @if($user->type == 'ensemble')
+                                            <h3>{{$user->ensemble->name}}</h3>
+                                        @elseif($user->type == 'soloist')
+                                            <h3>{{$user->info->first_name.' '.$user->info->last_name}}</h3>
+                                        @endif
+                                        @if($user->type == 'ensemble')
+                                            <p>{{$user->ensemble->summary}}</p>
+                                        @elseif($user->type == 'soloist')
+                                            <p>{{$user->info->bio}}</p>
+                                        @endif
+                                        @if($user->type == 'ensemble')
+                                            <p><a href="{{ URL::to('/'.$user->ensemble->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
+                                        @elseif($user->type == 'soloist')
+                                            <p><a href="{{ URL::to('/'.$user->info->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
-                                </div>
-                            </div>
-                        </div><div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
-                                </div>
-                            </div>
-                        </div><div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
-                                </div>
-                            </div>
-                        </div><div class="col-sm-6 col-md-4">
-                            <div class="thumbnail">
-                                <img alt="100%x200" data-src="holder.js/100%x200" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNTY4IiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDU2OCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTVlYTA3MzUyNTQgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToyOHB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNWVhMDczNTI1NCI+PHJlY3Qgd2lkdGg9IjU2OCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSIyMTEuMDA3ODEyNSIgeT0iMTEyLjYiPjU2OHgyMDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                <div class="caption">
-                                    <h3>Thumbnail label</h3>
-                                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.{{$address}}</p>
-
-                                    <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
-                                </div>
-                            </div>
-                        </div>
+                        @endfor
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -204,9 +175,14 @@
         $('#day').datetimepicker({
             'format' : 'YYYY-MM-DD',
             'minDate': output_date,
+            @if($date_r != null)
+            'date': '{{$date_r}}',
+            @endif
         }).on('changeDate', function(ev){                 
             $('#day').datepicker('hide');
         });
+
+        //$("#day").datepicker("date", "02-17-2012");
     });
     </script>
 @endsection

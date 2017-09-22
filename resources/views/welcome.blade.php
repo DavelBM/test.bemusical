@@ -14,26 +14,26 @@
                     <span class="glyphicon glyphicon-calendar input-group-addon" id="basic-addon2"> </span>
                     <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}" aria-describedby="basic-addon2" required>
                 </div>
-                <div class="input-group">
+                <!-- <div class="input-group">
                     <span class="glyphicon glyphicon-time input-group-addon" id="basic-addon3"> </span>
                     <select id="time" class="time form-control" name="time" aria-describedby="basic-addon3" required>
                         <?php
-                            $start = "08:00";
-                            $end = "22:00";
-                            $tStart = strtotime($start);
-                            $tEnd = strtotime($end);
-                            $tNow = $tStart;
+                            // $start = "08:00";
+                            // $end = "22:00";
+                            // $tStart = strtotime($start);
+                            // $tEnd = strtotime($end);
+                            // $tNow = $tStart;
 
-                            while($tNow <= $tEnd){
-                        ?>
-                            <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
-                        <?php
-                                $tNow = strtotime('+15 minutes',$tNow);
-                            }
+                            // while($tNow <= $tEnd){
+                        
+                            // <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                        
+                            //     $tNow = strtotime('+15 minutes',$tNow);
+                            // }
                         ?>
                     </select>
-                </div>
-                <div class="input-group">
+                </div> -->
+                <!-- <div class="input-group">
                     <span class="glyphicon glyphicon-dashboard input-group-addon" id="basic-addon4">Duracion</span>
                     <select id="duration" class="form-control" name="duration" aria-describedby="basic-addon4" placeholder="Minutes" required>
                         <option value="0">Select the duration</option>
@@ -47,26 +47,28 @@
                         <option value="270">4 hr 30 min</option>
                         <option value="300">5 hrs</option>
                     </select>
-                </div>
+                </div> -->
                 <div class="input-group">
                     <div class="radio">
-                        <label><input type="radio" name="typeOf">Soloist</label>
+                        <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
                     </div>
                     <div class="radio">
-                        <label><input type="radio" name="typeOf">Ensemble</label>
+                        <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
                     </div>
                 </div>
-                <div class="input-group">
+               <!--  <div class="input-group">
                     <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
                     <input id="text" type="text" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
-                </div>
+                </div> -->
             </div>
             <input id="place-id-principal" type="hidden" name="place_id" required>
             <input id="place-address-principal" type="hidden" name="place_address" required>
             <input id="place-geometry-principal" type="hidden" name="place_geometry" required>
             <input id="distance-google-principal" type="hidden" name="distance_google" required>
-
-            <button type="submit" class="btn btn-default">Search</button>
+            <input id="time" type="hidden" name="time" value="08:00" required>
+            <input id="duration" type="hidden" name="duration" value="60" required>
+            <br>
+            <button type="submit" class="btn btn-block btn-primary">Search</button>
         </form>
         @if(!$errors->isEmpty())
             <span class="help-block">

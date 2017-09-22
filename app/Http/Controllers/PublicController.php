@@ -648,32 +648,80 @@ class PublicController extends Controller
         $dayname = (new Carbon($request->day))->format('l');
         $availableUsers = [];
         $nonAvailableUsers = [];
+        $finalAvailableUsersDistance = [];
+        $finalAvailableUsersId = [];
+        $finalAvailableUsersType = [];
 
-        echo 'time '.$request->time.'<br>';
-        echo 'day '.$request->day.'<br>';
-        echo 'duracion '.$request->duration.'<br>';
-        echo 'lugar '.$request->place.'<br>';
-        echo 'tipo de '.$request->typeOf.'<br>';
-        echo 'texto'.$request->text.'<br>';
-        echo 'id '.$request->place_id.'<br>';
-        echo 'direccion '.$request->place_address.'<br>';
-        echo 'latitud y longitud '.$request->place_geometry.'<br>';
-        echo 'distancia google '.$request->distance_google.'<br>';
+        // echo 'time '.$request->time.'<br>';
+        // echo 'day '.$request->day.'<br>';
+        // echo 'duracion '.$request->duration.'<br>';
+        // echo 'lugar '.$request->place.'<br>';
+        // echo 'tipo de '.$request->typeOf.'<br>';
+        // echo 'texto'.$request->text.'<br>';
+        // echo 'id '.$request->place_id.'<br>';
+        // echo 'direccion '.$request->place_address.'<br>';
+        // echo 'latitud y longitud '.$request->place_geometry.'<br>';
+        $lat_lng_origin = substr($request->place_geometry, 1, -1);
+        $origin = explode(', ', $lat_lng_origin);
+        $lat_origin = $origin[0];
+        $lng_origin = $origin[1];
+        // echo $lat_lng_origin.'<br>';
 
         foreach ($users as $user) {
             try {
+                // echo '----Email----<br>'.$user.'<br>----/email----<br>';
+                
                 $option = GigOption::select('monday','tuesday','wednesday','thursday','friday','saturday','sunday','start','end','time_before_event','time_after_event')->where('user_id', $user->id)->firstOrFail();
-
+                // echo '----Option----<br>'.$option.'<br>----/option----<br>';
+                
                 $busyDays = Gig::select('start','allDay')->where('user_id', $user->id)->where('allDay', 1)->get();
-
+                // echo '<strong style="color: red;">----busyDay----<br>'.$busyDays.'<br>----/busyDay----<br></strong>';
+                
                 $busyHours = Gig::select('start','end')->where('user_id', $user->id)->where('allDay', 0)->get();
+                // echo '<strong style="color: red;">----busyHour----<br>'.$busyHours.'<br>----/busyHour----<br></strong>';
+                    
+                    //echo 'hola';
+                    //echo gettype($busyDays);
+                if (count($busyDays) == 0) {
+                    if ($user->type == 'soloist') {
+                        if ($user->info->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    } elseif ($user->type == 'ensemble') {
+                        if ($user->ensemble->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    }
+                    // echo '||||||||||||||||||||||||||||<<<<<<<<<<<<<<<<<<< <br>';
+                }
 
-                foreach ($busyDays as $busyDay) {
+                if (count($busyHours) == 0) {
+                    if ($user->type == 'soloist') {
+                        if ($user->info->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    } elseif ($user->type == 'ensemble') {
+                        if ($user->ensemble->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    }
+                    // echo '||||||||||||||||||||||||||||<<<<<<<<<<<<<<<<<<< <br>';
+                }
+                
+                foreach ($busyDays as $busyDay) {             
+
                     $busyDay_notime = explode(' ', $busyDay->start);
+                    // echo '<strong>';
+                    // print_r($busyDay_notime[0]);
+                    // echo '</strong><br>';
 
                     if($busyDay_notime[0] == $request->day){
+                        // echo 'si dia por opcion y dia requerido. Este usuario no esta disponible'.$user->email.'<br>';
                         array_push($nonAvailableUsers, $user->email);
-                    }else{
+                    } else {
+                    // } else if(empty($busyDay_notime[0])){
+                    //     array_push($availableUsers, $user->email);
+                    // } else {
                         if($option->monday == 0 and $dayname == 'Monday'){
                             array_push($nonAvailableUsers, $user->email);
                         }elseif($option->tuesday == 0 and $dayname == 'Tuesday'){
@@ -700,23 +748,105 @@ class PublicController extends Controller
                                 } elseif($durationRequested->between($busyDay_start_1, $busyDay_end_1)){
                                     array_push($nonAvailableUsers, $user->email);
                                 } else {
-                                    array_push($availableUsers, $user->email);
+                                    if ($user->type == 'soloist') {
+                                        if ($user->info->address != 'null') {
+                                            array_push($availableUsers, $user->email);
+                                        }
+                                    } elseif ($user->type == 'ensemble') {
+                                        if ($user->ensemble->address != 'null') {
+                                            array_push($availableUsers, $user->email);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             } catch(ModelNotFoundException $e) {
-
+                // echo '<strong style="color: red;">HAY ERROR '.$user->email.'</strong><br><br>';
             }
         }
         $availableUsersNoRepited = array_unique($availableUsers);
         $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
         $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+        // print_r($usersAvailable);
+        // echo '<br>';
 
         foreach ($usersAvailable as $user) {
-            echo $user.'<br>';
+            $singer = User::where('email', $user)->first();
+
+            if( $singer->type == 'ensemble' )
+            {
+                $addres_from_user = explode('|', $singer->ensemble->address);
+                $lat_from_user = explode('lat:', $addres_from_user[2]);
+                $lng_from_user = explode('long:', $addres_from_user[3]);
+                $mile_radious_from_user = $singer->ensemble->mile_radious;
+                // echo 'id: '.$singer->id.' |email:'.$singer->email.' |name:'.$singer->ensemble->name.' |lat:'.$lat_from_user[1].' |lng:'. $lng_from_user[1].'<br>';
+
+                // $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
+
+                // // echo $dist['distance'].'<br>';
+                // array_push($finalAvailableUsersDistance, $dist['distance']);
+                // array_push($finalAvailableUsersId, $singer->id);
+                // array_push($finalAvailableUsersType, 'ensemble');
+
+                // $finalAvailableUsers[$i]['id'] = $singer->id;
+                // $finalAvailableUsers[$i]['distance'] = $dist['distance'];
+                // $i++;
+            } 
+            else if( $singer->type == 'soloist' )
+            {
+                $addres_from_user = explode('|', $singer->info->address);
+                $lat_from_user = explode('lat:', $addres_from_user[2]);
+                $lng_from_user = explode('long:', $addres_from_user[3]);
+                $mile_radious_from_user = $singer->info->mile_radious;
+                // echo 'id: '.$singer->id.' |email:'.$singer->email.' |name:'.$singer->info->first_name.' |lat:'.$lat_from_user[1].' |lng:'. $lng_from_user[1].'<br>';
+
+                // $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
+
+                // // echo $dist['distance'].'<br>';
+                // array_push($finalAvailableUsersDistance, $dist['distance']);
+                // array_push($finalAvailableUsersId, $singer->id);
+                // array_push($finalAvailableUsersType, 'soloist');
+                // // $finalAvailableUsers[$i]['id'] = $singer->id;
+
+                // $finalAvailableUsers[$i]['distance'] = $dist['distance'];
+                // $i++;
+            }
+            $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
+            $distance_exploded = explode(' mi', $dist['distance']);
+
+            if (strpos($distance_exploded[0], ',')) {
+                $exploded_from_user = explode(",", $distance_exploded[0]);
+                $gd = $exploded_from_user[0].$exploded_from_user[1];
+                $distance_from_point_to_point = (int)$gd;
+            }else{
+                $distance_from_point_to_point = (int)$distance_exploded[0];
+            }
+
+            if ($distance_from_point_to_point > $mile_radious_from_user) {
+                //echo 'user '.$singer->email.' vive lejos->'.$distance_from_point_to_point.'-'.$mile_radious_from_user.'<br>';
+                array_push($nonAvailableUsers, $singer->email);
+            } else {
+                if ($request->soloist == $singer->type) {
+                    array_push($availableUsers, $singer->email);
+                }elseif ($request->ensemble == $singer->type) {
+                    array_push($availableUsers, $singer->email);
+                }elseif (empty($request->ensemble) && empty($request->soloist)) {
+                    array_push($availableUsers, $singer->email);
+                }
+                else{
+                    array_push($nonAvailableUsers, $singer->email);
+                }
+                //echo 'user '.$singer->email.' vive CERCA'.$distance_from_point_to_point.'-'.$mile_radious_from_user.'<br>';
+                // array_push($availableUsers, $singer->email);
+            }
         }
+
+        $availableUsersNoRepited = array_unique($availableUsers);
+        $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
+        $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+        //echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
 
         // $coordinates1 = $this->get_coordinates('Tychy', 'Jana Pawła II', 'Śląskie');
         
@@ -727,14 +857,18 @@ class PublicController extends Controller
         // }
         // else
         // {
-            $dist = $this->GetDrivingDistance(55.930385, 50.087692, -3.118425, 14.421150);
-            echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
+            // $dist = $this->GetDrivingDistance(55.930385, 50.087692, -3.118425, 14.421150);
+            // echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
         // }
-
+        //print_r($usersAvailable);
+        $usersAvailable = array_values($usersAvailable);
         return view('layouts.query_results')
             ->with('date', $date)
             ->with('time', $time)
-            ->with('address', $address);
+            ->with('address', $address)
+            ->with('place_r', $request->place)
+            ->with('date_r', $request->day)
+            ->with('users', $usersAvailable);
     }
 
     // public function get_coordinates($city, $street, $province)
@@ -765,7 +899,7 @@ class PublicController extends Controller
 
     public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
     {
-        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&language=pl-PL";
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -775,9 +909,13 @@ class PublicController extends Controller
         $response = curl_exec($ch);
         curl_close($ch);
         $response_a = json_decode($response, true);
-        $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
-        $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
-
-        return array('distance' => $dist, 'time' => $time);
-}
+        $status = $response_a['rows'][0]['elements'][0]['status'];
+        if ($status != 'ZERO_RESULTS') {
+            $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
+            $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+            return array('distance' => $dist, 'time' => $time);
+        } else {
+            echo 'no resultados por direccion';
+        }
+    }
 }
