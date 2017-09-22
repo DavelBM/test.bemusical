@@ -641,39 +641,143 @@ class PublicController extends Controller
     }
 
     public function query(Request $request){
-        $users = User_info::all();
+        $users = User::all();
         $date = (new Carbon($request->day))->format('l jS \\of F Y');
         $time = $request->time;
         $address = $request->address;
         $dayname = (new Carbon($request->day))->format('l');
+        $availableUsers = [];
+        $nonAvailableUsers = [];
+
+        echo 'time '.$request->time.'<br>';
+        echo 'day '.$request->day.'<br>';
+        echo 'duracion '.$request->duration.'<br>';
+        echo 'lugar '.$request->place.'<br>';
+        echo 'tipo de '.$request->typeOf.'<br>';
+        echo 'texto'.$request->text.'<br>';
+        echo 'id '.$request->place_id.'<br>';
+        echo 'direccion '.$request->place_address.'<br>';
+        echo 'latitud y longitud '.$request->place_geometry.'<br>';
+        echo 'distancia google '.$request->distance_google.'<br>';
+
         foreach ($users as $user) {
             try {
-                $option = GigOption::select('monday','tuesday','wednesday','thursday','friday','saturday','sunday','start','end','time_before_event','time_after_event')->where('user_id', $user->user_id)->firstOrFail();
-                echo $dayname.' '.$option->monday;
-                if($option->monday == 0 and $dayname == 'Monday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->tuesday == 0 and $dayname == 'Tuesday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->wednesday == 0 and $dayname == 'Wednesday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->thursday == 0 and $dayname == 'Thursday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->friday == 0 and $dayname == 'Friday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->saturday == 0 and $dayname == 'Saturday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }elseif($option->sunday == 0 and $dayname == 'Sunday'){
-                    echo 'usuario no disponible '.$user->slug.' <br>';
-                }else{
-                    echo 'DISPONIBLE '.$user->slug.' <br>';
+                $option = GigOption::select('monday','tuesday','wednesday','thursday','friday','saturday','sunday','start','end','time_before_event','time_after_event')->where('user_id', $user->id)->firstOrFail();
+
+                $busyDays = Gig::select('start','allDay')->where('user_id', $user->id)->where('allDay', 1)->get();
+
+                $busyHours = Gig::select('start','end')->where('user_id', $user->id)->where('allDay', 0)->get();
+
+                foreach ($busyDays as $busyDay) {
+                    $busyDay_notime = explode(' ', $busyDay->start);
+
+                    if($busyDay_notime[0] == $request->day){
+                        array_push($nonAvailableUsers, $user->email);
+                    }else{
+                        if($option->monday == 0 and $dayname == 'Monday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->tuesday == 0 and $dayname == 'Tuesday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->wednesday == 0 and $dayname == 'Wednesday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->thursday == 0 and $dayname == 'Thursday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->friday == 0 and $dayname == 'Friday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->saturday == 0 and $dayname == 'Saturday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->sunday == 0 and $dayname == 'Sunday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }else{
+                            foreach ($busyHours as $busyHour) {
+                                $dateTimeRequested = Carbon::parse($request->day.' '.$request->time.':00');
+                                $busyDay_start_1 = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
+                                $busyDay_end_1 = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
+                                $durationRequested = Carbon::parse($request->day.' '.$request->time.':00')->addMinute($request->duration);
+
+                                if ($dateTimeRequested->between($busyDay_start_1, $busyDay_end_1)) {
+                                    array_push($nonAvailableUsers, $user->email);
+                                } elseif($durationRequested->between($busyDay_start_1, $busyDay_end_1)){
+                                    array_push($nonAvailableUsers, $user->email);
+                                } else {
+                                    array_push($availableUsers, $user->email);
+                                }
+                            }
+                        }
+                    }
                 }
             } catch(ModelNotFoundException $e) {
-                echo 'hay un pedo<br>';
+
             }
         }
+        $availableUsersNoRepited = array_unique($availableUsers);
+        $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
+        $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+
+        foreach ($usersAvailable as $user) {
+            echo $user.'<br>';
+        }
+
+        // $coordinates1 = $this->get_coordinates('Tychy', 'Jana Pawła II', 'Śląskie');
+        
+        // $coordinates2 = $this->get_coordinates('Lędziny', 'Lędzińska', 'Śląskie');
+        // if ( !$coordinates1 || !$coordinates2 )
+        // {
+        //     echo 'Bad address.';
+        // }
+        // else
+        // {
+            $dist = $this->GetDrivingDistance(55.930385, 50.087692, -3.118425, 14.421150);
+            echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
+        // }
+
         return view('layouts.query_results')
             ->with('date', $date)
             ->with('time', $time)
             ->with('address', $address);
     }
+
+    // public function get_coordinates($city, $street, $province)
+    // {
+    //     $address = urlencode($city.','.$street.','.$province);
+    //     $url = "http://maps.google.com/maps/api/geocode/json?address=$address&sensor=false&region=Poland";
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    //     curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    //     $response = curl_exec($ch);
+    //     curl_close($ch);
+    //     $response_a = json_decode($response);
+    //     $status = $response_a->status;
+
+    //     if ( $status == 'ZERO_RESULTS' )
+    //     {
+    //         return FALSE;
+    //     }
+    //     else
+    //     {
+    //         $return = array('lat' => $response_a->results[0]->geometry->location->lat, 'long' => $long = $response_a->results[0]->geometry->location->lng);
+    //         return $return;
+    //     }
+    // }
+
+    public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
+    {
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&language=pl-PL";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response_a = json_decode($response, true);
+        $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
+        $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+
+        return array('distance' => $dist, 'time' => $time);
+}
 }

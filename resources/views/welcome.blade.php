@@ -35,19 +35,30 @@
                 </div>
                 <div class="input-group">
                     <span class="glyphicon glyphicon-dashboard input-group-addon" id="basic-addon4">Duracion</span>
-                    <input id="duration" type="number" class="form-control" type="duration" name="duration" value="{{ old('duration') }}" aria-describedby="basic-addon4" required>
+                    <select id="duration" class="form-control" name="duration" aria-describedby="basic-addon4" placeholder="Minutes" required>
+                        <option value="0">Select the duration</option>
+                        <option value="60">1 hr</option>
+                        <option value="90">1 hr 30 min</option>
+                        <option value="120">2 hrs</option>
+                        <option value="150">2 hrs 30 min</option>
+                        <option value="180">3 hrs</option>
+                        <option value="210">3 hr 30 min</option>
+                        <option value="240">4 hrs</option>
+                        <option value="270">4 hr 30 min</option>
+                        <option value="300">5 hrs</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <div class="radio">
-                        <label><input type="radio" name="optradio">Soloist</label>
+                        <label><input type="radio" name="typeOf">Soloist</label>
                     </div>
                     <div class="radio">
-                        <label><input type="radio" name="optradio">Ensemble</label>
+                        <label><input type="radio" name="typeOf">Ensemble</label>
                     </div>
                 </div>
                 <div class="input-group">
                     <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
-                    <input id="text" type="number" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
+                    <input id="text" type="text" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
                 </div>
             </div>
             <input id="place-id-principal" type="hidden" name="place_id" required>
