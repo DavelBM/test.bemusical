@@ -48,14 +48,18 @@
                         <option value="300">5 hrs</option>
                     </select>
                 </div> -->
-                <div class="input-group">
+                
+
+                <!-- <div class="input-group">
                     <div class="radio">
                         <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
                     </div>
                     <div class="radio">
                         <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
                     </div>
-                </div>
+                </div> -->
+
+
                <!--  <div class="input-group">
                     <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
                     <input id="text" type="text" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
@@ -64,9 +68,6 @@
             <input id="place-id-principal" type="hidden" name="place_id" required>
             <input id="place-address-principal" type="hidden" name="place_address" required>
             <input id="place-geometry-principal" type="hidden" name="place_geometry" required>
-            <input id="distance-google-principal" type="hidden" name="distance_google" required>
-            <input id="time" type="hidden" name="time" value="08:00" required>
-            <input id="duration" type="hidden" name="duration" value="60" required>
             <br>
             <button type="submit" class="btn btn-block btn-primary">Search</button>
         </form>

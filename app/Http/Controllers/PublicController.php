@@ -17,6 +17,9 @@ use App\Ask;
 use App\GeneralAsk;
 use App\Gig;
 use App\GigOption;
+use App\Tag;
+use App\Instrument;
+use App\Style;
 use Auth;
 use Mail;
 use URL;
@@ -640,17 +643,22 @@ class PublicController extends Controller
         return array($time_unavailable, $time_unavailable_end);
     }
 
+/*
     public function query(Request $request){
         $users = User::all();
         $date = (new Carbon($request->day))->format('l jS \\of F Y');
-        $time = $request->time;
-        $address = $request->address;
+        $time = "03:00";
+        $address = $request->place;
         $dayname = (new Carbon($request->day))->format('l');
         $availableUsers = [];
         $nonAvailableUsers = [];
         $finalAvailableUsersDistance = [];
         $finalAvailableUsersId = [];
         $finalAvailableUsersType = [];
+
+        $place_id = $request->place_id;
+        $place_address = $request->place_address;
+        $place_geometry = $request->place_geometry;
 
         // echo 'time '.$request->time.'<br>';
         // echo 'day '.$request->day.'<br>';
@@ -738,10 +746,11 @@ class PublicController extends Controller
                             array_push($nonAvailableUsers, $user->email);
                         }else{
                             foreach ($busyHours as $busyHour) {
-                                $dateTimeRequested = Carbon::parse($request->day.' '.$request->time.':00');
+                                $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
                                 $busyDay_start_1 = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
                                 $busyDay_end_1 = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
-                                $durationRequested = Carbon::parse($request->day.' '.$request->time.':00')->addMinute($request->duration);
+                                //$durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
+                                $durationRequested = Carbon::parse($request->day.' '.$time.':00');
 
                                 if ($dateTimeRequested->between($busyDay_start_1, $busyDay_end_1)) {
                                     array_push($nonAvailableUsers, $user->email);
@@ -828,16 +837,20 @@ class PublicController extends Controller
                 //echo 'user '.$singer->email.' vive lejos->'.$distance_from_point_to_point.'-'.$mile_radious_from_user.'<br>';
                 array_push($nonAvailableUsers, $singer->email);
             } else {
-                if ($request->soloist == $singer->type) {
-                    array_push($availableUsers, $singer->email);
-                }elseif ($request->ensemble == $singer->type) {
-                    array_push($availableUsers, $singer->email);
-                }elseif (empty($request->ensemble) && empty($request->soloist)) {
-                    array_push($availableUsers, $singer->email);
-                }
-                else{
-                    array_push($nonAvailableUsers, $singer->email);
-                }
+                // -------------REVISAR-------------
+                // if ($request->soloist == $singer->type) {
+                //     array_push($availableUsers, $singer->email);
+                // }elseif ($request->ensemble == $singer->type) {
+                //     array_push($availableUsers, $singer->email);
+                // }elseif (empty($request->ensemble) && empty($request->soloist)) {
+                //     array_push($availableUsers, $singer->email);
+                // }
+                // else{
+                //     array_push($nonAvailableUsers, $singer->email);
+                // }
+                // -------------REVISAR-------------
+                
+                array_push($availableUsers, $singer->email);
                 //echo 'user '.$singer->email.' vive CERCA'.$distance_from_point_to_point.'-'.$mile_radious_from_user.'<br>';
                 // array_push($availableUsers, $singer->email);
             }
@@ -848,29 +861,34 @@ class PublicController extends Controller
         $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
         //echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
 
-        // $coordinates1 = $this->get_coordinates('Tychy', 'Jana Pawła II', 'Śląskie');
-        
-        // $coordinates2 = $this->get_coordinates('Lędziny', 'Lędzińska', 'Śląskie');
-        // if ( !$coordinates1 || !$coordinates2 )
-        // {
-        //     echo 'Bad address.';
-        // }
-        // else
-        // {
-            // $dist = $this->GetDrivingDistance(55.930385, 50.087692, -3.118425, 14.421150);
-            // echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
-        // }
         //print_r($usersAvailable);
         $usersAvailable = array_values($usersAvailable);
         return view('layouts.query_results')
             ->with('date', $date)
             ->with('time', $time)
+            ->with('place_id', $place_id)
+            ->with('place_address', $place_address)
+            ->with('place_geometry', $place_geometry)
             ->with('address', $address)
             ->with('place_r', $request->place)
             ->with('date_r', $request->day)
             ->with('users', $usersAvailable);
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+    // $coordinates1 = $this->get_coordinates('Tychy', 'Jana Pawła II', 'Śląskie');
+        
+    // $coordinates2 = $this->get_coordinates('Lędziny', 'Lędzińska', 'Śląskie');
+    // if ( !$coordinates1 || !$coordinates2 )
+    // {
+    //     echo 'Bad address.';
+    // }
+    // else
+    // {
+        // $dist = $this->GetDrivingDistance(55.930385, 50.087692, -3.118425, 14.421150);
+        // echo 'Distance: <b>'.$dist['distance'].'</b><br>Travel time duration: <b>'.$dist['time'].'</b>';
+    // }
+///////////////////////////////////////////////////////////////////////////////////////////////
     // public function get_coordinates($city, $street, $province)
     // {
     //     $address = urlencode($city.','.$street.','.$province);
@@ -896,6 +914,224 @@ class PublicController extends Controller
     //         return $return;
     //     }
     // }
+///////////////////////////////////////////////////////////////////////////////////////////////
+*/
+
+    public function query(Request $request){
+        $users = User::all();
+        $date = (new Carbon($request->day))->format('l jS \\of F Y');
+        $address = $request->place;
+        $dayname = (new Carbon($request->day))->format('l');
+        $availableUsers = [];
+        $nonAvailableUsers = [];
+        $finalAvailableUsersDistance = [];
+        $finalAvailableUsersId = [];
+        $finalAvailableUsersType = [];
+
+        $place_id = $request->place_id;
+        $place_address = $request->place_address;
+        $place_geometry = $request->place_geometry;
+
+        $lat_lng_origin = substr($request->place_geometry, 1, -1);
+        $origin = explode(', ', $lat_lng_origin);
+        $lat_origin = $origin[0];
+        $lng_origin = $origin[1];
+
+        foreach ($users as $user) {
+            try {
+                $option = GigOption::select('monday','tuesday','wednesday','thursday','friday','saturday','sunday','start','end','time_before_event','time_after_event')->where('user_id', $user->id)->firstOrFail();
+
+                $busyDays = Gig::select('start','allDay')->where('user_id', $user->id)->where('allDay', 1)->get();
+
+                $busyHours = Gig::select('start','end')->where('user_id', $user->id)->where('allDay', 0)->get();
+
+                if (count($busyDays) == 0) {
+                    if ($user->type == 'soloist') {
+                        if ($user->info->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    } elseif ($user->type == 'ensemble') {
+                        if ($user->ensemble->address != 'null') {
+                            array_push($availableUsers, $user->email);
+                        }
+                    }
+                }
+                
+                foreach ($busyDays as $busyDay) {             
+
+                    $busyDay_notime = explode(' ', $busyDay->start);
+
+                    if($busyDay_notime[0] == $request->day){
+                        array_push($nonAvailableUsers, $user->email);
+                    } else {
+                        if($option->monday == 0 and $dayname == 'Monday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->tuesday == 0 and $dayname == 'Tuesday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->wednesday == 0 and $dayname == 'Wednesday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->thursday == 0 and $dayname == 'Thursday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->friday == 0 and $dayname == 'Friday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->saturday == 0 and $dayname == 'Saturday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }elseif($option->sunday == 0 and $dayname == 'Sunday'){
+                            array_push($nonAvailableUsers, $user->email);
+                        }else{
+                            array_push($availableUsers, $user->email);
+                        }
+                    }
+                }
+            } catch(ModelNotFoundException $e) {
+
+            }
+        }
+        $availableUsersNoRepited = array_unique($availableUsers);
+        $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
+        $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+
+        foreach ($usersAvailable as $user) {
+            $singer = User::where('email', $user)->first();
+
+            if( $singer->type == 'ensemble' )
+            {
+                $addres_from_user = explode('|', $singer->ensemble->address);
+                $lat_from_user = explode('lat:', $addres_from_user[2]);
+                $lng_from_user = explode('long:', $addres_from_user[3]);
+                $mile_radious_from_user = $singer->ensemble->mile_radious;
+            } 
+            else if( $singer->type == 'soloist' )
+            {
+                $addres_from_user = explode('|', $singer->info->address);
+                $lat_from_user = explode('lat:', $addres_from_user[2]);
+                $lng_from_user = explode('long:', $addres_from_user[3]);
+                $mile_radious_from_user = $singer->info->mile_radious;
+            }
+            $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
+            $distance_exploded = explode(' mi', $dist['distance']);
+
+            if (strpos($distance_exploded[0], ',')) {
+                $exploded_from_user = explode(",", $distance_exploded[0]);
+                $gd = $exploded_from_user[0].$exploded_from_user[1];
+                $distance_from_point_to_point = (int)$gd;
+            }else{
+                $distance_from_point_to_point = (int)$distance_exploded[0];
+            }
+
+            if ($distance_from_point_to_point > $mile_radious_from_user) {
+                array_push($nonAvailableUsers, $singer->email);
+            } else {
+                array_push($availableUsers, $singer->email);
+            }
+        }
+
+        $availableUsersNoRepited = array_unique($availableUsers);
+        $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
+        $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+
+        $tags = Tag::orderBy('name', 'DES')->select('id', 'name')->get();
+        $instruments = Instrument::orderBy('name', 'DES')->select('id', 'name')->get();
+        $styles = Style::orderBy('name', 'DES')->select('id', 'name')->get();
+
+        $usersAvailable = array_values($usersAvailable);
+        return view('layouts.query_results')
+            ->with('date', $date)
+            ->with('place_id', $place_id)
+            ->with('place_address', $place_address)
+            ->with('place_geometry', $place_geometry)
+            ->with('address', $address)
+            ->with('place_r', $request->place)
+            ->with('date_r', $request->day)
+            ->with('users', $usersAvailable)
+            ->with('tags', $tags)
+            ->with('instruments', $instruments)
+            ->with('styles', $styles);
+    }
+
+    public function filter(Request $request)
+    {
+        $time = $request->time;
+        $array = [];
+        $user_availables = [];
+        $user_nonavailables = [];
+        $tags_got = [];
+
+        foreach ($request->users as $user_email) {
+            $tags = [];
+            $user = User::select('id', 'email', 'type')->where('email', $user_email)->first();
+            $busyHours = Gig::select('start','end')->where('user_id', $user->id)->where('allDay', 0)->get();
+            $option = GigOption::where('user_id', $user->id)->first();
+
+            foreach ($busyHours as $busyHour) {
+                $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
+                $busyDay_start_in = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
+                $busyDay_end_in = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
+                $durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
+
+                if ($dateTimeRequested->between($busyDay_start_in, $busyDay_end_in)) {
+                    array_push($user_nonavailables, $user->id);
+                } elseif($durationRequested->between($busyDay_start_in, $busyDay_end_in)){
+                    array_push($user_nonavailables, $user->id);
+                } else {
+                    if ($user->type == 'soloist') {
+                        if ($user->info->address != 'null') {
+                            if ($request->soloist == 'soloist' && $request->ensemble == null) {
+                                array_push($user_availables, $user->id);
+                            }elseif ($request->soloist == null && $request->ensemble == null) {
+                                array_push($user_availables, $user->id);
+                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                array_push($user_availables, $user->id);
+                            }else{
+                                array_push($user_nonavailables, $user->id);
+                            }
+                        }
+                    } elseif ($user->type == 'ensemble') {
+                        if ($user->ensemble->address != 'null') {
+                            if ($request->soloist == null && $request->ensemble == 'ensemble') {
+                                array_push($user_availables, $user->id);
+                            }elseif ($request->soloist == null && $request->ensemble == null) {
+                                array_push($user_availables, $user->id);
+                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                array_push($user_availables, $user->id);
+                            }else{
+                                array_push($user_nonavailables, $user->id);
+                            }
+                        }
+                    }
+                }
+            }
+            if ($user->type == 'ensemble')
+            {
+                array_push($tags, $user->ensemble->ensemble_tags->pluck('id')->toArray());
+            }
+            else
+            if ($user->type == 'soloist') 
+            {
+               $tags = $user->user_tags->pluck('id')->toArray();
+            }
+            $request->tags = array_map('intval', $request->tags);
+            
+            foreach ($tags as $tag) {
+                if (in_array($tag, $request->tags)) {
+                    array_push($tags_got, 'existe'.$tag);
+                    array_push($user_availables, $user->id);
+                }else{
+                    array_push($user_nonavailables, $user->id);
+                }
+            }
+            
+            // $tags_got = array_diff($tags, $request->tags);
+
+        }
+
+        $availableUsersNoRepited = array_unique($user_availables);
+        $nonAvailableUsersNoRepited = array_unique($user_nonavailables);
+        $users_final_results = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
+        $users_final_results = array_values($users_final_results);
+
+        return array($tags, $request->tags, $tags_got, $users_final_results);
+    }
 
     public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
     {

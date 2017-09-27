@@ -106,7 +106,7 @@ class RegisterController extends Controller
             $info->phone           = 0;
             $info->location        = 'null';
             $info->degree          = 'null';
-            $info->mile_radious    = 0;
+            $info->mile_radious    = 20;
             $info->save();
 
         }elseif ($data['type'] == 'ensemble') {
@@ -131,7 +131,7 @@ class RegisterController extends Controller
             $ensemble->address         = 'null';
             $ensemble->phone           = 0;
             $ensemble->location        = 'null';
-            $ensemble->mile_radious    = 0;
+            $ensemble->mile_radious    = 20;
             $ensemble->save();
 
         }
