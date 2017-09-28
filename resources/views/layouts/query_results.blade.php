@@ -331,7 +331,7 @@
     function storageQuery(){
 
         var storedDivs = JSON.parse(localStorage.getItem("divs"));
-        if (storedDivs.length !== 0) {
+        if (localStorage.length !== 0) {
             $('#displayUsers').hide();
             var getting_users = [];
             var divProfile = $('#response');
