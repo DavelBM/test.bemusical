@@ -30,7 +30,6 @@
                             <input id="place-geometry-principal" type="hidden" name="place_geometry" value="{{$place_geometry}}">
 
                             <button type="submit" class="btn btn-default">New Search</button>
-                            <button class="btn btn-default" onclick="allUsers()">All users available in that area</button>
                         </form>
                     </div>
                     <div class="row"><center>RESULTS for: {{$address}} on {{$date}}</center></div>
@@ -112,9 +111,9 @@
 
                 <div class="panel-body">
                     <strong id="message" style="color: red;"></strong>
-                    <div id="response" class="row">
+                    
+                    <div id="response" class="row"></div>
 
-                    </div>
                     <div id="displayUsers" class="row">
                         @for($i=0; $i < count($users); $i++)
                             <?php
@@ -190,11 +189,52 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+
+    $('#searchTextFieldPrincipal').keypress(function(e){
+        if ( e.which == 13 ) // Enter key = keycode 13
+        {
+            $(this).next().focus();  //Use whatever selector necessary to focus the 'next' input
+            return false;
+        }
+    });
+    
     //////////////Maps////////////////////
     function initialize() {
 
         var inputPrincipal = document.getElementById('searchTextFieldPrincipal');
         var autocompletePrincipal = new google.maps.places.Autocomplete(inputPrincipal);
+
+        (function pacSelectFirst(input){
+            // store the original event binding function
+            var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+
+            function addEventListenerWrapper(type, listener) {
+            // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+            // and then trigger the original listener.
+
+            if (type == "keydown") {
+              var orig_listener = listener;
+              listener = function (event) {
+                var suggestion_selected = $(".pac-item-selected").length > 0;
+                if (event.which == 13 && !suggestion_selected) {
+                  var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+                  orig_listener.apply(input, [simulated_downarrow]);
+                }
+
+                orig_listener.apply(input, [event]);
+              };
+            }
+
+            // add the modified listener
+            _addEventListener.apply(input, [type, listener]);
+          }
+
+          if (input.addEventListener)
+            input.addEventListener = addEventListenerWrapper;
+          else if (input.attachEvent)
+            input.attachEvent = addEventListenerWrapper;
+
+        })(inputPrincipal);
 
         autocompletePrincipal.addListener('place_changed', function() {
             var placePrincipal = autocompletePrincipal.getPlace();
@@ -212,6 +252,11 @@
     //////////////----////////////////////
 
     $(function() {
+        if(history.length>0)
+        {
+            storageQuery();
+        }
+
         var get_date = new Date();
         var month = get_date.getMonth()+1;
         var day = get_date.getDate();
@@ -229,43 +274,78 @@
         }).on('changeDate', function(ev){                 
             $('#day').datepicker('hide');
         });
-
-        //$("#day").datepicker("date", "02-17-2012");
     });
 
     $(function() {
-        // $("#filter").on("submit", function(e) {
-        //     e.preventDefault();
-        //     // $.ajax({
-        //     //     url: $(this).attr("action"),
-        //     //     type: 'POST',
-        //     //     data: $(this).serialize(),
-        //     //     // beforeSend: function() {
-        //     //     //     $("#message").html("loading...").removeAttr('class','hdiv');
-        //     //     //     $('#response').attr('class','hdiv');
-        //     //     //     $('#displayUsers').attr('class','hdiv');
-        //     //     // },
-        //     //     // success: function(data) {
-        //     //     //     $("#message").attr('class','hdiv');
-        //     //     //     $('#response').removeAttr('class','hdiv').html(data);
-        //     //     // }
-        //     //     beforeSend: function() {
-        //     //         $("#message").html("loading...").show();
-        //     //         $('#response').hide();
-        //     //         $('#displayUsers').hide();
-        //     //     },
-        //     //     success: function(data) {
-        //     //         $("#message").hide();
-        //     //         $('#response').html(data).show();
-        //     //     }
-        //     // });
-        // });
+        var divProfile = $('#response');
+        var data_user = '';
+
+        $("#filter").on("submit", function(e) {
+            e.preventDefault();
+            var getting_users = [];
+
+            $.ajax({
+                url: $(this).attr("action"),
+                type: 'POST',
+                data: $(this).serialize(),
+                beforeSend: function() {
+                    localStorage.clear();
+                    $("#message").html("loading...").show();
+                    $('#displayUsers').hide();
+                    getting_users = [];
+                    divProfile.hide();
+                    divProfile.empty();
+                },
+                complete: function(){
+                    $("#message").hide();
+                },
+                success: function(data) {                 
+                    if ( data[0].length == 0 ){
+                        getting_users.push("<strong>We're sorry, we couldn't find any match with your requirements</strong>");
+                    }else{
+                        for (i = 0; i < data[0].length; i++) { 
+                            if (data[0][i]) {
+                                var image = data[0][i];
+                            }else{
+                                var image = 'images/profile/no-image.png';
+                            }
+                            var name = data[1][i];
+                            var bio = data[2][i];
+                            var slug = data[3][i];
+                            var slug_url = "{{ URL::to('/') }}/"+slug;
+                            var img_asset = "{{ asset('/') }}"+image;
+
+                            data_user = "<div class='col-sm-6 col-md-4'><div class='thumbnail'><a class='btn' href="+slug_url+"><img alt='100%x200' data-src='holder.js/100%x200' src="+img_asset+" alt="+bio+" data-holder-rendered='true' style='height: 200px; width: 100%; display: block;'></a><div class='caption'><h3>"+name+"</h3><p>"+bio+"</p><p><a href="+slug_url+" class='btn btn-primary' role='button'>See profile</a></p></div></div></div>";
+                            getting_users.push(data_user);
+                            localStorage.setItem("divs", JSON.stringify(getting_users));
+                        }
+                    }
+
+                    $finalData = divProfile.append(getting_users);
+                    $finalData.show();
+                }
+            });
+        });
     });
 
-    function allUsers(){
-        $('#displayUsers').show();
-        $('#response').hide();
+    function storageQuery(){
+
+        var storedDivs = JSON.parse(localStorage.getItem("divs"));
+        if (storedDivs.length !== 0) {
+            $('#displayUsers').hide();
+            var getting_users = [];
+            var divProfile = $('#response');
+            var data_user = '';
+            for (i = 0; i < storedDivs.length; i++) { 
+                data_user = storedDivs[i];
+                getting_users.push(data_user);
+            }
+            $finalData = divProfile.append(getting_users);
+            $finalData.show();
+        }
+        localStorage.clear();
     }
+
     </script>
 @endsection
 

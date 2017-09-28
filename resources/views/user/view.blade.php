@@ -584,5 +584,10 @@
       return n.toString().length == 1 ?  n = '0' + n: n;
     }
 
+    if(history.length>0)
+    {
+        history.go(+1);
+    }
+
 </script>
 @endsection

@@ -14,56 +14,6 @@
                     <span class="glyphicon glyphicon-calendar input-group-addon" id="basic-addon2"> </span>
                     <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}" aria-describedby="basic-addon2" required>
                 </div>
-                <!-- <div class="input-group">
-                    <span class="glyphicon glyphicon-time input-group-addon" id="basic-addon3"> </span>
-                    <select id="time" class="time form-control" name="time" aria-describedby="basic-addon3" required>
-                        <?php
-                            // $start = "08:00";
-                            // $end = "22:00";
-                            // $tStart = strtotime($start);
-                            // $tEnd = strtotime($end);
-                            // $tNow = $tStart;
-
-                            // while($tNow <= $tEnd){
-                        
-                            // <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
-                        
-                            //     $tNow = strtotime('+15 minutes',$tNow);
-                            // }
-                        ?>
-                    </select>
-                </div> -->
-                <!-- <div class="input-group">
-                    <span class="glyphicon glyphicon-dashboard input-group-addon" id="basic-addon4">Duracion</span>
-                    <select id="duration" class="form-control" name="duration" aria-describedby="basic-addon4" placeholder="Minutes" required>
-                        <option value="0">Select the duration</option>
-                        <option value="60">1 hr</option>
-                        <option value="90">1 hr 30 min</option>
-                        <option value="120">2 hrs</option>
-                        <option value="150">2 hrs 30 min</option>
-                        <option value="180">3 hrs</option>
-                        <option value="210">3 hr 30 min</option>
-                        <option value="240">4 hrs</option>
-                        <option value="270">4 hr 30 min</option>
-                        <option value="300">5 hrs</option>
-                    </select>
-                </div> -->
-                
-
-                <!-- <div class="input-group">
-                    <div class="radio">
-                        <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
-                    </div>
-                    <div class="radio">
-                        <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
-                    </div>
-                </div> -->
-
-
-               <!--  <div class="input-group">
-                    <span class="glyphicon glyphicon-list-alt input-group-addon" id="basic-addon4"></span>
-                    <input id="text" type="text" class="form-control" type="text" name="text" value="{{ old('duration') }}" aria-describedby="basic-addon4">
-                </div> -->
             </div>
             <input id="place-id-principal" type="hidden" name="place_id" required>
             <input id="place-address-principal" type="hidden" name="place_address" required>
@@ -71,10 +21,16 @@
             <br>
             <button type="submit" class="btn btn-block btn-primary">Search</button>
         </form>
-        @if(!$errors->isEmpty())
+        @if ($errors->has('distance'))
             <span class="help-block">
-                <strong style="color: red;">We had a problem while we was sending your request, check again</strong>
+                <strong style="color: red;">{{ $errors->first('distance') }}</strong>
             </span>
+        @else
+            @if(!$errors->isEmpty())
+                <span class="help-block">
+                    <strong style="color: red;">We had a problem while we was sending your request, check again</strong>
+                </span>
+            @endif
         @endif
         @include('flash::message')
         <div class="title m-b-md">
@@ -102,7 +58,7 @@
                         <label for="name" class="col-md-4 control-label">Name</label>
 
                         <div class="col-md-6">
-                            <input id="name" type="text" class="form-control" name="name" placeholder="Your full name" required>
+                            <input id="name" type="text" class="form-control" name="name" placeholder="Your full name" value="{{ old('name') }}" required>
 
                             @if ($errors->has('name'))
                                 <span class="help-block">
@@ -116,7 +72,7 @@
                         <label for="email" class="col-md-4 control-label">Email</label>
 
                         <div class="col-md-6">
-                            <input id="email" type="email" class="form-control" name="email" placeholder="Your email" required>
+                            <input id="email" type="email" class="form-control" name="email" placeholder="Your email" value="{{ old('email') }}" required>
 
                             @if ($errors->has('email'))
                                 <span class="help-block">
@@ -130,7 +86,7 @@
                         <label for="company" class="col-md-4 control-label">Company</label>
 
                         <div class="col-md-6">
-                            <input id="company" type="text" class="form-control" name="company" placeholder="Your company" required>
+                            <input id="company" type="text" class="form-control" name="company" placeholder="Your company" value="{{ old('company') }}" required>
 
                             @if ($errors->has('company'))
                                 <span class="help-block">
@@ -144,7 +100,7 @@
                         <label for="phone" class="col-md-4 control-label">Phone (optional)</label>
 
                         <div class="col-md-6">
-                            <input id="phone" type="number" class="form-control" name="phone" placeholder="This makes the process faster">
+                            <input id="phone" type="number" class="form-control" name="phone" placeholder="This makes the process faster" value="{{ old('phone') }}">
                             @if ($errors->has('phone'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('phone') }}</strong>
@@ -157,13 +113,7 @@
                         <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                         <div class="col-md-6">
-                            <!-- <input id="day" type="text" class="form-control" placeholder="Select date" class="textbox-n"  onfocus="(this.type='date')" name="day">  -->
-                            <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day">
-                            @if ($errors->has('day'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('day') }}</strong>
-                                </span>
-                            @endif
+                            <input id="day1" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}" aria-describedby="basic-addon2" required>
                         </div>
                     </div>
 
@@ -173,15 +123,15 @@
                         <div class="col-md-6">
                             <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
                             <select id="time" class="time form-control" name="time" required>
-                                <option value="0:00">Select time</option>
-                                <option value="8:00">8:00AM</option>
-                                <option value="8:15">8:15AM</option>
-                                <option value="8:30">8:30AM</option>
-                                <option value="8:45">8:45AM</option>
-                                <option value="9:00">9:00AM</option>
-                                <option value="9:15">9:15AM</option>
-                                <option value="9:30">9:30AM</option>
-                                <option value="9:45">9:45AM</option>
+                                <option value="00:00">Select time</option>
+                                <option value="08:00">8:00AM</option>
+                                <option value="08:15">8:15AM</option>
+                                <option value="08:30">8:30AM</option>
+                                <option value="08:45">8:45AM</option>
+                                <option value="09:00">9:00AM</option>
+                                <option value="09:15">9:15AM</option>
+                                <option value="09:30">9:30AM</option>
+                                <option value="09:45">9:45AM</option>
                                 <option value="10:00">10:00AM</option>
                                 <option value="10:15">10:15AM</option>
                                 <option value="10:30">10:30AM</option>
@@ -246,8 +196,7 @@
                         <div class="col-md-6">
 
                             <select id="duration" class="form-control" name="duration" placeholder="Minutes" required>
-                                <option value="0">Select the duration</option>
-                                <option value="60">1 hr</option>
+                                <option value="60">min. 1 hr</option>
                                 <option value="90">1 hr 30 min</option>
                                 <option value="120">2 hrs</option>
                                 <option value="150">2 hrs 30 min</option>
@@ -255,7 +204,7 @@
                                 <option value="210">3 hr 30 min</option>
                                 <option value="240">4 hrs</option>
                                 <option value="270">4 hr 30 min</option>
-                                <option value="300">5 hrs</option>
+                                <option value="300">max. 5 hrs</option>
                             </select>
                             <!-- <input id="duration" type="number" class="form-control" name="duration" placeholder="Minutes" required> -->
                             @if ($errors->has('duration'))
@@ -270,7 +219,7 @@
                         <label for="address" class="col-md-4 control-label">Location of event</label>
 
                         <div class="col-md-6">
-                            <input id="searchTextField" type="text" class="form-control" name="address" required>
+                            <input id="searchTextField" type="text" class="form-control" name="address" value="{{ old('address') }}" required>
                             @if ($errors->has('address'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('address') }}</strong>
@@ -302,7 +251,7 @@
                         <label for="comment" class="col-md-4 control-label">Comments</label>
 
                         <div class="col-md-6">
-                            <textarea id="comment" type="text" class="form-control" name="comment" placeholder="Do you have any special requirement?"  rows="10" ></textarea>
+                            <textarea id="comment" type="text" class="form-control" name="comment" placeholder="Do you have any special requirement?" value="{{ old('comment') }}" rows="10" ></textarea>
                             @if ($errors->has('comment'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('comment') }}</strong>
@@ -311,9 +260,9 @@
                         </div>
                     </div>
 
-                    <input id="place-id" type="hidden" name="place_id" required>
-                    <input id="place-address" type="hidden" name="place_address" required>
-                    <input id="place-geometry" type="hidden" name="place_geometry" required>
+                    <input id="place-id" type="hidden" name="place_id" value="{{ old('place_id') }}" required>
+                    <input id="place-address" type="hidden" name="place_address" value="{{ old('place_address') }}" required>
+                    <input id="place-geometry" type="hidden" name="place_geometry" value="{{ old('place_geometry') }}" required>
 
                     <div class="form-group">
                         {!! Form::submit('Ask for service', ['class' => 'btn btn-primary']) !!}
@@ -331,7 +280,6 @@
 @section('css')
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
-    <!-- <link rel="stylesheet" href="{{ asset('css/jquery.timepicker.css') }}"> -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datetimepicker.min.css') }}">
     <style>
             .full-height {
@@ -388,10 +336,45 @@
     <script src="{{ asset('js/main.js') }}"></script>
     <script src="{{ asset('vendor/fullcalendar/lib/moment.min.js')}}"></script>
     <script type="text/javascript" src="{{ asset('js/bootstrap-datetimepicker.min.js') }}"></script>
-    <!-- <script type="text/javascript" src="{{ asset('js/jquery.timepicker.min.js') }}"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+    
+    $(function() {
+        var get_date = new Date();
+        var month = get_date.getMonth()+1;
+        var day = get_date.getDate();
+
+        var output_date = get_date.getFullYear()+'-'+(month<10 ? '0' : '')+month+'-'+(day<10 ? '0' : '')+day;
+
+        $("#day1").val(output_date);
+
+        $('#day1').datetimepicker({
+            'format' : 'YYYY-MM-DD',
+            'minDate': output_date,
+            @if(!$errors->isEmpty())
+            'date': '{{ old("day") }}',
+            @endif
+        }).on('changeDate', function(ev){                 
+            $('#day1').datepicker('hide');
+        });
+    });
+
+    $('#searchTextFieldPrincipal').keypress(function(e){
+        if ( e.which == 13 ) // Enter key = keycode 13
+        {
+            $(this).next().focus();  //Use whatever selector necessary to focus the 'next' input
+            return false;
+        }
+    });
+
+    $('#searchTextField').keypress(function(e){
+        if ( e.which == 13 ) // Enter key = keycode 13
+        {
+            $(this).next().focus();  //Use whatever selector necessary to focus the 'next' input
+            return false;
+        }
+    });
     //////////////Maps////////////////////
     function initialize() {
 
@@ -399,6 +382,70 @@
         var inputPrincipal = document.getElementById('searchTextFieldPrincipal');
         var autocomplete = new google.maps.places.Autocomplete(input);
         var autocompletePrincipal = new google.maps.places.Autocomplete(inputPrincipal);
+
+        (function pacSelectFirst(input){
+            // store the original event binding function
+            var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+
+            function addEventListenerWrapper(type, listener) {
+            // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+            // and then trigger the original listener.
+
+            if (type == "keydown") {
+              var orig_listener = listener;
+              listener = function (event) {
+                var suggestion_selected = $(".pac-item-selected").length > 0;
+                if (event.which == 13 && !suggestion_selected) {
+                  var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+                  orig_listener.apply(input, [simulated_downarrow]);
+                }
+
+                orig_listener.apply(input, [event]);
+              };
+            }
+
+            // add the modified listener
+            _addEventListener.apply(input, [type, listener]);
+          }
+
+          if (input.addEventListener)
+            input.addEventListener = addEventListenerWrapper;
+          else if (input.attachEvent)
+            input.attachEvent = addEventListenerWrapper;
+
+        })(inputPrincipal);
+
+        (function pacSelectFirst(input){
+            // store the original event binding function
+            var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+
+            function addEventListenerWrapper(type, listener) {
+            // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+            // and then trigger the original listener.
+
+            if (type == "keydown") {
+              var orig_listener = listener;
+              listener = function (event) {
+                var suggestion_selected = $(".pac-item-selected").length > 0;
+                if (event.which == 13 && !suggestion_selected) {
+                  var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+                  orig_listener.apply(input, [simulated_downarrow]);
+                }
+
+                orig_listener.apply(input, [event]);
+              };
+            }
+
+            // add the modified listener
+            _addEventListener.apply(input, [type, listener]);
+          }
+
+          if (input.addEventListener)
+            input.addEventListener = addEventListenerWrapper;
+          else if (input.attachEvent)
+            input.attachEvent = addEventListenerWrapper;
+
+        })(input);
 
         autocomplete.addListener('place_changed', function() {
             var place = autocomplete.getPlace();
