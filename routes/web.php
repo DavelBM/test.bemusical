@@ -20,7 +20,7 @@ Auth::routes();
 Route::get('/user/logout', 'Auth\LoginController@userLogout')->name('user.logout');
 Route::get('/dashboard', 'HomeController@index')->name('user.dashboard');
 Route::get('/blocked', 'HomeController@blocked')->name('user.blocked');
-Route::put('/user/{user}/image', 'HomeController@updateImage')->name('user.updateImage');
+Route::post('/user/{user}/image', 'HomeController@updateImage')->name('user.updateImage');
 Route::put('/user/pass/{user}', 'HomeController@updatePassUser')->name('user.updatePassUser');
 Route::get('/user/image/destroy/{image}', 'HomeController@destroyImageUser')->name('user.image.destroy');
 Route::get('/user/ask/review/{id}', 'HomeController@ask_review')->name('user.ask.review');
@@ -89,7 +89,7 @@ Route::post('/add/image', 'HomeController@storeImages')->name('user.images');
 //Associate to users//
 
 //Ensembles
-Route::put('/ensemble/{user}/image', 'EnsembleController@updateImage')->name('ensemble.updateImage');
+Route::post('/ensemble/{user}/image', 'EnsembleController@updateImage')->name('ensemble.updateImage');
 Route::get('/ensemble/dashboard', 'EnsembleController@index')->name('ensemble.dashboard');
 Route::resource('/ensemble', 'EnsembleController',['except' => ['index', 'create', 'store', 'show', 'edit', 'destroy']]);
 

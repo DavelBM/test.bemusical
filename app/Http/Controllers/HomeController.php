@@ -25,6 +25,8 @@ use App\Ask;
 use App\GigOption;
 use Hash;
 use Auth;
+use Storage;
+use stdClass;
 
 class HomeController extends Controller
 {
@@ -83,7 +85,7 @@ class HomeController extends Controller
             $tags = Tag::orderBy('name', 'DES')->pluck('name', 'id');
             $instruments = Instrument::orderBy('name', 'DES')->pluck('name', 'id');
             $styles = Style::orderBy('name', 'DES')->pluck('name', 'id');
-            $images = User_image::where('user_id', $user)->orderBy('name', 'DES')->pluck('name', 'id');
+            $images = User_image::where('user_id', $user)->orderBy('name', 'DES')->get();
             $songs = User_song::where('user_id', $user)->get();
             $videos = User_video::where('user_id', $user)->get();
             $repertoires = $IDuser->user_repertoires->all();
@@ -151,7 +153,7 @@ class HomeController extends Controller
         $user = Auth::user()->id;
         if($request->file('image')){
             $file = $request->file('image');
-            $name = 'profile_picture_'.time().'.'.$file->getClientOriginalExtension();
+            $name = 'profile_picture_'.time().'-'.$file->getClientOriginalName();
             $path = public_path().'/images/profile';
             $file->move($path, $name); 
         }
@@ -161,14 +163,27 @@ class HomeController extends Controller
             'profile_picture'   => $name
         ]);
 
-        return redirect()->route('user.dashboard');
+        $update_profile_photo_object = new stdClass();
+        $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
+        $update_profile_photo_object->name = $name;
+        $info[] = $update_profile_photo_object;
+
+        return response()->json(array('info' => $info), 200);
     }
 
     public function destroyImageUser($image)
     {
+        $info = [];
         $user = Auth::user()->id;
-        User_image::where('user_id', $user)->where('name', $image)->delete();
-        return redirect()->route('user.dashboard');
+        $get_name = User_image::select('name')->where('id', $image)->first();
+        User_image::where('user_id', $user)->where('id', $image)->delete();
+        $delete_photo_object = new stdClass();
+        $get_name_array = explode("|", $get_name->name);
+        $delete_photo_object->status = $get_name_array[1].' <strong style="color: red;">deleted successfully</strong>';
+        $delete_photo_object->idImg = $image;
+        $info[] = $delete_photo_object;
+
+        return response()->json(array('info' => $info), 200);
     }
 
     //View for blocking the main user dashboard
@@ -317,20 +332,42 @@ class HomeController extends Controller
     {
         $user = Auth::user()->id;
         $num_img = User_image::where('user_id', $user)->count();
+        $photos = [];
+        
         if ($num_img < 5) {
-            $image = new User_image();
+            //dd('entre al primer filtro');
             $path = public_path().'/images/general';
-            if($request->file('file')){
-                $files = $request->file('file');
-                foreach($files as $file){
-                    $fileName = 'bio'.time().'-'.$file->getClientOriginalName();
-                    $file->move($path, $fileName);
-                    $image->user_id = $user;
-                    $image->name = $fileName;
-                    $image->save();
+            foreach ($request->photos as $photo) {
+                $filename = 'user_bio_'.time().'|'.$photo->getClientOriginalName();
+                $photo->move($path, $filename);
+
+                $user_photo = new User_image();
+                $user_photo->user_id = $user;
+                $user_photo->name = $filename;
+                $user_photo->save();
+
+                $new_num_img = User_image::where('user_id', $user)->count();
+                if ($new_num_img < 5) {
+                    $photo_object = new stdClass();
+                    $photo_object->name = str_replace('photos/', '',$photo->getClientOriginalName());
+                    $photo_object->fileName = $user_photo->name;
+                    $photo_object->fileID = $user_photo->id;
+                    $photo_object->status = '<strong style="color: green;">Saved successfully</strong>';
+                    $photos[] = $photo_object;
+                }else{
+                    $photo_object = new stdClass();
+                    $photo_object->status = 'You just can add 5 pictures';
+                    $photos[] = $photo_object;
+                    break;
                 }
             }
-        }  
+            return response()->json(array('files' => $photos), 200); 
+        } else {
+            $photo_object = new stdClass();
+            $photo_object->status = 'You just can add 5 pictures';
+            $photos[] = $photo_object;
+            return response()->json(array('files' => $photos), 200);
+        }   
     }
 
     public function blocked()
@@ -392,27 +429,6 @@ class HomeController extends Controller
                 $video->platform = 'youtube';
                 $video->user_id = $user;
                 $video->save();
-                //CHEKING IF THE VIDEO EXIST
-                // $videos_exist = Youtube_video::where('user_id', $user)->pluck('link');
-                
-                // if(empty($videos_exist)){
-                //     // $youtube->user_id = $user;
-                //     // $youtube->save();
-                //     dd('no existe y guardando');
-                // }else{
-                //     foreach ($videos_exist as $video_exist) {
-                //         if($video_exist == $youtube->link)
-                //         {
-                //             dd('el video ya esta repetido');
-                //             // return redirect()->back()->withErrors(['video'=>"You already added this video"]);
-                //         }else{
-                //             dd('ya hay video pero no repetido');
-                //             // $youtube->user_id = $user;
-                //             // $youtube->save();
-                //         }
-                //     }
-                // }
-
             }elseif (strpos($request->video, 'vimeo') !== false) {
                 
                 if (strpos($request->video, 'iframe') !== false) {

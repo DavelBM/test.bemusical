@@ -39,11 +39,9 @@ class PublicController extends Controller
             $dates = [];
             foreach ($getting_dates as $get_date) {
                 $date_exploded = explode(' ', $get_date->start);
-                $exploding_to_format = explode('-', $date_exploded[0]);
-                $formating_date = $exploding_to_format[1].'/'.$exploding_to_format[2].'/'.$exploding_to_format[0];
-                array_push($dates, $formating_date);   
+                array_push($dates, $date_exploded[0]);  
             }
-   			
+            
    			if (!$ensemble->user->visible) {
    				return view('admin.notReady');
    			}else{
@@ -68,9 +66,7 @@ class PublicController extends Controller
             $dates = [];
             foreach ($getting_dates as $get_date) {
                 $date_exploded = explode(' ', $get_date->start);
-                $exploding_to_format = explode('-', $date_exploded[0]);
-                $formating_date = $exploding_to_format[1].'/'.$exploding_to_format[2].'/'.$exploding_to_format[0];
-                array_push($dates, $formating_date);   
+                array_push($dates, $date_exploded[0]);   
             }
 
     		if (!$info->visible) {
@@ -633,8 +629,10 @@ class PublicController extends Controller
                         $time_sent_end = sprintf("%02d", $time_end[0]).':'.sprintf("%02d", $time_end[1]);
                         $full_time = $time_sent;
                         $full_time_end = $time_sent_end;
-                        array_push($time_unavailable, $full_time); 
-                        array_push($time_unavailable_end, $full_time_end); 
+                        array_push($time_unavailable, $gig->start); 
+                        array_push($time_unavailable_end, $gig->end); 
+                        // array_push($time_unavailable, $full_time); 
+                        // array_push($time_unavailable_end, $full_time_end); 
                     }
                 }
             }

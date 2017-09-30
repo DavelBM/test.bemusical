@@ -125,10 +125,21 @@
                         
                         <div class="col-md-5">
                             @if($info->profile_picture != 'null')
-                                <img src="{{ asset("images/profile/$info->profile_picture") }}" class="img-circle float-left" alt="{{$info->profile_picture}}" width="250" height="250">
+                                <img id="profile_picture_user" src="{{ asset("images/profile/$info->profile_picture") }}" class="img-circle float-left" alt="{{$info->profile_picture}}" width="250" height="250">
                             @else
-                                <img src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
+                                <img id="profile_picture_user" src="{{ asset("images/profile/no-image.png") }}" class="img-circle float-left" alt="No image">
                             @endif
+                            <!-- <form action="/user/{{$info->id}}/image" method="post" enctype="multipart/form-data"> -->
+                            <p id="loading_update_user_pic"></p>
+                            <p id="status_upload_update_user_image"></p>
+                            <!-- Form for upload profile picture -->
+                                <form method="post" enctype="multipart/form-data">
+                                    {{ csrf_field() }}Update Profile Picture:<br />
+                                    <input type="file" id="fileupload_update_user_image" name="image" data-url="/user/{{$info->id}}/image" multiple />
+                                    <!-- <input type="file" name="image">                     -->
+                                    <!-- <input type="submit" name="submit"> -->
+                                </form>
+                            <!-- /Form for upload profile picture -->
                         </div>
                         <div class="col-md-7">
                             <!-- Displaying data -->
@@ -137,7 +148,10 @@
                                     $info->address = "id:no-addres|address:no-address|lat:0|long:0";
                                 }
                                 $data = explode("|", $info->address);
+                                $data_id = explode("id:", $data[0]);
                                 $data_address = explode("address:", $data[1]);
+                                $data_lat = explode("lat:", $data[2]);
+                                $data_long = explode("long:", $data[3]);
                             @endphp
                             <strong>Name:</strong> {{$info->first_name." ".$info->last_name}}<br>
                             <strong>username*:</strong> {{$info->slug}}<br>
@@ -151,20 +165,6 @@
                             <strong>Mile Radius:</strong> {{$info->mile_radious}} miles<br>
                             <strong>About Me:</strong> {!!$info->about!!}<br>
                             <!-- /Displaying data -->
-
-                            <!-- Form for upload profile picture -->
-                            {!! Form::open(['route' => ['user.updateImage', $info->id], 'method' => 'PUT', 'files' => true]) !!}
-            
-                            {!! Form::file('image') !!}
-                            @if ($errors->has('image'))
-                                <span class="help-block">
-                                    <strong style="color: red;">{{ $errors->first('image') }}</strong>
-                                </span>
-                            @endif
-                            {!! Form::submit('Update image', ['class' => 'btn btn-primary']) !!}
-            
-                            {!! Form::close() !!}
-                            <!-- /Form for upload profile picture -->
 
                         </div>
                     </div>
@@ -236,28 +236,32 @@
                 <hr>
                 <div class="panel-body">
                     <strong>BIO IMAGES</strong>
-                    <div class="row">
+                </div>
+                <div class="panel-body">
+                    <!-- <form action="/add/image" method="post" enctype="multipart/form-data"> -->
+                    <form method="post" enctype="multipart/form-data">
+                        {{ csrf_field() }}
+                        You can add more than one picture(MAX 5):
+                        <br />
+                        <input type="file" id="fileupload" name="photos[]" data-url="/add/image" multiple />
+                        <!-- <input type="file" name="photos[]"> -->
+                        <br />
+                        <p id="loading"></p>
+                        <div id="images_user_profile">
+                            <div id="files_list"></div>
+                        </div>
+                        <p id="status_upload"></p>
+                        <input type="hidden" name="file_ids" id="file_ids" value="" />
+                        <!-- <input type="submit" name="submit"> -->
+                    </form>
                         <!-- Displaying images -->
                         @foreach($images as $image)
-                        <div class="col-md-12">
-                            <img src="{{ asset("images/general/$image") }}" class="img-rounded" alt="{{$image}}" width="304" height="236"><a href="{{ route('user.image.destroy', $image) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                        <div id="image_user_{{$image->id}}" class="col-md-12">
+                            <img src="{{ asset("images/general/$image->name") }}" class="img-rounded" alt="{{$image->name}}" width="304" height="236"><button class="btn btn-danger" onclick="destroyImg({{$image->id}}); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
                         </div>
+                        <p id="status_deleting_img_{{$image->id}}"></p>
                         @endforeach
                         <!-- /Displaying images -->
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <!-- Save Bio images -->
-                            {!! Form::open(['route'=> 'user.images', 'method' => 'POST', 'files'=>'true', 'id' => 'my-dropzone' , 'class' => 'dropzone']) !!}
-                                <div class="dz-message" style="height:50px;">
-                                    Drop your files here (5 images)
-                                </div>
-                                <div class="dropzone-previews"></div>
-                                <!-- <button type="submit" class="btn btn-success" id="submit">Save images</button> -->
-                            {!! Form::close() !!}
-                            <!-- /Save Bio images -->
-                        </div>
-                    </div>
                 </div>
 
                 <div class="panel-body"> 
@@ -412,17 +416,6 @@
                             @endif
                         </div>
                     </div>
-                    <!-- <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
-                        {!! Form::label('address', 'Address', ['class' => 'col-md-4 control-label']) !!}
-                        <div class="col-md-6">
-                            {!! Form::text('address', $info->address, ['class'=>'form-control', 'placeholder'=>'Tell us something amazing', 'required']) !!}
-                            @if ($errors->has('address'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('address') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div> -->
                     <div class="row form-group{{ $errors->has('address') ? ' has-error' : '' }}">
                         <label for="address" class="col-md-4 control-label">My address<p class="text-muted">Powered by google</p></label>
 
@@ -462,17 +455,6 @@
                             @endif
                         </div>
                     </div>
-                    <div class="row form-group{{ $errors->has('location') ? ' has-error' : '' }}">
-                        {!! Form::label('location', 'Location', ['class' => 'col-md-4 control-label']) !!}
-                        <div class="col-md-6">
-                            {!! Form::text('location', $info->location, ['class'=>'form-control', 'placeholder'=>'Usually, where do you work?', 'required']) !!}
-                            @if ($errors->has('location'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('location') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
                     <div class="row form-group{{ $errors->has('mile_radious') ? ' has-error' : '' }}">
                         {!! Form::label('mile_radious', 'Travel mile radius', ['class' => 'col-md-4 control-label']) !!}
                         <div class="col-md-6">
@@ -495,10 +477,11 @@
                             @endif
                         </div>
                     </div>
-                    <input id="place-id" type="hidden" name="place_id" required>
-                    <input id="place-address" type="hidden" name="place_address" required>
-                    <input id="place-geometry" type="hidden" name="place_geometry" required>
-                    <input id="place-city" type="hidden" name="place_city" required>
+
+                    <input id="place-id" type="hidden" name="place_id" value="{{$data_id[1]}}" required>
+                    <input id="place-address" type="hidden" name="place_address" value="{{$data_address[1]}}" required>
+                    <input id="place-geometry" type="hidden" name="place_geometry" value="({{$data_lat[1]}}, {{$data_long[1]}})" required>
+                    <input id="location" type="hidden" name="location" value="{{$info->location}}" required>
                 {!! Form::close() !!}
             </div>
             <div class="modal-footer">
@@ -583,10 +566,87 @@
 @endsection
 
 @section('js')
+    <script src="/js/jquery.ui.widget.js"></script>
+    <script src="/js/jquery.iframe-transport.js"></script>
+    <script src="/js/jquery.fileupload.js"></script>
+    <script src="/chosen/chosen.jquery.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-@endsection
 
-@section('script')
+    <script type="text/javascript">
+
+    function destroyImg(id){
+        var url = "/user/image/destroy/"+id;
+        $.get( url, function(data) {
+            $.each(data.info, function (index, info) {
+                var div2remove = '#image_user_'+info.idImg;
+                $(div2remove).remove()
+                $('<p/>').html(info.status).appendTo($('#status_deleting_img_'+info.idImg));
+                setTimeout(function() {
+                    $('#status_deleting_img_'+info.idImg).fadeOut();
+                }, 1000 );
+            });
+        });
+    }
+
+    $(function () {
+        $('#fileupload').fileupload({
+            dataType: 'json',
+            add: function (e, data) {
+                $('#loading').text('Uploading...');
+                data.submit();
+            },
+            done: function (e, data) {
+                $.each(data.result.files, function (index, file) {
+                    $('<p/>').html(file.name).appendTo($('#files_list'));
+                    setTimeout(function() {
+                        $('#files_list').fadeOut();
+                    }, 2000 );
+                    if ($('#file_ids').val() != '') {
+                        $('#file_ids').val($('#file_ids').val() + ',');
+                    }
+                    if(file.name == null){
+                        $('<p/>').html(file.status).appendTo($('#status_upload'));
+                    }else{
+                        $('#images_user_profile').prepend('<div id="image_user_'+file.fileID+'" class="col-md-12"><img src="{{ asset("images/general/") }}/'+file.fileName+'" class="img-rounded" alt="'+file.fileName+'" width="304" height="236"><button class="btn btn-danger" onclick="destroyImg('+file.fileID+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_img_'+file.fileID+'"></p>');
+                        $('<p/>').html(file.status).appendTo($('#status_upload'));
+                        setTimeout(function() {
+                            $('#status_upload').fadeOut();
+                        }, 1000 );
+                        $('#file_ids').val($('#file_ids').val() + file.fileID);
+                    }
+                });
+                $('#loading').text('');
+            }
+        });
+
+        $('#fileupload_update_user_image').fileupload({
+            dataType: 'json',
+            add: function (e, data) {
+                $('#loading_update_user_pic').text('Uploading...');
+                data.submit();
+            },
+            done: function (e, data) {
+                $.each(data.result.info, function (index, info) {
+                    $('<p/>').html(info.status).appendTo($('#status_upload_update_user_image'));
+                   $('#profile_picture_user').attr('src', '{{ asset("images/profile/") }}/'+info.name);
+                    setTimeout(function() {
+                        $('#status_upload_update_user_image').fadeOut();
+                    }, 1000 );
+                });
+                $('#loading_update_user_pic').text('');
+            }
+        });
+
+    });
+
+    $('#searchTextField').keypress(function(e){
+        if ( e.which == 13 ) // Enter key = keycode 13
+        {
+            $(this).next().focus();  //Use whatever selector necessary to focus the 'next' input
+            return false;
+        }
+    });
+
     //Api(choosen) for display and select tags
     $("#select-tag").chosen({
             placeholder_text_multiple: 'Choose 5 tags',
@@ -608,53 +668,79 @@
             disable_search_threshold: 10
     });
 
-    //Dropzone is for dropping images
-    Dropzone.options.myDropzone = {
-            //autoProcessQueue: false,
-            autoProcessQueue: true,
-            uploadMultiple: true,
-            maxFilezise: 10,
-            maxFiles: 5,
-            
-            init: function() {
-                //var submitBtn = document.querySelector("#submit");
-                //myDropzone = this;
-                
-                //submitBtn.addEventListener("click", function(e){
-                //    e.preventDefault();
-                //    e.stopPropagation();
-                //    myDropzone.processQueue();
-                //});
-                                
-                this.on("complete", function(file) {
-                    myDropzone.removeFile(file);
-                });
- 
-                this.on("success", 
-                    myDropzone.processQueue.bind(myDropzone)
-                );
-            }
-        };
-    //--Dropzone is for dropping images--//
-
     //////////////Maps////////////////////
     function initialize() {
 
-    var input = document.getElementById('searchTextField');
-    var autocomplete = new google.maps.places.Autocomplete(input);
+        var input = document.getElementById('searchTextField');
+        var autocomplete = new google.maps.places.Autocomplete(input);
 
-    autocomplete.addListener('place_changed', function() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-            return;
-        }
+        (function pacSelectFirst(input){
+            // store the original event binding function
+            var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
 
-        document.getElementById('place-id').value = place.place_id;
-        document.getElementById('place-geometry').value = place.geometry.location;
-        document.getElementById('place-address').value = place.formatted_address;
-      });
+            function addEventListenerWrapper(type, listener) {
+            // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+            // and then trigger the original listener.
+
+            if (type == "keydown") {
+              var orig_listener = listener;
+              listener = function (event) {
+                var suggestion_selected = $(".pac-item-selected").length > 0;
+                if (event.which == 13 && !suggestion_selected) {
+                  var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+                  orig_listener.apply(input, [simulated_downarrow]);
+                }
+
+                orig_listener.apply(input, [event]);
+              };
+            }
+
+            // add the modified listener
+            _addEventListener.apply(input, [type, listener]);
+          }
+
+          if (input.addEventListener)
+            input.addEventListener = addEventListenerWrapper;
+          else if (input.attachEvent)
+            input.attachEvent = addEventListenerWrapper;
+
+        })(input);
+
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
+
+            document.getElementById('place-id').value = place.place_id;
+            document.getElementById('place-geometry').value = place.geometry.location;
+            document.getElementById('place-address').value = place.formatted_address;
+            var latANDlng = document.getElementById('place-geometry').value;
+            var firstResultLatAndLng = latANDlng.slice(1, -1);
+            var lastResultLatAndLng = firstResultLatAndLng.split(", ");
+            codeLatLng(lastResultLatAndLng[0], lastResultLatAndLng[1]);
+        });
+    }
+
+    function codeLatLng(lat, lng) {
+        var geocoder= new google.maps.Geocoder();
+        var latlng = new google.maps.LatLng(lat, lng);
+        geocoder.geocode({latLng: latlng}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                if (results[1]) {
+                    var arrAddress = results;
+                    $.each(arrAddress, function(i, address_component) {
+                        if (address_component.types[0] == "locality") {
+                            document.getElementById('location').value = address_component.address_components[0].long_name;
+                            itemLocality = address_component.address_components[0].long_name;
+                        }
+                    });
+                }
+            }
+        });
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
     //////////////----////////////////////
+    </script>
 @endsection

@@ -25,6 +25,8 @@ use App\GigOption;
 use App\Ask;
 use Hash;
 use Mail;
+use Storage;
+use stdClass;
 
 class EnsembleController extends Controller
 {
@@ -82,7 +84,7 @@ class EnsembleController extends Controller
             $tags = Tag::orderBy('name', 'DES')->pluck('name', 'id');
             $instruments = Instrument::orderBy('name', 'DES')->pluck('name', 'id');
             $styles = Style::orderBy('name', 'DES')->pluck('name', 'id');
-            $images = $ensemble->ensemble_images->pluck('name');
+            $images = $ensemble->ensemble_images->all();
             $videos = $ensemble->ensemble_videos->all();
             $songs = $ensemble->ensemble_songs->all();
 
@@ -161,7 +163,12 @@ class EnsembleController extends Controller
             'profile_picture'   => $name
         ]);
 
-        return redirect()->route('ensemble.dashboard');
+        $update_profile_photo_object = new stdClass();
+        $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
+        $update_profile_photo_object->name = $name;
+        $info[] = $update_profile_photo_object;
+
+        return response()->json(array('info' => $info), 200);
     }
 
     public function storeInstruments(Request $request)
@@ -213,27 +220,56 @@ class EnsembleController extends Controller
     {
         $ensemble_id = Auth::user()->ensemble->id;
         $num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
+        $photos = [];
         if ($num_img < 5) {
-            $image = new Ensemble_image();
+            //dd('entre al primer filtro');
             $path = public_path().'/images/general';
-            if($request->file('file')){
-                $files = $request->file('file');
-                foreach($files as $file){
-                    $fileName = 'ensemble_bio_'.time().'-'.$file->getClientOriginalName();
-                    $file->move($path, $fileName);
-                    $image->ensemble_id = $ensemble_id;
-                    $image->name = $fileName;
-                    $image->save();
+            foreach ($request->photos as $photo) {
+                $filename = 'ensemble_bio_'.time().'|'.$photo->getClientOriginalName();
+                $photo->move($path, $filename);
+
+                $ensemble_photo = new Ensemble_image();
+                $ensemble_photo->ensemble_id = $ensemble_id;
+                $ensemble_photo->name = $filename;
+                $ensemble_photo->save();
+
+                $new_num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
+                if ($new_num_img < 5) {
+                    $photo_object = new stdClass();
+                    $photo_object->name = str_replace('photos/', '',$photo->getClientOriginalName());
+                    $photo_object->fileName = $ensemble_photo->name;
+                    $photo_object->fileID = $ensemble_photo->id;
+                    $photo_object->status = '<strong style="color: green;">Saved successfully</strong>';
+                    $photos[] = $photo_object;
+                }else{
+                    $photo_object = new stdClass();
+                    $photo_object->status = 'You just can add 5 pictures';
+                    $photos[] = $photo_object;
+                    break;
                 }
             }
+            return response()->json(array('files' => $photos), 200); 
+        } else {
+            $photo_object = new stdClass();
+            $photo_object->status = 'You just can add 5 pictures';
+            $photos[] = $photo_object;
+            return response()->json(array('files' => $photos), 200);
         }  
     }
 
     public function destroyImageEnsemble($image)
     {
+        $info = [];
         $ensemble_id = Auth::user()->ensemble->id;
-        Ensemble_image::where('ensemble_id', $ensemble_id)->where('name', $image)->delete();
-        return redirect()->route('ensemble.dashboard');
+        $get_name = Ensemble_image::select('name')->where('id', $image)->first();
+        Ensemble_image::where('ensemble_id', $ensemble_id)->where('id', $image)->delete();
+        $delete_photo_object = new stdClass();
+        $get_name_array = explode("|", $get_name->name);
+        $delete_photo_object->status = $get_name_array[1].' <strong style="color: red;">deleted successfully</strong>';
+        $delete_photo_object->idImg = $image;
+        $info[] = $delete_photo_object;
+
+        return response()->json(array('info' => $info), 200);
     }
 
     public function video(Request $request)
@@ -392,17 +428,56 @@ class EnsembleController extends Controller
 
     public function member(Request $request)
     {
+        if(filter_var($request->member, FILTER_VALIDATE_EMAIL)) {
+            //USERS NOT REGISTERED YET
 
-        if(strpos($request->member, 'bemusical.us/') !== false) {
-            $display = explode("bemusical.us/", $request->member);
-            $slug_member = end($display);
-            
-            if (Ensemble::where('slug', '=', $slug_member)->exists()) {
-                return redirect()->back()->withErrors(['member'=>"You cannot add ensembles in this ensemble"]);
-            }elseif(User_info::where('slug', '=', $slug_member)->exists()){
+            if (!User::where('email', '=', $request->member)->exists()) {
+             
+                $ensemble = Ensemble::select('id', 'name')
+                                    ->where('user_id', Auth::user()->id)
+                                    ->firstOrFail();
+                
                 $num_code = str_random(50);
                 $token = $num_code.time();
-                $user = User_info::where('slug', '=', $slug_member)->firstOrFail();
+
+                if( Member::where('ensemble_id', '=', $ensemble->id)
+                    ->where('email', '=', $request->member)
+                    ->where('confirmation', '=', 1)
+                    ->exists()
+                  )
+                {
+                    return redirect()->back()->withErrors(['member'=>"This user is part of your ensemble already"]);
+                }
+
+                $member = new Member;
+                $member->ensemble_id  = $ensemble->id;
+                $member->user_id      = Auth::user()->id;
+                $member->name         = 'new';
+                $member->instrument   = 'null';
+                $member->slug         = 'null';
+                $member->token        = $token;
+                $member->email        = $request->member;
+                $member->confirmation = 0;
+                $member->save();
+
+                $data = [  
+                            'token'           => $token,
+                            'ensemble_name'   => $ensemble->name,
+                            'email'           => $request->member,
+                        ];
+
+                Mail::send('email.notmember_request', $data, function($message) use ($request){
+                    $message->from('support@bemusical.us');
+                    $message->to($request->member);
+                    $message->subject('You have an invitation from BeMusical.us member');
+                });
+
+            }else{
+                $num_code = str_random(50);
+                $token = $num_code.time();
+                $user_entered = User::where('email', $request->member)->first();
+
+                $user = User_info::where('user_id', '=', $user_entered->id)->firstOrFail();
 
                 $ensemble = Ensemble::select('id', 'name')
                                     ->where('user_id', Auth::user()->id)
@@ -421,7 +496,7 @@ class EnsembleController extends Controller
                 $member->user_id      = $user->user->id;
                 $member->name         = $user->first_name.' '.$user->last_name;
                 $member->instrument   = 'null';
-                $member->slug         = $slug_member;
+                $member->slug         = $user->slug;
                 $member->token        = $token;
                 $member->email        = $user->user->email;
                 $member->confirmation = 0;
@@ -438,69 +513,72 @@ class EnsembleController extends Controller
                     $message->to($user->user->email);
                     $message->subject('You have an invitation');
                 });
+                return redirect()->route('ensemble.dashboard');
+            }
+            return redirect()->route('ensemble.dashboard');
+
+        } else {
+            //USERS ALREADY REGISTERED
+            if(strpos($request->member, 'bemusical.us/') !== false) {
+                $display = explode("bemusical.us/", $request->member);
+                $slug_member = end($display);
+                
+                if (Ensemble::where('slug', '=', $slug_member)->exists()) {
+                    return redirect()->back()->withErrors(['member'=>"You cannot add ensembles in this ensemble"]);
+                }elseif(User_info::where('slug', '=', $slug_member)->exists()){
+                    $num_code = str_random(50);
+                    $token = $num_code.time();
+                    $user = User_info::where('slug', '=', $slug_member)->firstOrFail();
+
+                    $ensemble = Ensemble::select('id', 'name')
+                                        ->where('user_id', Auth::user()->id)
+                                        ->firstOrFail();
+
+                    if(   Member::where('ensemble_id', '=', $ensemble->id)
+                                ->where('user_id', '=', $user->user->id)
+                                ->exists()
+                      )
+                    {
+                        return redirect()->back()->withErrors(['member'=>"This user is part of your ensemble already"]);
+                    }
+
+                    $member = new Member;
+                    $member->ensemble_id  = $ensemble->id;
+                    $member->user_id      = $user->user->id;
+                    $member->name         = $user->first_name.' '.$user->last_name;
+                    $member->instrument   = 'null';
+                    $member->slug         = $slug_member;
+                    $member->token        = $token;
+                    $member->email        = $user->user->email;
+                    $member->confirmation = 0;
+                    $member->save();
+                    
+                    $data = [  
+                                'token'           => $token,
+                                'ensemble_name'   => $ensemble->name,
+                                'name'            => $user->first_name,
+                            ];
+
+                    Mail::send('email.member_request', $data, function($message) use ($user){
+                        $message->from('support@bemusical.us');
+                        $message->to($user->user->email);
+                        $message->subject('You have an invitation');
+                    });
+                }else{
+                    return redirect()->back()->withErrors(['member'=>"The user does not exist"]);
+                }
+
             }else{
-                return redirect()->back()->withErrors(['member'=>"The user does not exist"]);
+                return redirect()->back()->withErrors(['member'=>"Link not allowed"]);
             }
 
-        }else{
-            return redirect()->back()->withErrors(['member'=>"Link not allowed"]);
+            return redirect()->route('ensemble.dashboard');
         }
-
-        return redirect()->route('ensemble.dashboard');
     }
 
     public function destroy_member($id)
     {
         $member = Member::find($id)->delete();
-        return redirect()->route('ensemble.dashboard');
-    }
-
-    public function notmember(Request $request)
-    {            
-        if (!User::where('email', '=', $request->notmember)->exists()) {
-             
-            $ensemble = Ensemble::select('id', 'name')
-                                ->where('user_id', Auth::user()->id)
-                                ->firstOrFail();
-            
-            $num_code = str_random(50);
-            $token = $num_code.time();
-
-            if( Member::where('ensemble_id', '=', $ensemble->id)
-                ->where('email', '=', $request->notmember)
-                ->where('confirmation', '=', 1)
-                ->exists()
-              )
-            {
-                return redirect()->back()->withErrors(['member'=>"This user is part of your ensemble already"]);
-            }
-
-            $member = new Member;
-            $member->ensemble_id  = $ensemble->id;
-            $member->user_id      = Auth::user()->id;
-            $member->name         = 'new';
-            $member->instrument   = 'null';
-            $member->slug         = 'null';
-            $member->token        = $token;
-            $member->email        = $request->notmember;
-            $member->confirmation = 0;
-            $member->save();
-
-            $data = [  
-                        'token'           => $token,
-                        'ensemble_name'   => $ensemble->name,
-                        'email'           => $request->notmember,
-                    ];
-
-            Mail::send('email.notmember_request', $data, function($message) use ($request){
-                $message->from('support@bemusical.us');
-                $message->to($request->notmember);
-                $message->subject('You have an invitation from BeMusical.us member');
-            });
-
-        }else{
-            return redirect()->back()->withErrors(['notmember'=>"This user already exist, use the 'slug option'"]);
-        }
         return redirect()->route('ensemble.dashboard');
     }
 }

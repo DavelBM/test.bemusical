@@ -102,7 +102,7 @@ class RegisterController extends Controller
             $info->about           = 'null';
             $info->profile_picture = 'null';
             $info->bio             = 'null';
-            $info->address         = 'null';
+            $info->address         = 'id:no-addres|address:no-address|lat:0|long:0';
             $info->phone           = 0;
             $info->location        = 'null';
             $info->degree          = 'null';
@@ -128,7 +128,7 @@ class RegisterController extends Controller
             $ensemble->profile_picture = 'null';
             $ensemble->summary         = 'null';
             $ensemble->about           = 'null';
-            $ensemble->address         = 'null';
+            $ensemble->address         = 'id:no-addres|address:no-address|lat:0|long:0';
             $ensemble->phone           = 0;
             $ensemble->location        = 'null';
             $ensemble->mile_radious    = 20;

@@ -233,9 +233,7 @@
                         <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                         <div class="col-md-6">
-
                             <input id="day" type="text" class="form-control" placeholder="Select date" type="date" name="day" value="{{ old('day') }}">
-
                             </select>
                             @if ($errors->has('day'))
                                 <span class="help-block">
@@ -246,86 +244,12 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="time" class="col-md-4 control-label">Time of performance</label>
-
-                        <div class="col-md-6">
-                        <select id="time" class="time form-control" name="time" required></select></select>
-                            <!-- <select id="time" class="time form-control" name="time" required>
-                                <option value="00:00">Select time</option>
-                                <option value="08:00">8:00AM</option>
-                                <option value="08:15">8:15AM</option>
-                                <option value="08:30">8:30AM</option>
-                                <option value="08:45">8:45AM</option>
-                                <option value="09:00">9:00AM</option>
-                                <option value="09:15">9:15AM</option>
-                                <option value="09:30">9:30AM</option>
-                                <option value="09:45">9:45AM</option>
-                                <option value="10:00">10:00AM</option>
-                                <option value="10:15">10:15AM</option>
-                                <option value="10:30">10:30AM</option>
-                                <option value="10:45">10:45AM</option>
-                                <option value="11:00">11:00AM</option>
-                                <option value="11:15">11:15AM</option>
-                                <option value="11:30">11:30AM</option>
-                                <option value="11:45">11:45AM</option>
-                                <option value="12:00">12:00PM</option>
-                                <option value="12:15">12:15PM</option>
-                                <option value="12:30">12:30PM</option>
-                                <option value="12:45">12:45PM</option>
-                                <option value="13:00">1:00PM</option>
-                                <option value="13:15">1:15PM</option>
-                                <option value="13:30">1:30PM</option>
-                                <option value="13:45">1:45PM</option>
-                                <option value="14:00">2:00PM</option>
-                                <option value="14:15">2:15PM</option>
-                                <option value="14:30">2:30PM</option>
-                                <option value="14:45">2:45PM</option>
-                                <option value="15:00">3:00PM</option>
-                                <option value="15:15">3:15PM</option>
-                                <option value="15:30">3:30PM</option>
-                                <option value="15:45">3:45PM</option>
-                                <option value="16:00">4:00PM</option>
-                                <option value="16:15">4:15PM</option>
-                                <option value="16:30">4:30PM</option>
-                                <option value="16:45">4:45PM</option>
-                                <option value="17:00">5:00PM</option>
-                                <option value="17:15">5:15PM</option>
-                                <option value="17:30">5:30PM</option>
-                                <option value="17:45">5:45PM</option>
-                                <option value="18:00">6:00PM</option>
-                                <option value="18:15">6:15PM</option>
-                                <option value="18:30">6:30PM</option>
-                                <option value="18:45">6:45PM</option>
-                                <option value="19:00">7:00PM</option>
-                                <option value="19:15">7:15PM</option>
-                                <option value="19:30">7:30PM</option>
-                                <option value="19:45">7:45PM</option>
-                                <option value="20:00">8:00PM</option>
-                                <option value="20:15">8:15PM</option>
-                                <option value="20:30">8:30PM</option>
-                                <option value="20:45">8:45PM</option>
-                                <option value="21:00">9:00PM</option>
-                                <option value="21:15">9:15PM</option>
-                                <option value="21:30">9:30PM</option>
-                                <option value="21:45">9:45PM</option>
-                                <option value="22:00">10:00PM</option>
-                            </select> -->
-                            @if ($errors->has('time'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('time') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="row form-group">
                         <label for="duration" class="col-md-4 control-label">Length of performance</label>
 
                         <div class="col-md-6">
 
-                            <select id="duration" class="form-control" name="duration" placeholder="Minutes" required>
-                                <option value="0">Select the duration</option>
-                                <option value="60">1 hr</option>
+                            <select id="duration" class="form-control" name="duration" placeholder="Minutes" onchange="sendDuration()" required>
+                                <option value="60">min. 1 hr</option>
                                 <option value="90">1 hr 30 min</option>
                                 <option value="120">2 hrs</option>
                                 <option value="150">2 hrs 30 min</option>
@@ -333,12 +257,26 @@
                                 <option value="210">3 hr 30 min</option>
                                 <option value="240">4 hrs</option>
                                 <option value="270">4 hr 30 min</option>
-                                <option value="300">5 hrs</option>
+                                <option value="300">max. 5 hrs</option>
                             </select>
                             <!-- <input id="duration" type="number" class="form-control" name="duration" placeholder="Minutes" required> -->
                             @if ($errors->has('duration'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('duration') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="time" class="col-md-4 control-label">Time of performance</label>
+
+                        <div class="col-md-6">
+                            <select id="time" class="time form-control" name="time" required></select>
+                            </select>
+                            @if ($errors->has('time'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('time') }}</strong>
                                 </span>
                             @endif
                         </div>
@@ -395,11 +333,52 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+
+    $('#searchTextField').keypress(function(e){
+        if ( e.which == 13 ) // Enter key = keycode 13
+        {
+            $(this).next().focus();  //Use whatever selector necessary to focus the 'next' input
+            return false;
+        }
+    });
+
     //////////////Maps////////////////////
     function initialize() {
 
         var input = document.getElementById('searchTextField');
         var autocomplete = new google.maps.places.Autocomplete(input);
+
+        (function pacSelectFirst(input){
+            // store the original event binding function
+            var _addEventListener = (input.addEventListener) ? input.addEventListener : input.attachEvent;
+
+            function addEventListenerWrapper(type, listener) {
+            // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+            // and then trigger the original listener.
+
+            if (type == "keydown") {
+              var orig_listener = listener;
+              listener = function (event) {
+                var suggestion_selected = $(".pac-item-selected").length > 0;
+                if (event.which == 13 && !suggestion_selected) {
+                  var simulated_downarrow = $.Event("keydown", {keyCode:40, which:40})
+                  orig_listener.apply(input, [simulated_downarrow]);
+                }
+
+                orig_listener.apply(input, [event]);
+              };
+            }
+
+            // add the modified listener
+            _addEventListener.apply(input, [type, listener]);
+          }
+
+          if (input.addEventListener)
+            input.addEventListener = addEventListenerWrapper;
+          else if (input.attachEvent)
+            input.attachEvent = addEventListenerWrapper;
+
+        })(input);
 
         autocomplete.addListener('place_changed', function() {
             var place = autocomplete.getPlace();
@@ -432,83 +411,45 @@
     google.maps.event.addDomListener(window, 'load', initialize);
     //////////////----////////////////////
 
-    //////////////Getting Date////////////////////
-    var currentdate = new Date(); 
+    $(function() {
 
-    var todaymonth = (currentdate.getMonth()+1);
-    if(todaymonth == "1"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "2"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "3"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "4"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "5"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "6"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "7"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "8"){
-        var newmonth = '0'+todaymonth;
-    }else if(todaymonth == "9"){
-        var newmonth = '0'+todaymonth;
-    }
+        var output_date = moment().format("YYYY-MM-DD");
+ 
+        $("#day").val(output_date);
 
-    var todayday = currentdate.getDate();
-    if(todayday == "1"){
-        var newday = '0'+todayday;
-    }else if(todayday == "2"){
-        var newday = '0'+todayday;
-    }else if(todayday == "3"){
-        var newday = '0'+todayday;
-    }else if(todayday == "4"){
-        var newday = '0'+todayday;
-    }else if(todayday == "5"){
-        var newday = '0'+todayday;
-    }else if(todayday == "6"){
-        var newday = '0'+todayday;
-    }else if(todayday == "7"){
-        var newday = '0'+todayday;
-    }else if(todayday == "8"){
-        var newday = '0'+todayday;
-    }else if(todayday == "9"){
-        var newday = '0'+todayday;
-    }
+        $('#day').datetimepicker({
+            'format' : 'YYYY-MM-DD',
+            'minDate': output_date,
+            'daysOfWeekDisabled': [@if($option->monday == 0)1,@endif @if($option->tuesday == 0)2,@endif @if($option->wednesday == 0)3,@endif @if($option->thursday == 0)4,@endif @if($option->friday == 0)5,@endif @if($option->saturday == 0)6,@endif @if($option->sunday == 0)0,@endif],
+            'disabledDates': [@foreach($dates as $date)"{{$date}}",@endforeach],
+        }).on('changeDate', function(ev){                 
+            $('#day').datepicker('hide');
+        });
 
-    document.getElementById("btn-status").disabled = true;
 
-    var datetime =  currentdate.getFullYear()+"-"+newmonth+"-"+newday;
-    document.getElementById('day').setAttribute("min", datetime);
-    //////////////------------////////////////////
+        $("#time").attr("disabled", "disabled");
+        var selectList = $('#time');
+        selectList.append('<option>(Pick an hour)</option>');
 
-    var get_date = new Date();
-    var month = get_date.getMonth()+1;
-    var day = get_date.getDate();
+        $("#day").on("dp.change", function(e) {
+            sendDuration();
+        });
 
-    var output_date = get_date.getFullYear()+'-'+(month<10 ? '0' : '')+month+'-'+(day<10 ? '0' : '')+day;
-
-    $("#day").val(output_date);
-
-    $('#day').datetimepicker({
-        'format' : 'YYYY-MM-DD',
-        'minDate': output_date,
-        'daysOfWeekDisabled': [@if($option->monday == 0)1,@endif @if($option->tuesday == 0)2,@endif @if($option->wednesday == 0)3,@endif @if($option->thursday == 0)4,@endif @if($option->friday == 0)5,@endif @if($option->saturday == 0)6,@endif @if($option->sunday == 0)0,@endif],
-
-        'disabledDates': [@foreach($dates as $date)"{{$date}}",@endforeach],
-    }).on('changeDate', function(ev){                 
-        $('#day').datepicker('hide');
+        if ($("#day").val(output_date) != 0) sendDuration();
     });
 
-    $("#time").attr("disabled", "disabled");
-    var selectList = $('#time');
-    selectList.append('<option>(Pick an hour)</option>');
-    var time_select;
-    var timeBeforeEvent = {{$option->time_before_event}};
-    var timeAfterEvent = {{$option->time_after_event}};
+    function sendDuration(){
+        var duration = $("#duration").val();
+        selectTime(duration);
+    }
 
-    $("#day").on("dp.change", function(e) {
+    function selectTime(duration_requested){
+
+        var selectList = $('#time');
+        var time_select;
+        var timeBeforeEvent = parseInt({{$option->time_before_event}})+parseInt(duration_requested);
+        var timeAfterEvent = {{$option->time_after_event}};
+
         /* Asking for information to db */
         $.get( "/allow/times/date="+$('#day').val()+"&id={{$ensemble->user_id}}", function(data) {
             if (data[0].length > 0) { 
@@ -517,7 +458,6 @@
                 var dates_deleting = [];
                 $("#time").removeAttr("disabled");     
                 $('#time').empty();
-
                 /* Creating hours for select dropdown */
                 for(var hour = {{$start_exploded[0]}}; hour <= {{$end_exploded[0]}}; hour++){
                     var ampmhour = ((hour + 11) % 12 + 1);
@@ -534,16 +474,22 @@
                         }  
 
                         /* Helper variable */
-                        time_select = (aZero(hour)+':'+aZero(minute));   
-                        var currentTime= moment(time_select, "HH:mm");
+                        time_selected = (aZero(hour)+':'+aZero(minute)+':00'); 
+                        day_selected = $('#day').val();
+                        time_select = day_selected+' '+time_selected;
+                        var currentTime= moment(time_select, "YYYY-MM-DD HH:mm:ss");
 
                         loopDataLength:
                         for(var i = 0; i < data[0].length; i++) {
                             /*Here we compare tha start time and the end time of the evento to print it*/
-                            var startTime = moment(data[0][i], "HH:mm").subtract(timeBeforeEvent, 'm');
-                            var endTime = moment(data[1][i], "HH:mm").add(timeAfterEvent, 'm');
-                            var isBetween = currentTime.isBetween(startTime, endTime);
+                            var startTime_A = moment(data[0][i]);
+                            var startTime = startTime_A.subtract(timeBeforeEvent, 'm');
 
+                            var endTime_A = moment(data[1][i]);
+                            var endTime = endTime_A.add(timeAfterEvent, 'm');
+                            
+                            var isBetween = currentTime.isBetween(startTime, endTime);
+                            
                             /* If time called "time_select" for select exist in array received from db called "data", we break this for. We have to wait to the next iteration.*/
                             if (($.inArray(time_select, data[0]) > -1)) {break loopDataLength;}
         
@@ -619,16 +565,10 @@
 
             }
         });
-    });
-
+    }
     /* helper function to add a zero to times */
     function aZero(n) {
       return n.toString().length == 1 ?  n = '0' + n: n;
-    }
-
-    if(history.length>0)
-    {
-        history.go(+1);
     }
 
     </script>

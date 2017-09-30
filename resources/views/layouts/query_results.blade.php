@@ -252,10 +252,7 @@
     //////////////----////////////////////
 
     $(function() {
-        if(history.length>0)
-        {
-            storageQuery();
-        }
+        if (localStorage.length !== 0) storageQuery();
 
         var get_date = new Date();
         var month = get_date.getMonth()+1;
@@ -289,7 +286,7 @@
                 type: 'POST',
                 data: $(this).serialize(),
                 beforeSend: function() {
-                    localStorage.clear();
+                    
                     $("#message").html("loading...").show();
                     $('#displayUsers').hide();
                     getting_users = [];
@@ -329,7 +326,6 @@
     });
 
     function storageQuery(){
-
         var storedDivs = JSON.parse(localStorage.getItem("divs"));
         if (localStorage.length !== 0) {
             $('#displayUsers').hide();
