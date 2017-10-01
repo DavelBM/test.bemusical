@@ -214,16 +214,10 @@
 
                         <!-- Add tags -->
                         <div class="col-md-3">
-                            {!! Form::open(['route' => 'ensemble.tag', 'method' => 'POST']) !!}
                                 <div class="form-group col-md-12">
                                     {!! Form::label('tags', 'Tags', ['class' => 'control-label']) !!}<br>
                                     {!! Form::select('tags[]', $tags, $my_tags, ['id'=>'select-tag','class'=>'form-control', 'multiple', 'required']) !!}
                                 </div>
-
-                                <div class="form-group">
-                                        {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
-                                </div>
-                            {!! Form::close() !!}
                         </div>
                         <!-- /Add tags -->
 
@@ -234,12 +228,12 @@
                     <strong>BIO IMAGES</strong>
                 </div>
                 <div class="panel-body">
-                    <!-- <form action="/ensemble/add/image" method="post" enctype="multipart/form-data"> -->
+                    <!-- <form action="/add/ensemble/image" method="post" enctype="multipart/form-data"> -->
                     <form method="post" enctype="multipart/form-data">
                         {{ csrf_field() }}
                         You can add more than one picture(MAX 5):
                         <br />
-                        <input type="file" id="fileupload" name="photos[]" data-url="/ensemble/add/image" multiple />
+                        <input type="file" id="fileupload" name="photos[]" data-url="/add/ensemble/image" multiple />
                         <!-- <input type="file" name="photos[]"> -->
                         <br />
                         <p id="loading"></p>
@@ -248,6 +242,7 @@
                         </div>
                         <p id="status_upload"></p>
                         <input type="hidden" name="file_ids" id="file_ids" value="" />
+                        <!-- <input type="submit" name="submit"> -->
                     </form>
                         <!-- Displaying images -->
                         @foreach($images as $image)
@@ -599,6 +594,8 @@
             dataType: 'json',
             add: function (e, data) {
                 $('#loading').text('Uploading...');
+                $('#status_upload').show();
+                $('#status_upload').empty();
                 data.submit();
             },
             done: function (e, data) {
@@ -611,16 +608,30 @@
                         $('#file_ids').val($('#file_ids').val() + ',');
                     }
                     if(file.name == null){
-                        $('<p/>').html(file.status).appendTo($('#status_upload'));
+                        if (file.failed == 'true') {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 2000 );
+                        } else {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                        }
                     }else{
                         $('#images_ensemble_profile').prepend('<div id="image_ensemble_'+file.fileID+'" class="col-md-12"><img src="{{ asset("images/general/") }}/'+file.fileName+'" class="img-rounded" alt="'+file.fileName+'" width="304" height="236"><button class="btn btn-danger" onclick="destroyImg('+file.fileID+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_img_'+file.fileID+'"></p>');
-                        $('<p/>').html(file.status).appendTo($('#status_upload'));
-                        setTimeout(function() {
-                            $('#status_upload').fadeOut();
-                        }, 1000 );
+                        if (file.failed == 'true') {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 1000 );
+                        } else {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 1000 );
+                        }
                         $('#file_ids').val($('#file_ids').val() + file.fileID);
                     }
-                });
+                });                        
                 $('#loading').text('');
             }
         });
@@ -629,15 +640,23 @@
             dataType: 'json',
             add: function (e, data) {
                 $('#loading_update_ensemble_pic').text('Uploading...');
+                $('#status_upload_update_ensemble_image').show();
+                $('#status_upload_update_ensemble_image').empty();
                 data.submit();
             },
             done: function (e, data) {
                 $.each(data.result.info, function (index, info) {
                     $('<p/>').html(info.status).appendTo($('#status_upload_update_ensemble_image'));
-                   $('#profile_picture_ensemble').attr('src', '{{ asset("images/ensemble/") }}/'+info.name);
-                    setTimeout(function() {
-                        $('#status_upload_update_ensemble_image').fadeOut();
-                    }, 1000 );
+                    if (info.status == '<strong style="color: red;">Select an image</strong>') {
+                        setTimeout(function() {
+                            $('#status_upload_update_ensemble_image').fadeOut();
+                        }, 2000 );
+                    }else{
+                        $('#profile_picture_ensemble').attr('src', '{{ asset("images/ensemble/") }}/'+info.name);
+                        setTimeout(function() {
+                            $('#status_upload_update_ensemble_image').fadeOut();
+                        }, 1000 );
+                    }
                 });
                 $('#loading_update_ensemble_pic').text('');
             }
@@ -653,12 +672,43 @@
     });
 
     //Api(choosen) for display and select tags
-    $("#select-tag").chosen({
-            placeholder_text_multiple: 'Choose 5 tags',
-            max_selected_options: '5',
-            disable_search_threshold: 10
-    }).change(function(){
-        console.log('tag works');
+    $(function () {
+        $("#select-tag").chosen({
+                placeholder_text_multiple: 'Choose 5 tags',
+                max_selected_options: '5',
+                disable_search_threshold: 10
+        }).change(function(){       
+            if ($("#select-tag option:selected").length > 3) {
+                
+                $('#select-tag option').removeAttr('selected');
+                //$("option:selected").removeAttr("selected");
+                //$(this).removeAttr("selected[value="+last_tag+"]"); 
+                //alert('sd');
+            }
+            $.ajax({
+                type: "POST",
+                url: "/ensemble/add/tag",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "tags": $("#select-tag").val(),
+                },
+                dataType: 'json',
+                beforeSend: function(){
+                    //cue the page loader             
+                //console.log('beforeSend');  
+                },
+                success: function(response){
+                    $.each(response.tags, function (index, tag) {
+                        console.log(tag.data);
+                    });
+                },
+                error: function(xhr){
+                    //hide the page loader             
+                //console.log('error'); 
+                }
+            });
+            return true;
+        });
     });
 
     //Api(choosen) for display and select instruments

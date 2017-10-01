@@ -96,7 +96,7 @@ Route::resource('/ensemble', 'EnsembleController',['except' => ['index', 'create
 Route::post('/ensemble/add/instrument', 'EnsembleController@storeInstruments')->name('ensemble.instrument');
 Route::post('/ensemble/add/tag', 'EnsembleController@storeTags')->name('ensemble.tag');
 Route::post('/ensemble/add/style', 'EnsembleController@storeStyles')->name('ensemble.style');
-Route::post('/ensemble/add/image', 'EnsembleController@storeImages')->name('ensemble.images');
+Route::post('/add/ensemble/image', 'EnsembleController@storeImages')->name('ensemble.images');
 Route::post('/ensemble/add/video', 'EnsembleController@video')->name('ensemble.video');
 Route::post('/ensemble/add/song', 'EnsembleController@song')->name('ensemble.song');
 

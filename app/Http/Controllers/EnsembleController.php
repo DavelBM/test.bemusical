@@ -27,6 +27,7 @@ use Hash;
 use Mail;
 use Storage;
 use stdClass;
+use Validator;
 
 class EnsembleController extends Controller
 {
@@ -148,27 +149,40 @@ class EnsembleController extends Controller
         return redirect()->route('ensemble.dashboard');
     }
 
-    public function updateImage(updateImageUser $request, $id)
+    public function updateImage(Request $request, $id)
     {
-        $user = \Auth::user()->id;
-        if($request->file('image')){
-            $file = $request->file('image');
-            $name = 'ensemble_picture_'.time().'.'.$file->getClientOriginalExtension();
-            $path = public_path().'/images/ensemble';
-            $file->move($path, $name); 
-        }
-
-        Ensemble::where('user_id', $user)
-        ->update([
-            'profile_picture'   => $name
+        $info = [];
+        $validator = Validator::make($request->all(), [
+            'image' => 'image|required',
         ]);
 
-        $update_profile_photo_object = new stdClass();
-        $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
-        $update_profile_photo_object->name = $name;
-        $info[] = $update_profile_photo_object;
+        if ($validator->fails()) {
+            $update_profile_photo_object = new stdClass();
+            $update_profile_photo_object->status ='<strong style="color: red;">Select an image</strong>';
+            $info[] = $update_profile_photo_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
 
-        return response()->json(array('info' => $info), 200);
+            $user = \Auth::user()->id;
+            if($request->file('image')){
+                $file = $request->file('image');
+                $name = 'ensemble_picture_'.time().'.'.$file->getClientOriginalExtension();
+                $path = public_path().'/images/ensemble';
+                $file->move($path, $name); 
+            }
+
+            Ensemble::where('user_id', $user)
+            ->update([
+                'profile_picture'   => $name
+            ]);
+
+            $update_profile_photo_object = new stdClass();
+            $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
+            $update_profile_photo_object->name = $name;
+            $info[] = $update_profile_photo_object;
+
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function storeInstruments(Request $request)
@@ -188,6 +202,7 @@ class EnsembleController extends Controller
 
     public function storeTags(Request $request)
     {
+        $tags = [];
         $ensemble_id = Auth::user()->ensemble->id;
         EnsembleTag::where('ensemble_id', $ensemble_id)->delete();
         
@@ -198,7 +213,13 @@ class EnsembleController extends Controller
             $tag->tag_id = $id;
             $tag->save(); 
         }
-        return redirect()->route('ensemble.dashboard');
+        //return redirect()->route('ensemble.dashboard');
+
+        $tag_object = new stdClass();
+        $tag_object->status ='guardado';
+        $tag_object->data = $request->tags;
+        $tags[] = $tag_object;
+        return response()->json(array('tags' => $tags), 200);
     }
 
     public function storeStyles(Request $request)
@@ -218,42 +239,72 @@ class EnsembleController extends Controller
 
     public function storeImages(Request $request)
     {
-        $ensemble_id = Auth::user()->ensemble->id;
-        $num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
         $photos = [];
-        if ($num_img < 5) {
-            //dd('entre al primer filtro');
-            $path = public_path().'/images/general';
-            foreach ($request->photos as $photo) {
-                $filename = 'ensemble_bio_'.time().'|'.$photo->getClientOriginalName();
-                $photo->move($path, $filename);
+        $validator = Validator::make($request->all(), [
+            'photos' => 'array|required',
+        ]);
 
-                $ensemble_photo = new Ensemble_image();
-                $ensemble_photo->ensemble_id = $ensemble_id;
-                $ensemble_photo->name = $filename;
-                $ensemble_photo->save();
-
-                $new_num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
-                if ($new_num_img < 5) {
-                    $photo_object = new stdClass();
-                    $photo_object->name = str_replace('photos/', '',$photo->getClientOriginalName());
-                    $photo_object->fileName = $ensemble_photo->name;
-                    $photo_object->fileID = $ensemble_photo->id;
-                    $photo_object->status = '<strong style="color: green;">Saved successfully</strong>';
-                    $photos[] = $photo_object;
-                }else{
-                    $photo_object = new stdClass();
-                    $photo_object->status = 'You just can add 5 pictures';
-                    $photos[] = $photo_object;
-                    break;
-                }
-            }
-            return response()->json(array('files' => $photos), 200); 
-        } else {
+        if ($validator->fails()) {
             $photo_object = new stdClass();
-            $photo_object->status = 'You just can add 5 pictures';
-            $photos[] = $photo_object;
+            $photo_object->status ='<strong style="color: red;">Select an image</strong>';
+            $photo_object->failed = 'true';
+            $photo[] = $photo_object;
             return response()->json(array('files' => $photos), 200);
+        } else {
+
+            $imageRules = array(
+                'photos' => 'image'
+            );
+
+            $ensemble_id = Auth::user()->ensemble->id;
+            $num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
+
+            if ($num_img < 5) {
+                //dd('entre al primer filtro');
+                $path = public_path().'/images/general';
+                foreach ($request->photos as $photo) {
+                    $photo = array('photos' => $photo);
+                    $imageValidator = Validator::make($photo, $imageRules);
+                    if ($imageValidator->fails()) {
+                        //dd('esto fallo');
+                        $photo_object = new stdClass();
+                        $photo_object->status ='<strong style="color: red;">'.$photo['photos']->getClientOriginalName().' is not an image</strong>';
+                        $photo_object->failed = 'true';
+                        $photos[] = $photo_object;
+                        break;
+                    } else {
+
+                        $filename = 'ensemble_bio_'.time().'|'.$photo['photos']->getClientOriginalName();
+                        $photo['photos']->move($path, $filename);
+
+                        $ensemble_photo = new Ensemble_image();
+                        $ensemble_photo->ensemble_id = $ensemble_id;
+                        $ensemble_photo->name = $filename;
+                        $ensemble_photo->save();
+
+                        $new_num_img = Ensemble_image::where('ensemble_id', $ensemble_id)->count();
+                        if ($new_num_img < 5) {
+                            $photo_object = new stdClass();
+                            $photo_object->name = str_replace('photos/', '',$photo['photos']->getClientOriginalName());
+                            $photo_object->fileName = $ensemble_photo->name;
+                            $photo_object->fileID = $ensemble_photo->id;
+                            $photo_object->status = '<strong style="color: green;">Saved successfully</strong>';
+                            $photos[] = $photo_object;
+                        }else{
+                            $photo_object = new stdClass();
+                            $photo_object->status = 'You just can add 5 pictures';
+                            $photos[] = $photo_object;
+                            break;
+                        }
+                    }
+                }
+                return response()->json(array('files' => $photos), 200); 
+            } else {
+                $photo_object = new stdClass();
+                $photo_object->status = 'You just can add 5 pictures';
+                $photos[] = $photo_object;
+                return response()->json(array('files' => $photos), 200);
+            }
         }  
     }
 

@@ -593,6 +593,8 @@
             dataType: 'json',
             add: function (e, data) {
                 $('#loading').text('Uploading...');
+                $('#status_upload').show();
+                $('#status_upload').empty();
                 data.submit();
             },
             done: function (e, data) {
@@ -605,13 +607,27 @@
                         $('#file_ids').val($('#file_ids').val() + ',');
                     }
                     if(file.name == null){
-                        $('<p/>').html(file.status).appendTo($('#status_upload'));
+                        if (file.failed == 'true') {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 2000 );
+                        } else {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                        }
                     }else{
                         $('#images_user_profile').prepend('<div id="image_user_'+file.fileID+'" class="col-md-12"><img src="{{ asset("images/general/") }}/'+file.fileName+'" class="img-rounded" alt="'+file.fileName+'" width="304" height="236"><button class="btn btn-danger" onclick="destroyImg('+file.fileID+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_img_'+file.fileID+'"></p>');
-                        $('<p/>').html(file.status).appendTo($('#status_upload'));
-                        setTimeout(function() {
-                            $('#status_upload').fadeOut();
-                        }, 1000 );
+                        if (file.failed == 'true') {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 1000 );
+                        } else {
+                            $('<p/>').html(file.status).appendTo($('#status_upload'));
+                            setTimeout(function() {
+                                $('#status_upload').fadeOut();
+                            }, 1000 );
+                        }
                         $('#file_ids').val($('#file_ids').val() + file.fileID);
                     }
                 });
@@ -623,15 +639,23 @@
             dataType: 'json',
             add: function (e, data) {
                 $('#loading_update_user_pic').text('Uploading...');
+                $('#status_upload_update_user_image').show();
+                $('#status_upload_update_user_image').empty();
                 data.submit();
             },
             done: function (e, data) {
                 $.each(data.result.info, function (index, info) {
                     $('<p/>').html(info.status).appendTo($('#status_upload_update_user_image'));
-                   $('#profile_picture_user').attr('src', '{{ asset("images/profile/") }}/'+info.name);
-                    setTimeout(function() {
-                        $('#status_upload_update_user_image').fadeOut();
-                    }, 1000 );
+                    if (info.status == '<strong style="color: red;">Select an image</strong>') {
+                        setTimeout(function() {
+                            $('#status_upload_update_user_image').fadeOut();
+                        }, 2000 );
+                    }else{
+                        $('#profile_picture_user').attr('src', '{{ asset("images/profile/") }}/'+info.name);
+                        setTimeout(function() {
+                            $('#status_upload_update_user_image').fadeOut();
+                        }, 1000 );
+                    }
                 });
                 $('#loading_update_user_pic').text('');
             }
