@@ -31,12 +31,13 @@
                                 <br>
                                 <p>
                                 Name: <strong>{{$name}}</strong><br>
-                                Type of music: <strong>{{$event}}</strong><br>
                                 On: <strong>{{$date}}</strong><br>
-                                For : <strong>{{$duration}} minutes</strong><br>
+                                Lenght : <strong>{{$duration}}</strong><br>
                                 Distance : <strong>{{$distance}} miles</strong><br>
-                                <a class="btn btn-primary" type="button" href="{{ URL::to('/price/'.$token.'1') }}">Confirm availability and send my price</a><br>
-                                <a class="btn btn-primary" type="button" href="{{ URL::to('/specified/request/invitation/'.$token.'0') }}">No, I can't assit</a> <br>
+                                Notes from client: <strong>{{$event}}</strong><br>
+                                Are you available?<br>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/price/'.$token.'1') }}">YES</a><br>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/specified/request/invitation/'.$token.'0') }}">NO</a> <br>
                                 </p>
                                 <!-- Do you want to accept? Are you available? 
                                 <p>

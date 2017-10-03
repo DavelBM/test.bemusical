@@ -26,13 +26,13 @@ class generalRequest extends FormRequest
         return [
             'name'         => 'min:2|max:120|required',
             'email'        => 'required|string|email|max:255',
-            'company'      => 'min:2|max:120|required',
+            //'company'      => 'min:2|max:120|required',
             'day'          => 'date_format:"Y-m-d"|required',
             'time'         => 'date_format:"H:i"|required',
             'duration'     => 'alpha_num|required',
             'address'      => 'min:4|max:191|required',
             'place_id'     => 'required',
-            'type'         => 'required|in:soloist,ensemble',
+            //'type'         => 'required|in:soloist,ensemble',
             'comment'      => 'max:191',
         ];
     }

@@ -309,13 +309,18 @@
                     <form id="sendRepertoir" method="post" enctype="multipart/form-data">
                         {{ csrf_field() }}
                         <div class="row form-group">
-                            <label for="repertoir" class="col-md-4 control-label">Briefly explain:</label>
-                            <div class="col-md-6">
-                                <input id="repertoir" type="text" class="form-control" name="repertoir" placeholder="Add some amazing repertoir" required>
+                            <label for="repertoir" class="col-md-2 control-label">Briefly explain:</label>
+                            <div class="col-md-10">
+                                <div class="col-md-6">
+                                    <input id="composer" type="text" class="form-control" name="composer" placeholder="Add composer" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input id="work" type="text" class="form-control" name="work" placeholder="Add work" required>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            {!! Form::submit('Add song', ['class' => 'btn btn-primary btn-block']) !!}
+                            {!! Form::submit('Add repertoir', ['class' => 'btn btn-primary btn-block']) !!}
                         </div>
                         <p id="repertoirLodingForAdd"></p>
                         <p id="repertoirSuccessfullyAdded"></p>
@@ -324,15 +329,13 @@
                         <strong>Repertoir</strong>
                         <div class="col-md-12" id="repertoir_ensemble_profile"></div>
                         @foreach($repertoires as $repertoir)
-                            <div class="col-md-12">
-                                <div id="repertoir_ensemble_{{$repertoir->id}}">*{{ $repertoir->repertoire_example }}<button class="btn btn-danger"><span class="glyphicon glyphicon-remove" onclick="destroyRepertoir({{$repertoir->id}})" aria-hidden="true"></span></button>
-                                @if(!$repertoir->visible and $total_repertoires < 5)
-                                    <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-success">Make it visible</a></div>
-                                @elseif($repertoir->visible)
-                                    <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-danger">Hide it</a></div>
-                                @endif
-                                <p id="status_deleting_repertoir_ensemble_{{$repertoir->id}}"></p>
-                            </div>
+                            <div id="repertoir_ensemble_{{$repertoir->id}}">*{{ $repertoir->repertoire_example }}<button class="btn btn-danger"><span class="glyphicon glyphicon-remove" onclick="destroyRepertoir({{$repertoir->id}})" aria-hidden="true"></span></button>
+                            @if(!$repertoir->visible and $total_repertoires < 5)
+                                <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-success">Make it visible</a></div>
+                            @elseif($repertoir->visible)
+                                <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-danger">Hide it</a></div>
+                            @endif
+                            <p id="status_deleting_repertoir_ensemble_{{$repertoir->id}}"></p>
                         @endforeach    
                     </div>                  
                 </div>

@@ -82,28 +82,19 @@
                         </div>
                     </div>
 
-                    <div class="row form-group{{ $errors->has('company') ? ' has-error' : '' }}">
-                        <label for="company" class="col-md-4 control-label">Company</label>
+                    <div class="row form-group">
+                        <label for="address" class="col-md-4 control-label">Location of event</label>
 
                         <div class="col-md-6">
-                            <input id="company" type="text" class="form-control" name="company" placeholder="Your company" value="{{ old('company') }}" required>
-
-                            @if ($errors->has('company'))
+                            <input id="searchTextField" type="text" class="form-control" name="address" value="{{ old('address') }}" required>
+                            @if ($errors->has('address'))
                                 <span class="help-block">
-                                    <strong>{{ $errors->first('company') }}</strong>
+                                    <strong>{{ $errors->first('address') }}</strong>
                                 </span>
                             @endif
-                        </div>
-                    </div>
-
-                    <div class="row form-group">
-                        <label for="phone" class="col-md-4 control-label">Phone (optional)</label>
-
-                        <div class="col-md-6">
-                            <input id="phone" type="number" class="form-control" name="phone" placeholder="This makes the process faster" value="{{ old('phone') }}">
-                            @if ($errors->has('phone'))
+                            @if ($errors->has('place_id'))
                                 <span class="help-block">
-                                    <strong>{{ $errors->first('phone') }}</strong>
+                                    <strong style="color: red;">Please choose a place with google suggestions</strong>
                                 </span>
                             @endif
                         </div>
@@ -123,64 +114,20 @@
                         <div class="col-md-6">
                             <!-- <input id="time" class="time form-control" name="time" placeholder="Select time" required> -->
                             <select id="time" class="time form-control" name="time" required>
-                                <option value="00:00">Select time</option>
-                                <option value="08:00">8:00AM</option>
-                                <option value="08:15">8:15AM</option>
-                                <option value="08:30">8:30AM</option>
-                                <option value="08:45">8:45AM</option>
-                                <option value="09:00">9:00AM</option>
-                                <option value="09:15">9:15AM</option>
-                                <option value="09:30">9:30AM</option>
-                                <option value="09:45">9:45AM</option>
-                                <option value="10:00">10:00AM</option>
-                                <option value="10:15">10:15AM</option>
-                                <option value="10:30">10:30AM</option>
-                                <option value="10:45">10:45AM</option>
-                                <option value="11:00">11:00AM</option>
-                                <option value="11:15">11:15AM</option>
-                                <option value="11:30">11:30AM</option>
-                                <option value="11:45">11:45AM</option>
-                                <option value="12:00">12:00PM</option>
-                                <option value="12:15">12:15PM</option>
-                                <option value="12:30">12:30PM</option>
-                                <option value="12:45">12:45PM</option>
-                                <option value="13:00">1:00PM</option>
-                                <option value="13:15">1:15PM</option>
-                                <option value="13:30">1:30PM</option>
-                                <option value="13:45">1:45PM</option>
-                                <option value="14:00">2:00PM</option>
-                                <option value="14:15">2:15PM</option>
-                                <option value="14:30">2:30PM</option>
-                                <option value="14:45">2:45PM</option>
-                                <option value="15:00">3:00PM</option>
-                                <option value="15:15">3:15PM</option>
-                                <option value="15:30">3:30PM</option>
-                                <option value="15:45">3:45PM</option>
-                                <option value="16:00">4:00PM</option>
-                                <option value="16:15">4:15PM</option>
-                                <option value="16:30">4:30PM</option>
-                                <option value="16:45">4:45PM</option>
-                                <option value="17:00">5:00PM</option>
-                                <option value="17:15">5:15PM</option>
-                                <option value="17:30">5:30PM</option>
-                                <option value="17:45">5:45PM</option>
-                                <option value="18:00">6:00PM</option>
-                                <option value="18:15">6:15PM</option>
-                                <option value="18:30">6:30PM</option>
-                                <option value="18:45">6:45PM</option>
-                                <option value="19:00">7:00PM</option>
-                                <option value="19:15">7:15PM</option>
-                                <option value="19:30">7:30PM</option>
-                                <option value="19:45">7:45PM</option>
-                                <option value="20:00">8:00PM</option>
-                                <option value="20:15">8:15PM</option>
-                                <option value="20:30">8:30PM</option>
-                                <option value="20:45">8:45PM</option>
-                                <option value="21:00">9:00PM</option>
-                                <option value="21:15">9:15PM</option>
-                                <option value="21:30">9:30PM</option>
-                                <option value="21:45">9:45PM</option>
-                                <option value="22:00">10:00PM</option>
+                                <?php
+                                    $start = "08:00";
+                                    $end = "22:00";
+                                    $tStart = strtotime($start);
+                                    $tEnd = strtotime($end);
+                                    $tNow = $tStart;
+
+                                    while($tNow <= $tEnd){
+                                ?>
+                                    <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                                <?php
+                                        $tNow = strtotime('+15 minutes',$tNow);
+                                    }
+                                ?>
                             </select>
                             @if ($errors->has('time'))
                                 <span class="help-block">
@@ -216,34 +163,47 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="address" class="col-md-4 control-label">Location of event</label>
+                        <label for="type" class="col-md-4 control-label">Type</label>
 
                         <div class="col-md-6">
-                            <input id="searchTextField" type="text" class="form-control" name="address" value="{{ old('address') }}" required>
-                            @if ($errors->has('address'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('address') }}</strong>
-                                </span>
-                            @endif
-                            @if ($errors->has('place_id'))
-                                <span class="help-block">
-                                    <strong style="color: red;">Please choose a place with google suggestions</strong>
-                                </span>
-                            @endif
+                            <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
+                            <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
                         </div>
                     </div>
 
                     <div class="row form-group">
-                        <label for="type" class="col-md-4 control-label">Type</label>
-
+                        <label for="tags" class="col-md-4 control-label">Tags</label>
                         <div class="col-md-6">
-                            <label class="radio-inline"><input type="radio" name="type" value="soloist">Soloist</label>
-                            <label class="radio-inline"><input type="radio" name="type" value="ensemble">Ensemble</label>
-                            @if ($errors->has('type'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('type') }}</strong>
-                                </span>
-                            @endif
+                            @php
+                                $tags = \App\Tag::orderBy('name', 'DES')->select('id', 'name')->get();
+                            @endphp
+                            @foreach($tags as $tag)
+                                <label><input type="checkbox" name="tags[]" value="{{$tag->id}}">{{$tag->name}}</label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="instruments" class="col-md-4 control-label">Instruments</label>
+                        <div class="col-md-6">
+                            @php
+                                $instruments = \App\Instrument::orderBy('name', 'DES')->select('id', 'name')->get();
+                            @endphp
+                            @foreach($instruments as $instrument)
+                                <label><input type="checkbox" name="instruments[]" value="{{$instrument->id}}">{{$instrument->name}}</label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="styles" class="col-md-4 control-label">Styles</label>
+                        <div class="col-md-6">
+                            @php
+                                $styles = \App\Style::orderBy('name', 'DES')->select('id', 'name')->get();
+                            @endphp
+                            @foreach($styles as $style)
+                                <label><input type="checkbox" name="styles[]" value="{{$style->id}}">{{$style->name}}</label>
+                            @endforeach
                         </div>
                     </div>
 
@@ -251,7 +211,7 @@
                         <label for="comment" class="col-md-4 control-label">Comments</label>
 
                         <div class="col-md-6">
-                            <textarea id="comment" type="text" class="form-control" name="comment" placeholder="Do you have any special requirement?" value="{{ old('comment') }}" rows="10" ></textarea>
+                            <textarea id="comment" type="text" class="form-control" name="comment" placeholder="Do you have any special requirement?" value="{{ old('comment') }}" rows="5" ></textarea>
                             @if ($errors->has('comment'))
                                 <span class="help-block">
                                     <strong>{{ $errors->first('comment') }}</strong>

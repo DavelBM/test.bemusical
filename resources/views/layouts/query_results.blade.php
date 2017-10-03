@@ -36,74 +36,80 @@
 
                     <strong><center>filters---filters---filters---filters---filters---filters---filters---filters---filters---filters---filters---filters</center></strong>
                     <form id="filter" action="/filter/results/" method="post">
-                    {{ csrf_field() }}
-                    <div class="row">
-                        <div class="col-md-4">
-                            <span class="glyphicon glyphicon-time" id="basic-addon3"> </span>
-                            <select id="time" class="time form-control" name="time" aria-describedby="basic-addon3" required>
-                                <?php
-                                    $start = "08:00";
-                                    $end = "22:00";
-                                    $tStart = strtotime($start);
-                                    $tEnd = strtotime($end);
-                                    $tNow = $tStart;
+                        {{ csrf_field() }}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="glyphicon glyphicon-time" id="basic-addon3"> </span>
+                                <select id="time" class="time form-control" name="time" aria-describedby="basic-addon3" required>
+                                    <?php
+                                        $start = "08:00";
+                                        $end = "22:00";
+                                        $tStart = strtotime($start);
+                                        $tEnd = strtotime($end);
+                                        $tNow = $tStart;
 
-                                    while($tNow <= $tEnd){
-                                ?>
-                                    <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
-                                <?php
-                                        $tNow = strtotime('+15 minutes',$tNow);
-                                    }
-                                ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <span class="glyphicon glyphicon-dashboard" id="basic-addon4"></span>
-                            <select id="duration" class="form-control" name="duration" aria-describedby="basic-addon4" placeholder="Minutes" required>
-                                <option value="60">1 hr</option>
-                                <option value="90">1 hr 30 min</option>
-                                <option value="120">2 hrs</option>
-                                <option value="150">2 hrs 30 min</option>
-                                <option value="180">3 hrs</option>
-                                <option value="210">3 hr 30 min</option>
-                                <option value="240">4 hrs</option>
-                                <option value="270">4 hr 30 min</option>
-                                <option value="300">5 hrs</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="radio">
-                                <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
+                                        while($tNow <= $tEnd){
+                                    ?>
+                                        <option value="{{date('H:i',$tNow)}}">{{date('h:i A',$tNow)}}</option>
+                                    <?php
+                                            $tNow = strtotime('+15 minutes',$tNow);
+                                        }
+                                    ?>
+                                </select>
                             </div>
-                            <div class="radio">
-                                <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
+                            <div class="col-md-4">
+                                <span class="glyphicon glyphicon-dashboard" id="basic-addon4"></span>
+                                <select id="duration" class="form-control" name="duration" aria-describedby="basic-addon4" placeholder="Minutes" required>
+                                    <option value="60">1 hr</option>
+                                    <option value="90">1 hr 30 min</option>
+                                    <option value="120">2 hrs</option>
+                                    <option value="150">2 hrs 30 min</option>
+                                    <option value="180">3 hrs</option>
+                                    <option value="210">3 hr 30 min</option>
+                                    <option value="240">4 hrs</option>
+                                    <option value="270">4 hr 30 min</option>
+                                    <option value="300">5 hrs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="radio">
+                                    <label><input type="checkbox" name="soloist" value="soloist">Soloist</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="checkbox" name="ensemble" value="ensemble">Ensemble</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            tags<br>
-                            @foreach($tags as $tag)
-                                <label><input type="checkbox" name="tags[]" value="{{$tag->id}}">{{$tag->name}}</label>
-                            @endforeach
+                        <div class="row">
+                            <div class="col-md-4">
+                                tags<br>
+                                @foreach($tags as $tag)
+                                    <label><input type="checkbox" name="tags[]" value="{{$tag->id}}">{{$tag->name}}</label>
+                                @endforeach
+                            </div>
+                            <div class="col-md-4">
+                                instruments<br>
+                                @foreach($instruments as $instrument)
+                                    <label><input type="checkbox" name="instruments[]" value="{{$instrument->id}}">{{$instrument->name}}</label>
+                                @endforeach
+                            </div>
+                            <div class="col-md-4">
+                                styles<br>
+                                @foreach($styles as $style)
+                                    <label><input type="checkbox" name="styles[]" value="{{$style->id}}">{{$style->name}}</label>
+                                @endforeach
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            instruments<br>
-                            @foreach($instruments as $instrument)
-                                <label><input type="checkbox" name="instruments[]" value="{{$instrument->id}}">{{$instrument->name}}</label>
+                        @if($flag == 0)
+                            @foreach($users as $user)
+                                <input type="hidden" name="users[]" value="{{$user}}">
                             @endforeach
-                        </div>
-                        <div class="col-md-4">
-                            styles<br>
-                            @foreach($styles as $style)
-                                <label><input type="checkbox" name="styles[]" value="{{$style->id}}">{{$style->name}}</label>
+                        @else
+                            @foreach($users_by_date as $user)
+                                <input type="hidden" name="users[]" value="{{$user}}">
                             @endforeach
-                        </div>
-                    </div>
-                    @foreach($users as $user)
-                      <input type="hidden" name="users[]" value="{{$user}}">
-                    @endforeach
+                        @endif
                         <input id="day" type="hidden" name="day" value="{{$date_r}}">
                         <input class="btn btn-primary" type="submit" value="Update">
                     </form>
@@ -115,58 +121,62 @@
                     <div id="response" class="row"></div>
 
                     <div id="displayUsers" class="row">
-                        @for($i=0; $i < count($users); $i++)
-                            <?php
-                                $user = \App\User::where('email','=',$users[$i])->first();
-                                if ($user->type == 'ensemble') {
-                                    $pic = $user->ensemble->profile_picture;
-                                }elseif ($user->type == 'soloist') {
-                                    $pic = $user->info->profile_picture;
-                                }                            
-                            ?>
-                            <div class="col-sm-6 col-md-4">
-                                <div class="thumbnail">
-                                    @if($user->type == 'ensemble')
-                                        @if($pic != 'null')
-                                            <a class="btn" href="{{ URL::to('/'.$user->ensemble->slug) }}">
-                                                <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                            </a>
-                                        @else
-                                            <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
-                                                <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/no-image.png") }}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                            </a>
-                                        @endif 
-                                    @elseif($user->type == 'soloist')
-                                        @if($pic != 'null')
-                                            <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
-                                                <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                            </a>
-                                        @else
-                                            <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
-                                                <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/no-image.png") }}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
-                                            </a>
-                                        @endif                                        
-                                    @endif
-                                    <div class="caption">
+                        @if($users == null)
+                            <strong>We're sorry, we couldn't find any match with your requirements</strong>
+                        @else
+                            @for($i=0; $i < count($users); $i++)
+                                <?php
+                                    $user = \App\User::where('id','=',$users[$i])->first();
+                                    if ($user->type == 'ensemble') {
+                                        $pic = $user->ensemble->profile_picture;
+                                    }elseif ($user->type == 'soloist') {
+                                        $pic = $user->info->profile_picture;
+                                    }                            
+                                ?>
+                                <div class="col-sm-6 col-md-4">
+                                    <div class="thumbnail">
                                         @if($user->type == 'ensemble')
-                                            <h3>{{$user->ensemble->name}}</h3>
+                                            @if($pic != 'null')
+                                                <a class="btn" href="{{ URL::to('/'.$user->ensemble->slug) }}">
+                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                                </a>
+                                            @else
+                                                <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
+                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/no-image.png") }}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                                </a>
+                                            @endif 
                                         @elseif($user->type == 'soloist')
-                                            <h3>{{$user->info->first_name.' '.$user->info->last_name}}</h3>
+                                            @if($pic != 'null')
+                                                <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
+                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                                </a>
+                                            @else
+                                                <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
+                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/no-image.png") }}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                                </a>
+                                            @endif                                        
                                         @endif
-                                        @if($user->type == 'ensemble')
-                                            <p>{{$user->ensemble->summary}}</p>
-                                        @elseif($user->type == 'soloist')
-                                            <p>{{$user->info->bio}}</p>
-                                        @endif
-                                        @if($user->type == 'ensemble')
-                                            <p><a href="{{ URL::to('/'.$user->ensemble->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
-                                        @elseif($user->type == 'soloist')
-                                            <p><a href="{{ URL::to('/'.$user->info->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
-                                        @endif
+                                        <div class="caption">
+                                            @if($user->type == 'ensemble')
+                                                <h3>{{$user->ensemble->name}}</h3>
+                                            @elseif($user->type == 'soloist')
+                                                <h3>{{$user->info->first_name.' '.$user->info->last_name}}</h3>
+                                            @endif
+                                            @if($user->type == 'ensemble')
+                                                <p>{{$user->ensemble->summary}}</p>
+                                            @elseif($user->type == 'soloist')
+                                                <p>{{$user->info->bio}}</p>
+                                            @endif
+                                            @if($user->type == 'ensemble')
+                                                <p><a href="{{ URL::to('/'.$user->ensemble->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
+                                            @elseif($user->type == 'soloist')
+                                                <p><a href="{{ URL::to('/'.$user->info->slug) }}" class="btn btn-primary" role="button">See profile</a> </p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endfor
+                            @endfor
+                        @endif
                     </div>
                 </div>
             </div>

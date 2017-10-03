@@ -217,19 +217,6 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="event_type" class="col-md-4 control-label">Music</label>
-
-                        <div class="col-md-6">
-                            <input id="event_type" type="text" class="form-control" name="event_type" placeholder="What kind of music do you require?" value="{{ old('event_type') }}" required>
-                            @if ($errors->has('event_type'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('event_type') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="row form-group">
                         <label for="day" class="col-md-4 control-label">Day of performance</label>
 
                         <div class="col-md-6">
@@ -295,6 +282,19 @@
                             @if ($errors->has('place_id'))
                                 <span class="help-block">
                                     <strong style="color: red;">Please choose a place with google suggestions</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="event_type" class="col-md-4 control-label">Requirements</label>
+
+                        <div class="col-md-6">
+                            <input id="event_type" type="text" class="form-control" name="event_type" placeholder="Any special requirement? type of music?" value="{{ old('event_type') }}" required>
+                            @if ($errors->has('event_type'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('event_type') }}</strong>
                                 </span>
                             @endif
                         </div>

@@ -540,7 +540,8 @@ class EnsembleController extends Controller
     {   
         $info = [];
         $validator = Validator::make($request->all(), [
-            'repertoir' => 'required|max:50',
+            'composer' => 'required|max:50',
+            'work' => 'required|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -551,15 +552,15 @@ class EnsembleController extends Controller
         } else {
             $repertoir = new EnsembleRepertoire($request->all());
             $repertoir->ensemble_id = Auth::user()->ensemble->id;
-            $repertoir->repertoire_example = $request->repertoir;
+            $repertoir->repertoire_example = $request->work.' - '.$request->composer;
             $repertoir->visible = 0;
             $repertoir->save();
 
             $repertoir_count = EnsembleRepertoire::where('ensemble_id', Auth::user()->ensemble->id)->where('visible', 1)->count();
 
             $repertoir_object = new stdClass();
-            $repertoir_object->status = '<strong style="color: green;">Repertoir "'.$request->repertoir.'" successfully added</strong>';
-            $repertoir_object->name = $request->repertoir;
+            $repertoir_object->status = '<strong style="color: green;">Repertoir "'.$request->work.' - '.$request->composer.'" successfully added</strong>';
+            $repertoir_object->name = $request->work.' - '.$request->composer;
             $repertoir_object->id = $repertoir->id;
             $repertoir_object->count = $repertoir_count;
             $info[] = $repertoir_object;
