@@ -184,43 +184,30 @@
                     <div class="row">
                         <!-- Add instruments -->
                         <div class="col-md-3">
-                            {!! Form::open(['route' => 'ensemble.instrument', 'method' => 'POST']) !!}
-                                <div class="form-group col-md-12">
-                                    {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
-                                    {!! Form::select('instruments[]', $instruments, $my_instruments, ['id'=>'select-instrument','class'=>'form-control', 'multiple', 'required']) !!}
-                                </div>
-
-                                <div class="form-group">
-                                        {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
-                                </div>
-                            {!! Form::close() !!}
+                            <div class="form-group col-md-12">
+                                {!! Form::label('instruments', 'Instruments', ['class' => 'control-label']) !!}<br>
+                                {!! Form::select('instruments[]', $instruments, $my_instruments, ['id'=>'select-instrument','class'=>'form-control', 'multiple', 'required']) !!}
+                            </div>
                         </div>
                         <!-- /Add instruments -->
 
                         <!-- Add styles -->
                         <div class="col-md-3">
-                            {!! Form::open(['route' => 'ensemble.style', 'method' => 'POST']) !!}
-                                <div class="form-group col-md-12">
-                                    {!! Form::label('styles', 'Styles', ['class' => 'control-label']) !!}<br>
-                                    {!! Form::select('styles[]', $styles, $my_styles, ['id'=>'select-style','class'=>'form-control', 'multiple', 'required']) !!}
-                                </div>
-
-                                <div class="form-group">
-                                        {!! Form::submit('Add', ['class' => 'btn btn-primary btn-block']) !!}
-                                </div>
-                            {!! Form::close() !!}
+                            <div class="form-group col-md-12">
+                                {!! Form::label('styles', 'Styles', ['class' => 'control-label']) !!}<br>
+                                {!! Form::select('styles[]', $styles, $my_styles, ['id'=>'select-style','class'=>'form-control', 'multiple', 'required']) !!}
+                            </div>
                         </div>
                         <!-- /Add styles -->
 
                         <!-- Add tags -->
                         <div class="col-md-3">
-                                <div class="form-group col-md-12">
-                                    {!! Form::label('tags', 'Tags', ['class' => 'control-label']) !!}<br>
-                                    {!! Form::select('tags[]', $tags, $my_tags, ['id'=>'select-tag','class'=>'form-control', 'multiple', 'required']) !!}
-                                </div>
+                            <div class="form-group col-md-12">
+                                {!! Form::label('tags', 'Tags', ['class' => 'control-label']) !!}<br>
+                                {!! Form::select('tags[]', $tags, $my_tags, ['id'=>'select-tag','class'=>'form-control', 'multiple', 'required']) !!}
+                            </div>
                         </div>
                         <!-- /Add tags -->
-
                     </div>
                 </div>
                 <hr>
@@ -255,104 +242,98 @@
                 </div>
 
                 <div class="panel-body"> 
-                    {!! Form::open(['route' => 'ensemble.video', 'method' => 'POST']) !!}
-
+                    <form id="sendVideo" method="post" enctype="multipart/form-data">
+                        {{ csrf_field() }}
                         <div class="row form-group">
                             <label for="video" class="col-md-4 control-label">Videos links:</label>
-
                             <div class="col-md-6">
-                                <input id="video" type="text" class="form-control" name="video" required>
+                                <input id="video" type="text" class="form-control" name="video" placeholder="Youtube or Vimeo videos are admitted" required>
                             </div>
                         </div>
-                        @if ($errors->has('video'))
-                            <span class="help-block">
-                                <strong style="color: red;">{{ $errors->first('video') }}</strong>
-                            </span>
-                        @endif
                         <div class="form-group">
-                                {!! Form::submit('Add video', ['class' => 'btn btn-primary btn-block']) !!}
+                            {!! Form::submit('Add video', ['class' => 'btn btn-primary btn-block']) !!}
                         </div>
-                    {!! Form::close() !!}
-
-                    {!! Form::open(['route' => 'ensemble.song', 'method' => 'POST']) !!}
-
+                        <p id="videoLodingForAdd"></p>
+                        <p id="videoSuccessfullyAdded"></p>
+                    </form> 
+                    <form id="sendSong" method="post" enctype="multipart/form-data">
+                        {{ csrf_field() }}
                         <div class="row form-group">
                             <label for="song" class="col-md-4 control-label">Songs links:</label>
-
                             <div class="col-md-6">
-                                <input id="song" type="text" class="form-control" name="song" required>
+                                <input id="song" type="text" class="form-control" name="song" placeholder="Spotify or Soundcloud songs are admitted" required>
                             </div>
                         </div>
-                        @if ($errors->has('song'))
-                            <span class="help-block">
-                                <strong style="color: red;">{{ $errors->first('song') }}</strong>
-                            </span>
-                        @endif
                         <div class="form-group">
-                                {!! Form::submit('Add song', ['class' => 'btn btn-primary btn-block']) !!}
+                            {!! Form::submit('Add song', ['class' => 'btn btn-primary btn-block']) !!}
                         </div>
-                    {!! Form::close() !!}
+                        <p id="songLodingForAdd"></p>
+                        <p id="songSuccessfullyAdded"></p>
+                    </form>
                     <div class="row">
                         <strong>VIDEOS</strong>
-                        <div class="col-md-12">
+                        <div class="col-md-12" id="videos_ensemble_profile"></div>
                         @foreach($videos as $video)
-                            @if($video->platform == 'youtube')
-                                <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{$video->code}}" frameborder="0" allowfullscreen></iframe>
-                            @elseif($video->platform == 'vimeo')
-                                <iframe src="https://player.vimeo.com/video/{{$video->code}}" width="100%" height="315" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-                            @endif
-                            <a href="{{ route('ensemble.video.destroy', $video->id) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            <div class="col-md-12">
+                                @if($video->platform == 'youtube')
+                                    <div id="video_ensemble_{{$video->id}}"><iframe width="100%" height="315" src="https://www.youtube.com/embed/{{$video->code}}" frameborder="0" allowfullscreen></iframe>
+                                @elseif($video->platform == 'vimeo')
+                                    <div id="video_ensemble_{{$video->id}}"><iframe src="https://player.vimeo.com/video/{{$video->code}}" width="100%" height="315" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                                @endif
+                                <button class="btn btn-danger" onclick="destroyVideo('{{$video->id}}'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div>
+                                <p id="status_deleting_video_ensemble_{{$video->id}}"></p>
+                            </div>
                         @endforeach
-                        </div>
                     </div>
 
                     <div class="row">
                         <strong>SONGS</strong>
-                        <div class="col-md-12">
+                        <div class="col-md-12" id="songs_ensemble_profile"></div>
                         @foreach($songs as $song)
-                            @if($song->platform == 'spotify')
-                                <iframe src="https://open.spotify.com/embed?uri=spotify:track:{{$song->code}}&theme=white&view=coverart" 
-                                frameborder="0" allowtransparency="true"></iframe>
-                            @elseif($song->platform == 'soundcloud')
-                                <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{$song->code}}&amp;color=0066cc&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>
-                            @endif
-                                <a href="{{ route('ensemble.song.destroy', $song->id) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            <div class="col-md-12">
+                                @if($song->platform == 'spotify')
+                                    <div id="song_ensemble_{{$song->id}}"><iframe id="song_ensemble_{{$song->id}}" src="https://open.spotify.com/embed?uri=spotify:track:{{$song->code}}&theme=white&view=coverart" 
+                                    frameborder="0" allowtransparency="true"></iframe>
+                                @elseif($song->platform == 'soundcloud')
+                                    <div id="song_ensemble_{{$song->id}}">
+                                    <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{$song->code}}&amp;color=0066cc&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>
+                                @endif
+                                <button class="btn btn-danger" onclick="destroySong('{{$song->id}}'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div>
+                                <p id="status_deleting_song_ensemble_{{$song->id}}"></p>
+                            </div>
                         @endforeach                        
                         </div>
                     </div>
                 </div>
                 <div class="panel-body">
-                    {!! Form::open(['route' => 'ensemble.repertoir', 'method' => 'POST']) !!}
-
+                    <form id="sendRepertoir" method="post" enctype="multipart/form-data">
+                        {{ csrf_field() }}
                         <div class="row form-group">
                             <label for="repertoir" class="col-md-4 control-label">Briefly explain:</label>
-
                             <div class="col-md-6">
-                                <input id="repertoir" type="text" class="form-control" name="repertoir" required>
+                                <input id="repertoir" type="text" class="form-control" name="repertoir" placeholder="Add some amazing repertoir" required>
                             </div>
                         </div>
-                        @if ($errors->has('repertoir'))
-                            <span class="help-block">
-                                <strong style="color: red;">{{ $errors->first('repertoir') }}</strong>
-                            </span>
-                        @endif
                         <div class="form-group">
-                                {!! Form::submit('Add repertoir', ['class' => 'btn btn-primary btn-block']) !!}
+                            {!! Form::submit('Add song', ['class' => 'btn btn-primary btn-block']) !!}
                         </div>
-                    {!! Form::close() !!}  
+                        <p id="repertoirLodingForAdd"></p>
+                        <p id="repertoirSuccessfullyAdded"></p>
+                    </form>    
                     <div class="row">
                         <strong>Repertoir</strong>
-                        <div class="col-md-12">
+                        <div class="col-md-12" id="repertoir_ensemble_profile"></div>
                         @foreach($repertoires as $repertoir)
-                            *{{ $repertoir->repertoire_example }}<a href="{{ route('ensemble.repertoir.destroy', $repertoir->id) }}" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
-                            @if(!$repertoir->visible and $total_repertoires < 5)
-                                <a href="{{ route('ensemble.repertoir.update', $repertoir->id) }}" class="btn btn-success">Make it visible</a>
-                            @elseif($repertoir->visible)
-                                <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-danger">Hide it</a>
-                            @endif
-                            <br>
-                        @endforeach                        
-                        </div>
+                            <div class="col-md-12">
+                                <div id="repertoir_ensemble_{{$repertoir->id}}">*{{ $repertoir->repertoire_example }}<button class="btn btn-danger"><span class="glyphicon glyphicon-remove" onclick="destroyRepertoir({{$repertoir->id}})" aria-hidden="true"></span></button>
+                                @if(!$repertoir->visible and $total_repertoires < 5)
+                                    <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-success">Make it visible</a></div>
+                                @elseif($repertoir->visible)
+                                    <a href="{{ route('user.repertoir.update', $repertoir->id) }}" class="btn btn-danger">Hide it</a></div>
+                                @endif
+                                <p id="status_deleting_repertoir_ensemble_{{$repertoir->id}}"></p>
+                            </div>
+                        @endforeach    
                     </div>                  
                 </div>
             </div>
@@ -575,6 +556,176 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+
+    function destroyRepertoir(id){
+        var url = "/ensemble/delete/repertoir/"+id;
+        $.get( url, function(data) {
+            $.each(data.info, function (index, info) {
+                var div2remove = '#repertoir_ensemble_'+info.id;
+                $(div2remove).remove()
+                $('<p/>').html(info.status).appendTo($('#status_deleting_repertoir_ensemble_'+info.id));
+                setTimeout(function() {
+                    $('#status_deleting_repertoir_ensemble_'+info.id).fadeOut();
+                }, 1000 );
+            });
+        });
+    }
+
+    $(function () {
+        $("#sendRepertoir").submit(function(e) {
+            var url = "/ensemble/add/repertoir"; 
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $("#sendRepertoir").serialize(),
+                dataType: 'json',
+                beforeSend: function(){
+                    $('#repertoirLodingForAdd').text('Loading...');
+                    $('#repertoirSuccessfullyAdded').show();
+                    $('#repertoirSuccessfullyAdded').empty();
+                },
+                success: function(response){
+                    $.each(response.info, function (index, info) {
+                        $('#repertoir').val('');
+
+                        if(info.count < 5){
+                            $('#repertoir_ensemble_profile').prepend('<div id="repertoir_ensemble_'+info.id+'">*'+info.name+'<button onclick="destroyRepertoir('+info.id+')" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button><a href="{{ url("/ensemble/update/repertoir/") }}/'+info.id+'" class="btn btn-success">Make it visible</a></div><p id="status_deleting_repertoir_ensemble_'+info.id+'>"');
+                        } else {
+                            $('#repertoir_ensemble_profile').prepend('<div id="repertoir_ensemble_'+info.id+'">*'+info.name+'<button onclick="destroyRepertoir('+info.id+')" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_repertoir_ensemble_'+info.id+'">');
+                        }
+                        $('<p/>').html(info.status).appendTo($('#repertoirSuccessfullyAdded'));
+                        setTimeout(function() {
+                            $('#repertoirSuccessfullyAdded').fadeOut();
+                        }, 2000 );
+                    });
+                    $('#repertoirLodingForAdd').text('');
+                },
+                error: function(xhr){
+
+                }
+            });
+            e.preventDefault(); 
+        });
+    });
+
+    function destroySong(id){
+        var url = "/ensemble/delete/song/"+id;
+        $.get( url, function(data) {
+            $.each(data.info, function (index, info) {
+                var div2remove = '#song_ensemble_'+info.id;
+                $(div2remove).remove()
+                $('<p/>').html(info.status).appendTo($('#status_deleting_song_ensemble_'+info.id));
+                setTimeout(function() {
+                    $('#status_deleting_song_ensemble_'+info.id).fadeOut();
+                }, 1000 );
+            });
+        });
+    }
+
+    $(function () {
+        $("#sendSong").submit(function(e) {
+            var url = "/ensemble/add/song"; 
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $("#sendSong").serialize(),
+                dataType: 'json',
+                beforeSend: function(){
+                    $('#songLodingForAdd').text('Loading...');
+                    $('#songSuccessfullyAdded').show();
+                    $('#songSuccessfullyAdded').empty();
+                },
+                success: function(response){
+                    $.each(response.songs, function (index, song) {
+                        if (song.flag == 1) {
+                            $('#song').val('');
+                            $('<p/>').html(song.status).appendTo($('#songSuccessfullyAdded'));
+                            setTimeout(function() {
+                                $('#songSuccessfullyAdded').fadeOut();
+                            }, 2000 );
+
+                            if(song.platform == 'spotify'){
+                                $('#songs_ensemble_profile').prepend('<div id="song_ensemble_'+song.id+'"><iframe src="https://open.spotify.com/embed?uri=spotify:track:'+song.code+'&theme=white&view=coverart" frameborder="0" allowtransparency="true"></iframe><button class="btn btn-danger" onclick="destroySong('+song.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_song_ensemble_'+song.id+'">');
+                            }
+                            else if(song.platform == 'soundcloud'){
+                                $('#songs_ensemble_profile').prepend('<div id="song_ensemble_'+song.id+'"><iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+song.code+'&amp;color=0066cc&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe><button class="btn btn-danger" onclick="destroySong('+song.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_song_ensemble_'+song.id+'">');
+                            }            
+                        } else {
+                            $('<p/>').html(song.status).appendTo($('#songSuccessfullyAdded'));
+                            setTimeout(function() {
+                                $('#songSuccessfullyAdded').fadeOut();
+                            }, 2000 );
+                        }
+                    });
+                    $('#songLodingForAdd').text('');
+                },
+                error: function(xhr){
+
+                }
+            });
+            e.preventDefault(); 
+        });
+    });
+
+    function destroyVideo(id){
+        var url = "/ensemble/delete/video/"+id;
+        $.get( url, function(data) {
+            $.each(data.info, function (index, info) {
+                var div2remove = '#video_ensemble_'+info.id;
+                $(div2remove).remove()
+                $('<p/>').html(info.status).appendTo($('#status_deleting_video_ensemble_'+info.id));
+                setTimeout(function() {
+                    $('#status_deleting_video_ensemble_'+info.id).fadeOut();
+                }, 1000 );
+            });
+        });
+    }
+
+    $(function () {
+        $("#sendVideo").submit(function(e) {
+            var url = "/ensemble/add/video"; 
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $("#sendVideo").serialize(),
+                dataType: 'json',
+                beforeSend: function(){
+                    $('#videoLodingForAdd').text('Loading...');
+                    $('#videoSuccessfullyAdded').show();
+                    $('#videoSuccessfullyAdded').empty();
+                },
+                success: function(response){
+                    $.each(response.videos, function (index, video) {
+                        if (video.flag == 1) {
+                            $('#video').val('');
+                            $('<p/>').html(video.status).appendTo($('#videoSuccessfullyAdded'));
+                            setTimeout(function() {
+                                $('#videoSuccessfullyAdded').fadeOut();
+                            }, 2000 );
+
+                            if(video.platform == 'youtube'){
+                                $('#videos_ensemble_profile').prepend('<div id="video_ensemble_'+video.id+'"><iframe width="100%" height="315" src="https://www.youtube.com/embed/'+video.code+'" frameborder="0" allowfullscreen></iframe><button class="btn btn-danger" onclick="destroyVideo('+video.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_video_ensemble_'+video.id+'">');
+                            }
+                            else if(video.platform == 'vimeo'){
+                                $('#videos_user_profile').prepend('<div id="video_ensemble_'+video.id+'"><iframe src="https://player.vimeo.com/video/'+video.code+'" width="100%" height="315" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><button class="btn btn-danger" onclick="destroyVideo('+video.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_video_ensemble_'+video.id+'">');
+                            }
+                        } else {
+                            $('<p/>').html(video.status).appendTo($('#videoSuccessfullyAdded'));
+                            setTimeout(function() {
+                                $('#videoSuccessfullyAdded').fadeOut();
+                            }, 2000 );
+                        }
+                    });
+                    $('#videoLodingForAdd').text('');
+                },
+                error: function(xhr){
+
+                }
+            });
+            e.preventDefault(); 
+        });
+    });
+
     function destroyImg(id){
         var url = "/ensemble/image/destroy/"+id;
         $.get( url, function(data) {
@@ -678,13 +829,6 @@
                 max_selected_options: '5',
                 disable_search_threshold: 10
         }).change(function(){       
-            if ($("#select-tag option:selected").length > 3) {
-                
-                $('#select-tag option').removeAttr('selected');
-                //$("option:selected").removeAttr("selected");
-                //$(this).removeAttr("selected[value="+last_tag+"]"); 
-                //alert('sd');
-            }
             $.ajax({
                 type: "POST",
                 url: "/ensemble/add/tag",
@@ -694,39 +838,78 @@
                 },
                 dataType: 'json',
                 beforeSend: function(){
-                    //cue the page loader             
-                //console.log('beforeSend');  
+
                 },
                 success: function(response){
                     $.each(response.tags, function (index, tag) {
-                        console.log(tag.data);
+                        
                     });
                 },
                 error: function(xhr){
-                    //hide the page loader             
-                //console.log('error'); 
+
                 }
             });
-            return true;
         });
     });
 
     //Api(choosen) for display and select instruments
-    $("#select-instrument").chosen({
-            placeholder_text_multiple: 'Choose 5 instruments',
-            max_selected_options: '5',
-            disable_search_threshold: 10
-    }).change(function(){
-        console.log('instrument works');
+    $(function () {
+        $("#select-instrument").chosen({
+                placeholder_text_multiple: 'Choose 5 instruments',
+                max_selected_options: '5',
+                disable_search_threshold: 10
+        }).change(function(){
+            $.ajax({
+                type: "POST",
+                url: "/ensemble/add/instrument",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "instruments": $("#select-instrument").val(),
+                },
+                dataType: 'json',
+                beforeSend: function(){
+
+                },
+                success: function(response){
+                    $.each(response.instruments, function (index, instrument) {
+                        
+                    });
+                },
+                error: function(xhr){
+
+                }
+            });
+        });
     });
 
     //Api(choosen) for display and select styles
-    $("#select-style").chosen({
-            placeholder_text_multiple: 'Choose 5 styles',
-            max_selected_options: '5',
-            disable_search_threshold: 10
-    }).change(function(){
-        console.log('style works');
+    $(function () {
+        $("#select-style").chosen({
+                placeholder_text_multiple: 'Choose 5 styles',
+                max_selected_options: '5',
+                disable_search_threshold: 10
+        }).change(function(){
+            $.ajax({
+                type: "POST",
+                url: "/ensemble/add/style",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "styles": $("#select-style").val(),
+                },
+                dataType: 'json',
+                beforeSend: function(){
+
+                },
+                success: function(response){
+                    $.each(response.styles, function (index, style) {
+                        
+                    });
+                },
+                error: function(xhr){
+
+                }
+            });
+        });
     });
 
     //////////////Maps////////////////////

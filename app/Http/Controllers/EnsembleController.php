@@ -186,7 +186,8 @@ class EnsembleController extends Controller
     }
 
     public function storeInstruments(Request $request)
-    {
+    {        
+        $instruments = [];
         $ensemble_id = Auth::user()->ensemble->id;
         EnsembleInstrument::where('ensemble_id', $ensemble_id)->delete();
         
@@ -197,7 +198,12 @@ class EnsembleController extends Controller
             $instrument->instrument_id = $id;
             $instrument->save(); 
         }
-        return redirect()->route('ensemble.dashboard');
+
+        $instrument_object = new stdClass();
+        $instrument_object->status ='guardado';
+        $instrument_object->data = $request->instruments;
+        $instruments[] = $instrument_object;
+        return response()->json(array('instruments' => $instruments), 200);
     }
 
     public function storeTags(Request $request)
@@ -213,7 +219,6 @@ class EnsembleController extends Controller
             $tag->tag_id = $id;
             $tag->save(); 
         }
-        //return redirect()->route('ensemble.dashboard');
 
         $tag_object = new stdClass();
         $tag_object->status ='guardado';
@@ -224,6 +229,7 @@ class EnsembleController extends Controller
 
     public function storeStyles(Request $request)
     {
+        $styles = [];
         $ensemble_id = Auth::user()->ensemble->id;
         EnsembleStyle::where('ensemble_id', $ensemble_id)->delete();
         
@@ -234,7 +240,12 @@ class EnsembleController extends Controller
             $style->style_id = $id;
             $style->save(); 
         }
-        return redirect()->route('ensemble.dashboard');
+
+        $style_object = new stdClass();
+        $style_object->status ='guardado';
+        $style_object->data = $request->styles;
+        $styles[] = $style_object;
+        return response()->json(array('styles' => $styles), 200);
     }
 
     public function storeImages(Request $request)
@@ -350,7 +361,11 @@ class EnsembleController extends Controller
                     $id_video = end($display);
                     $video->code = $id_video;
                 }else{
-                    return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    $video_object = new stdClass();
+                    $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                    $video_object->flag = '0';
+                    $videos[] = $video_object;
+                    return response()->json(array('videos' => $videos), 200);
                 }
 
                 $video->platform = 'youtube';
@@ -372,7 +387,11 @@ class EnsembleController extends Controller
                     $id_video = end($display);
                     $video->code = $id_video;
                 }else{
-                    return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    $video_object = new stdClass();
+                    $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                    $video_object->flag = '0';
+                    $videos[] = $video_object;
+                    return response()->json(array('videos' => $videos), 200);
                 }    
 
                 $video->platform = 'vimeo';
@@ -380,18 +399,46 @@ class EnsembleController extends Controller
                 $video->save();
 
             }else{
-                return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                $video_object = new stdClass();
+                $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                $video_object->flag = '0';
+                $videos[] = $video_object;
+                return response()->json(array('videos' => $videos), 200);
             }
         }else{
-            return redirect()->back()->withErrors(['video'=>"You only can add 5 videos in total"]);
+            $video_object = new stdClass();
+            $video_object->status = '<strong style="color: red;">You only can add 5 videos in total</strong>';
+            $video_object->flag = '0';
+            $videos[] = $video_object;
+            return response()->json(array('videos' => $videos), 200);
         }
-        return redirect()->route('ensemble.dashboard');
+        $video_object = new stdClass();
+        $video_object->status = '<strong style="color: green;">Video successfully added</strong>';
+        $video_object->flag = '1';
+        $video_object->code = $video->code;
+        $video_object->platform = $video->platform;
+        $video_object->id = $video->id;
+        $videos[] = $video_object;
+        return response()->json(array('videos' => $videos), 200);
     }
 
     public function delete_video($id)
     {
-        $video = Ensemble_video::find($id)->delete();
-        return redirect()->route('ensemble.dashboard');
+        $info = [];
+        $video = Ensemble_video::find($id);
+        if ($video->ensemble_id == Auth::user()->ensemble->id) {
+            $video->delete();
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = '<strong style="color: red;">video deleted successfully</strong>';
+            $delete_song_object->id = $id;
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_video_object = new stdClass();
+            $delete_video_object->status = 'Action no permitted';
+            $info[] = $delete_video_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function song(Request $request)
@@ -418,7 +465,11 @@ class EnsembleController extends Controller
                     $id_song = explode('"', $display[1]);
                     $song->code = $id_song[0];
                 }else{
-                    return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
+                    $song_object = new stdClass();
+                    $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                    $song_object->flag = '0';
+                    $songs[] = $song_object;
+                    return response()->json(array('songs' => $songs), 200);
                 }
                 $song->platform = 'spotify';
                 $song->ensemble_id = $ensemble_id;
@@ -431,42 +482,108 @@ class EnsembleController extends Controller
                     $id_song = explode("&amp;", $display[1]);
                     $song->code = $id_song[0];
                 }else {
-                    return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
+                    $song_object = new stdClass();
+                    $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                    $song_object->flag = '0';
+                    $songs[] = $song_object;
+                    return response()->json(array('songs' => $songs), 200);
                 }     
                 $song->platform = 'soundcloud';   
                 $song->ensemble_id = $ensemble_id;
                 $song->save();
 
             }else{
-                return redirect()->back()->withErrors(['song'=>"That is not an allowed link or song"]);
+                $song_object = new stdClass();
+                    $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                    $song_object->flag = '0';
+                    $songs[] = $song_object;
+                    return response()->json(array('songs' => $songs), 200);
             }
         }else{
-            return redirect()->back()->withErrors(['song'=>"You only can add 5 songs in total"]);
+            $song_object = new stdClass();
+            $song_object->status = '<strong style="color: red;">You only can add 5 songs in total</strong>';
+            $song_object->flag = '0';
+            $songs[] = $song_object;
+            return response()->json(array('songs' => $songs), 200);
         }
-        return redirect()->route('ensemble.dashboard');
+        $song_object = new stdClass();
+        $song_object->status = '<strong style="color: green;">song successfully added</strong>';
+        $song_object->flag = '1';
+        $song_object->code = $song->code;
+        $song_object->platform = $song->platform;
+        $song_object->id = $song->id;
+        $songs[] = $song_object;
+        return response()->json(array('songs' => $songs), 200);
     }
 
 
     public function delete_song($id)
     {
-        $song = Ensemble_song::find($id)->delete();
-        return redirect()->route('ensemble.dashboard');
+        $info = [];
+        $song = Ensemble_song::find($id);
+        if ($song->ensemble_id == Auth::user()->ensemble->id) {
+            $song->delete();
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = '<strong style="color: red;">song deleted successfully</strong>';
+            $delete_song_object->id = $id;
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = 'Action no permitted';
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function repertoir(repertoirRequest $request)
     {   
-        $repertoir = new EnsembleRepertoire($request->all());
-        $repertoir->ensemble_id = Auth::user()->ensemble->id;
-        $repertoir->repertoire_example = $request->repertoir;
-        $repertoir->visible = 0;
-        $repertoir->save();
-        return redirect()->route('ensemble.dashboard');
+        $info = [];
+        $validator = Validator::make($request->all(), [
+            'repertoir' => 'required|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            $repertoir_object = new stdClass();
+            $repertoir_object->status = '<strong style="color: red;"> 50 is the max number of caracters</strong>';
+            $info[] = $repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $repertoir = new EnsembleRepertoire($request->all());
+            $repertoir->ensemble_id = Auth::user()->ensemble->id;
+            $repertoir->repertoire_example = $request->repertoir;
+            $repertoir->visible = 0;
+            $repertoir->save();
+
+            $repertoir_count = EnsembleRepertoire::where('ensemble_id', Auth::user()->ensemble->id)->where('visible', 1)->count();
+
+            $repertoir_object = new stdClass();
+            $repertoir_object->status = '<strong style="color: green;">Repertoir "'.$request->repertoir.'" successfully added</strong>';
+            $repertoir_object->name = $request->repertoir;
+            $repertoir_object->id = $repertoir->id;
+            $repertoir_object->count = $repertoir_count;
+            $info[] = $repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function destroy_repertoir($id)
     {
-        $repertoir = EnsembleRepertoire::find($id)->delete();
-        return redirect()->route('ensemble.dashboard');
+        $info = [];
+        $repertoir = EnsembleRepertoire::find($id);
+        if ($repertoir->ensemble_id == Auth::user()->ensemble->id) {
+            $repertoir->delete();
+            $delete_repertoir_object = new stdClass();
+            $delete_repertoir_object->status = '<strong style="color: red;">Repertoir deleted successfully</strong>';
+            $delete_repertoir_object->id = $id;
+            $info[] = $delete_repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_repertoir_object = new stdClass();
+            $delete_repertoir_object->status = 'Action no permitted';
+            $info[] = $delete_repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function update_repertoir($id)

@@ -191,15 +191,22 @@ class HomeController extends Controller
     {
         $info = [];
         $user = Auth::user()->id;
-        $get_name = User_image::select('name')->where('id', $image)->first();
-        User_image::where('user_id', $user)->where('id', $image)->delete();
-        $delete_photo_object = new stdClass();
-        $get_name_array = explode("|", $get_name->name);
-        $delete_photo_object->status = $get_name_array[1].' <strong style="color: red;">deleted successfully</strong>';
-        $delete_photo_object->idImg = $image;
-        $info[] = $delete_photo_object;
+        $get_name = User_image::select('user_id','name')->where('id', $image)->first();
+        if ($get_name->user_id == $user) { 
+            User_image::where('user_id', $user)->where('id', $image)->delete();
+            $delete_photo_object = new stdClass();
+            $get_name_array = explode("|", $get_name->name);
+            $delete_photo_object->status = $get_name_array[1].' <strong style="color: red;">deleted successfully</strong>';
+            $delete_photo_object->idImg = $image;
+            $info[] = $delete_photo_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_photo_object = new stdClass();
+            $delete_photo_object->status = 'Action no permitted';
+            $info[] = $delete_photo_object;
+            return response()->json(array('info' => $info), 200);
+        }
 
-        return response()->json(array('info' => $info), 200);
     }
 
     //View for blocking the main user dashboard
@@ -300,48 +307,66 @@ class HomeController extends Controller
     }
 
     public function storeInstruments(Request $request)
-    {
+    {        
+        $instruments = [];
         $user = Auth::user()->id;
         UserInstrument::where('user_id', $user)->delete();
         
         foreach ($request->instruments as $id) 
         {
             $instrument = new UserInstrument($request->all());
-            $instrument->user_id = Auth::user()->id;
+            $instrument->user_id = $user;
             $instrument->instrument_id = $id;
             $instrument->save(); 
         }
-        return redirect()->route('user.dashboard');
+
+        $instrument_object = new stdClass();
+        $instrument_object->status ='guardado';
+        $instrument_object->data = $request->instruments;
+        $instruments[] = $instrument_object;
+        return response()->json(array('instruments' => $instruments), 200);
     }
 
     public function storeTags(Request $request)
     {
+        $tags = [];
         $user = Auth::user()->id;
         UserTag::where('user_id', $user)->delete();
         
         foreach ($request->tags as $id) 
         {
             $tag = new UserTag($request->all());
-            $tag->user_id = Auth::user()->id;
+            $tag->user_id = $user;
             $tag->tag_id = $id;
             $tag->save(); 
         }
-        return redirect()->route('user.dashboard');
+
+        $tag_object = new stdClass();
+        $tag_object->status ='guardado';
+        $tag_object->data = $request->tags;
+        $tags[] = $tag_object;
+        return response()->json(array('tags' => $tags), 200);
     }
 
     public function storeStyles(Request $request)
     {
+        $styles = [];
         $user = Auth::user()->id;
         UserStyle::where('user_id', $user)->delete();
         
         foreach ($request->styles as $id) 
         {
             $style = new UserStyle($request->all());
-            $style->user_id = Auth::user()->id;
+            $style->user_id = $user;
             $style->style_id = $id;
             $style->save(); 
         }
-        return redirect()->route('user.dashboard');
+
+        $style_object = new stdClass();
+        $style_object->status ='guardado';
+        $style_object->data = $request->styles;
+        $styles[] = $style_object;
+        return response()->json(array('styles' => $styles), 200);
     }
 
     public function storeImages(Request $request)
@@ -444,6 +469,7 @@ class HomeController extends Controller
 
     public function video(Request $request)
     {
+        $videos = [];
         $user = Auth::user()->id;
         $total_videos = User_video::where('user_id', $user)->count();
         if ($total_videos < 5) {
@@ -469,12 +495,18 @@ class HomeController extends Controller
                     $id_video = end($display);
                     $video->code = $id_video;
                 }else{
-                    return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    //return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    $video_object = new stdClass();
+                    $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                    $video_object->flag = '0';
+                    $videos[] = $video_object;
+                    return response()->json(array('videos' => $videos), 200);
                 }
 
                 $video->platform = 'youtube';
                 $video->user_id = $user;
                 $video->save();
+            //CHECK IF THIS IS A VIDEO FROM VIMEO
             }elseif (strpos($request->video, 'vimeo') !== false) {
                 
                 if (strpos($request->video, 'iframe') !== false) {
@@ -490,7 +522,12 @@ class HomeController extends Controller
                     $id_video = end($display);
                     $video->code = $id_video;
                 }else{
-                    return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    //return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                    $video_object = new stdClass();
+                    $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                    $video_object->flag = '0';
+                    $videos[] = $video_object;
+                    return response()->json(array('videos' => $videos), 200);
                 }    
 
                 $video->platform = 'vimeo';
@@ -498,22 +535,54 @@ class HomeController extends Controller
                 $video->save();
 
             }else{
-                return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                //return redirect()->back()->withErrors(['video'=>"That is not an allowed link or video"]);
+                $video_object = new stdClass();
+                $video_object->status = '<strong style="color: red;">That is not an allowed link or video</strong>';
+                $video_object->flag = '0';
+                $videos[] = $video_object;
+                return response()->json(array('videos' => $videos), 200);
             }
         }else{
-            return redirect()->back()->withErrors(['video'=>"You only can add 5 videos in total"]);
+            //return redirect()->back()->withErrors(['video'=>"You only can add 5 videos in total"]);
+            $video_object = new stdClass();
+            $video_object->status = '<strong style="color: red;">You only can add 5 videos in total</strong>';
+            $video_object->flag = '0';
+            $videos[] = $video_object;
+            return response()->json(array('videos' => $videos), 200);
         }
-        return redirect()->route('user.dashboard');
+        $video_object = new stdClass();
+        $video_object->status = '<strong style="color: green;">Video successfully added</strong>';
+        $video_object->flag = '1';
+        $video_object->code = $video->code;
+        $video_object->platform = $video->platform;
+        $video_object->id = $video->id;
+        $videos[] = $video_object;
+        return response()->json(array('videos' => $videos), 200);
+        //return redirect()->route('user.dashboard');
     }
 
     public function delete_video($id)
     {
-        $video = User_video::find($id)->delete();
-        return redirect()->route('user.dashboard');
+        $info = [];
+        $video = User_video::find($id);
+        if ($video->user_id == Auth::user()->id) {
+            $video->delete();
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = '<strong style="color: red;">video deleted successfully</strong>';
+            $delete_song_object->id = $id;
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_video_object = new stdClass();
+            $delete_video_object->status = 'Action no permitted';
+            $info[] = $delete_video_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function song(Request $request)
     {
+        $songs = [];
         $user = Auth::user()->id;
         $total_songs = User_song::where('user_id', $user)->count();
 
@@ -536,7 +605,12 @@ class HomeController extends Controller
                     $id_song = explode('"', $display[1]);
                     $song->code = $id_song[0];
                 }else{
-                    return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
+                    $song_object = new stdClass();
+                    $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                    $song_object->flag = '0';
+                    $songs[] = $song_object;
+                    return response()->json(array('songs' => $songs), 200);
+                    //return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
                 }
                 $song->platform = 'spotify';
                 $song->user_id = $user;
@@ -549,42 +623,112 @@ class HomeController extends Controller
                     $id_song = explode("&amp;", $display[1]);
                     $song->code = $id_song[0];
                 }else {
-                    return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
+                    $song_object = new stdClass();
+                    $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                    $song_object->flag = '0';
+                    $songs[] = $song_object;
+                    return response()->json(array('songs' => $songs), 200);
+                    //return redirect()->back()->withErrors(['song'=>"Link not allowed"]);
                 }     
                 $song->platform = 'soundcloud';   
                 $song->user_id = $user;
                 $song->save();
 
             }else{
-                return redirect()->back()->withErrors(['song'=>"That is not an allowed link or song"]);
+                $song_object = new stdClass();
+                $song_object->status = '<strong style="color: red;">That is not an allowed link or song</strong>';
+                $song_object->flag = '0';
+                $songs[] = $song_object;
+                return response()->json(array('songs' => $songs), 200);
+                //return redirect()->back()->withErrors(['song'=>"That is not an allowed link or song"]);
             }
         }else{
-            return redirect()->back()->withErrors(['song'=>"You only can add 5 songs in total"]);
+            $song_object = new stdClass();
+            $song_object->status = '<strong style="color: red;">You only can add 5 songs in total</strong>';
+            $song_object->flag = '0';
+            $songs[] = $song_object;
+            return response()->json(array('songs' => $songs), 200);
+            //return redirect()->back()->withErrors(['song'=>"You only can add 5 songs in total"]);
         }
-        return redirect()->route('user.dashboard');
+        $song_object = new stdClass();
+        $song_object->status = '<strong style="color: green;">song successfully added</strong>';
+        $song_object->flag = '1';
+        $song_object->code = $song->code;
+        $song_object->platform = $song->platform;
+        $song_object->id = $song->id;
+        $songs[] = $song_object;
+        return response()->json(array('songs' => $songs), 200);
+        //return redirect()->route('user.dashboard');
     }
 
 
     public function delete_song($id)
     {
-        $song = User_song::find($id)->delete();
-        return redirect()->route('user.dashboard');
+        $info = [];
+        $song = User_song::find($id);
+        if ($song->user_id == Auth::user()->id) {
+            $song->delete();
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = '<strong style="color: red;">song deleted successfully</strong>';
+            $delete_song_object->id = $id;
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_song_object = new stdClass();
+            $delete_song_object->status = 'Action no permitted';
+            $info[] = $delete_song_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
-    public function repertoir(repertoirRequest $request)
+    public function repertoir(Request $request)
     {   
-        $repertoir = new UserRepertoir($request->all());
-        $repertoir->user_id = Auth::user()->id;
-        $repertoir->repertoire_example = $request->repertoir;
-        $repertoir->visible = 0;
-        $repertoir->save();
-        return redirect()->route('user.dashboard');
+        $info = [];
+        $validator = Validator::make($request->all(), [
+            'repertoir' => 'required|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            $repertoir_object = new stdClass();
+            $repertoir_object->status = '<strong style="color: red;"> 50 is the max number of caracters</strong>';
+            $info[] = $repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $repertoir = new UserRepertoir($request->all());
+            $repertoir->user_id = Auth::user()->id;
+            $repertoir->repertoire_example = $request->repertoir;
+            $repertoir->visible = 0;
+            $repertoir->save();
+
+            $repertoir_count = UserRepertoir::where('user_id', Auth::user()->id)->where('visible', 1)->count();
+
+            $repertoir_object = new stdClass();
+            $repertoir_object->status = '<strong style="color: green;">Repertoir "'.$request->repertoir.'" successfully added</strong>';
+            $repertoir_object->name = $request->repertoir;
+            $repertoir_object->id = $repertoir->id;
+            $repertoir_object->count = $repertoir_count;
+            $info[] = $repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function destroy_repertoir($id)
     {
-        $repertoir = UserRepertoir::find($id)->delete();
-        return redirect()->route('user.dashboard');
+        $info = [];
+        $repertoir = UserRepertoir::find($id);
+        if ($repertoir->user_id == Auth::user()->id) {
+            $repertoir->delete();
+            $delete_repertoir_object = new stdClass();
+            $delete_repertoir_object->status = '<strong style="color: red;">Repertoir deleted successfully</strong>';
+            $delete_repertoir_object->id = $id;
+            $info[] = $delete_repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $delete_repertoir_object = new stdClass();
+            $delete_repertoir_object->status = 'Action no permitted';
+            $info[] = $delete_repertoir_object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 
     public function update_repertoir($id)
