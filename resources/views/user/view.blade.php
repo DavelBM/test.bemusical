@@ -271,7 +271,7 @@
                     </div>
 
                     <div class="row form-group">
-                        <label for="event_type" class="col-md-4 control-label">Requirements</label>
+                        <label for="event_type" class="col-md-4 control-label">Requirements(optional)</label>
 
                         <div class="col-md-6">
                             <input id="event_type" type="text" class="form-control" name="event_type" placeholder="Any special requirement? type of music?" value="{{ old('event_type') }}" required>
@@ -457,6 +457,7 @@
                         day_selected = $('#day').val();
                         time_select = day_selected+' '+time_selected;
                         var currentTime= moment(time_select, "YYYY-MM-DD HH:mm:ss");
+                        var currentTime2= (aZero(hour)+':'+aZero(minute));
 
                         loopDataLength:
                         for(var i = 0; i < data[0].length; i++) {
@@ -474,11 +475,11 @@
         
                             /* We push to an array all data received */
                             //if(data != time_select){
-                            dates_getting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                            dates_getting.push('<option value="'+currentTime2+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
 
                             /*We select all the times busy to push them in a array*/
                             if(isBetween){
-                                dates_deleting.push('<option value="'+time_select+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
+                                dates_deleting.push('<option value="'+currentTime2+'" >'+ampmhour+':'+aZero(minute)+' '+a+'</option>');
                             }
                             //}         
                         }

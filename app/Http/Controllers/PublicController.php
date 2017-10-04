@@ -181,7 +181,7 @@ class PublicController extends Controller
         $info->phone           = 0;
         $info->location        = 'null';
         $info->degree          = 'null';
-        $info->mile_radious    = 0;
+        $info->mile_radious    = 20;
         $info->save();
 
         Member::where('id', $request->id)
@@ -324,98 +324,99 @@ class PublicController extends Controller
 
     public function send_price(Request $request)
     {
-        $available = substr($request->token, -1);
-        $token = substr($request->token, 0, -1);
+        dd('hola sending price');
+        // $available = substr($request->token, -1);
+        // $token = substr($request->token, 0, -1);
 
-        $review = Ask::where('token', $token)->firstOrFail();
-        $user = User::where('id', $review->user_id)->firstOrFail();
+        // $review = Ask::where('token', $token)->firstOrFail();
+        // $user = User::where('id', $review->user_id)->firstOrFail();
 
-        if($user->type == "soloist") {
-            $info = User_info::select('first_name', 'last_name')->where('user_id', $review->user_id)->firstOrFail();
-        } elseif($user->type == "ensemble") {
-             $ensemble = Ensemble::select('name')->where('user_id', $review->user_id)->firstOrFail();
-        }
+        // if($user->type == "soloist") {
+        //     $info = User_info::select('first_name', 'last_name')->where('user_id', $review->user_id)->firstOrFail();
+        // } elseif($user->type == "ensemble") {
+        //      $ensemble = Ensemble::select('name')->where('user_id', $review->user_id)->firstOrFail();
+        // }
         
-        if($review->available == 1 or $review->nonavailable == 1 or $review->price != null or $review->accepted_price == 1){
-            Flash::error('This token already was used');
-            return redirect()->route('login');
-        }else{
-            if($available == 1){
-                Ask::where('token', $token)
-                ->update([
-                    'price'       => $request->price,
-                    'available'   => 1,
-                    'nonavailable'=> 0,
-                ]);
+        // if($review->available == 1 or $review->nonavailable == 1 or $review->price != null or $review->accepted_price == 1){
+        //     Flash::error('This token already was used');
+        //     return redirect()->route('login');
+        // }else{
+        //     if($available == 1){
+        //         Ask::where('token', $token)
+        //         ->update([
+        //             'price'       => $request->price,
+        //             'available'   => 1,
+        //             'nonavailable'=> 0,
+        //         ]);
 
-                $dt = explode("|", $review->date);
-                $address = explode("|", $review->address);
-                $addrNAME = explode("address:", $address[1]);
+        //         $dt = explode("|", $review->date);
+        //         $address = explode("|", $review->address);
+        //         $addrNAME = explode("address:", $address[1]);
                 
-                if($user->type == "soloist") {
-                    $data = [
-                        'name'    => $review->name,
-                        'name_use'=> $info->first_name.' '.$info->last_name,
-                        'email'   => $review->email,
-                        'phone'   => $review->phone,
-                        'date'    => $dt[1],
-                        'address' => $addrNAME[1],
-                        'duration'=> $review->duration,
-                        'price'   => $request->price,
-                        'token'   => $review->token,
-                    ];
-                } elseif($user->type == "ensemble") {
-                     $data = [
-                        'name'    => $review->name,
-                        'name_use'=> $ensemble->name,
-                        'email'   => $review->email,
-                        'phone'   => $review->phone,
-                        'date'    => $dt[1],
-                        'address' => $addrNAME[1],
-                        'duration'=> $review->duration,
-                        'price'   => $request->price,
-                        'token'   => $review->token,
-                    ];
-                }
+        //         if($user->type == "soloist") {
+        //             $data = [
+        //                 'name'    => $review->name,
+        //                 'name_use'=> $info->first_name.' '.$info->last_name,
+        //                 'email'   => $review->email,
+        //                 'phone'   => $review->phone,
+        //                 'date'    => $dt[1],
+        //                 'address' => $addrNAME[1],
+        //                 'duration'=> $review->duration,
+        //                 'price'   => $request->price,
+        //                 'token'   => $review->token,
+        //             ];
+        //         } elseif($user->type == "ensemble") {
+        //              $data = [
+        //                 'name'    => $review->name,
+        //                 'name_use'=> $ensemble->name,
+        //                 'email'   => $review->email,
+        //                 'phone'   => $review->phone,
+        //                 'date'    => $dt[1],
+        //                 'address' => $addrNAME[1],
+        //                 'duration'=> $review->duration,
+        //                 'price'   => $request->price,
+        //                 'token'   => $review->token,
+        //             ];
+        //         }
 
-                Mail::send('email.request_send_price_client', $data, function($message) use ($review){
-                    $message->from('support@bemusical.us');
-                    $message->to($review->email);
-                    $message->subject("Hi, we have a price proposal for your event");
-                });
+        //         Mail::send('email.request_send_price_client', $data, function($message) use ($review){
+        //             $message->from('support@bemusical.us');
+        //             $message->to($review->email);
+        //             $message->subject("Hi, we have a price proposal for your event");
+        //         });
 
-                if($user->type == "soloist") {
-                    Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $info){
-                        $message->from('support@bemusical.us');
-                        $message->to('david@bemusic.al');
-                        $message->subject('Admin, '.$info->first_name.' '.$info->last_name.' is available and gives the price to '.$review->name);
-                    });
-                } elseif($user->type == "ensemble") {
-                    Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $ensemble){
-                        $message->from('support@bemusical.us');
-                        $message->to('david@bemusic.al');
-                        $message->subject('Admin, '.$ensemble->name.' is available and gives the price to '.$review->name);
-                    }); 
-                }
+        //         if($user->type == "soloist") {
+        //             Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $info){
+        //                 $message->from('support@bemusical.us');
+        //                 $message->to('david@bemusic.al');
+        //                 $message->subject('Admin, '.$info->first_name.' '.$info->last_name.' is available and gives the price to '.$review->name);
+        //             });
+        //         } elseif($user->type == "ensemble") {
+        //             Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $ensemble){
+        //                 $message->from('support@bemusical.us');
+        //                 $message->to('david@bemusic.al');
+        //                 $message->subject('Admin, '.$ensemble->name.' is available and gives the price to '.$review->name);
+        //             }); 
+        //         }
 
-                Flash::success('You accept the request, you can find all the info in your dashboard');
-                return redirect()->route('login');
-            }elseif($available == 0){
-                Ask::where('token', $token)
-                ->update([
-                    'price'       => $request->price,
-                    'available'   => 0,
-                    'nonavailable'=> 1,
-                ]);
-                Flash::warning('You did not accept the request, we will contact you to know what happend.');
-                return redirect()->route('login');                
-            }
-        }
+        //         Flash::success('You accept the request, you can find all the info in your dashboard');
+        //         return redirect()->route('login');
+        //     }elseif($available == 0){
+        //         Ask::where('token', $token)
+        //         ->update([
+        //             'price'       => $request->price,
+        //             'available'   => 0,
+        //             'nonavailable'=> 1,
+        //         ]);
+        //         Flash::warning('You did not accept the request, we will contact you to know what happend.');
+        //         return redirect()->route('login');                
+        //     }
+        // }
     }
 
     public function asking_request($get_token)
     {
-        dd('hola');
+        dd('hola NOT AVAILABLE');
         // ///////////SEND MAIL TO CLIENT THAT THE USER CANT ASSIST TO THE EVENT
         // $available = substr($get_token, -1);
         // $token = substr($get_token, 0, -1);
@@ -543,7 +544,7 @@ class PublicController extends Controller
         $time = $request->time;
         $date_timestamp = $request->day.' '.$time.':00';
 
-        $users = User::all();
+        $users = User::where('visible', 1)->get();
         $date = (new Carbon($request->day))->format('l jS \\of F Y');
         $address = $request->place;
         $dayname = (new Carbon($request->day))->format('l');
@@ -654,7 +655,7 @@ class PublicController extends Controller
             $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
             
             if ($dist['distance'] == 'undefined') {
-                return redirect()->back()->withErrors(['distance'=>"You cannot get there driving"]);
+                array_push($nonAvailableUsers, $singer->email);
             }
 
             $distance_exploded = explode(' mi', $dist['distance']);
@@ -717,39 +718,68 @@ class PublicController extends Controller
             $busyHours = Gig::select('start','end')->where('user_id', $user_filter->id)->where('allDay', 0)->get();
             $option = GigOption::where('user_id', $user_filter->id)->first();
 
-            foreach ($busyHours as $busyHour) {
-                $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
-                $busyDay_start_in = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
-                $busyDay_end_in = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
-                $durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
-
-                if ($dateTimeRequested->between($busyDay_start_in, $busyDay_end_in)) {
-                    array_push($user_nonavailables, $user_filter->id);
-                } elseif($durationRequested->between($busyDay_start_in, $busyDay_end_in)){
-                    array_push($user_nonavailables, $user_filter->id);
-                } else {
-                    if ($user_filter->type == 'soloist') {
-                        if ($user_filter->info->address != 'null') {
-                            if ($request->soloist == 'soloist' && $request->ensemble == null) {
-                                array_push($user_availables, $user_filter->id);
-                            }elseif ($request->soloist == null && $request->ensemble == null) {
-                                array_push($user_availables, $user_filter->id);
-                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user_filter->id);
-                            }else{
-                                array_push($user_nonavailables, $user_filter->id);
-                            }
+            if (empty($busyHours->start) or empty($busyHours->end)) {
+                //array_push($status, 'entre a vacio');
+                if ($user->type == 'soloist') {
+                    if ($user->info->address != 'null') {
+                        if ($request->soloist == 'soloist' && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == null && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }else{
+                            array_push($user_nonavailables, $user->id);
                         }
-                    } elseif ($user_filter->type == 'ensemble') {
-                        if ($user_filter->ensemble->address != 'null') {
-                            if ($request->soloist == null && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user_filter->id);
-                            }elseif ($request->soloist == null && $request->ensemble == null) {
-                                array_push($user_availables, $user_filter->id);
-                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user_filter->id);
-                            }else{
-                                array_push($user_nonavailables, $user_filter->id);
+                    }
+                } elseif ($user->type == 'ensemble') {
+                    if ($user->ensemble->address != 'null') {
+                        if ($request->soloist == null && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == null && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }else{
+                            array_push($user_nonavailables, $user->id);
+                        }
+                    }
+                }
+            }else{
+                foreach ($busyHours as $busyHour) {
+                    $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
+                    $busyDay_start_in = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
+                    $busyDay_end_in = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
+                    $durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
+
+                    if ($dateTimeRequested->between($busyDay_start_in, $busyDay_end_in)) {
+                        array_push($user_nonavailables, $user_filter->id);
+                    } elseif($durationRequested->between($busyDay_start_in, $busyDay_end_in)){
+                        array_push($user_nonavailables, $user_filter->id);
+                    } else {
+                        if ($user_filter->type == 'soloist') {
+                            if ($user_filter->info->address != 'null') {
+                                if ($request->soloist == 'soloist' && $request->ensemble == null) {
+                                    array_push($user_availables, $user_filter->id);
+                                }elseif ($request->soloist == null && $request->ensemble == null) {
+                                    array_push($user_availables, $user_filter->id);
+                                }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user_filter->id);
+                                }else{
+                                    array_push($user_nonavailables, $user_filter->id);
+                                }
+                            }
+                        } elseif ($user_filter->type == 'ensemble') {
+                            if ($user_filter->ensemble->address != 'null') {
+                                if ($request->soloist == null && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user_filter->id);
+                                }elseif ($request->soloist == null && $request->ensemble == null) {
+                                    array_push($user_availables, $user_filter->id);
+                                }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user_filter->id);
+                                }else{
+                                    array_push($user_nonavailables, $user_filter->id);
+                                }
                             }
                         }
                     }
@@ -994,7 +1024,7 @@ class PublicController extends Controller
     }
 
     public function query(Request $request){
-        $users = User::all();
+        $users = User::where('visible', 1)->get();
         $date = (new Carbon($request->day))->format('l jS \\of F Y');
         $address = $request->place;
         $dayname = (new Carbon($request->day))->format('l');
@@ -1087,7 +1117,7 @@ class PublicController extends Controller
             $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
             
             if ($dist['distance'] == 'undefined') {
-                return redirect()->back()->withErrors(['distance'=>"You cannot get there driving"]);
+                array_push($nonAvailableUsers, $singer->email);
             }
 
             $distance_exploded = explode(' mi', $dist['distance']);
@@ -1164,45 +1194,75 @@ class PublicController extends Controller
         $styles_request = $request->styles;
 
         $users_array_request = $request->users;
-
+        //$status = [];
         foreach ($users_array_request as $user_email) {
             $user = User::select('id', 'email', 'type')->where('id', $user_email)->first();
             $busyHours = Gig::select('start','end')->where('user_id', $user->id)->where('allDay', 0)->get();
             $option = GigOption::where('user_id', $user->id)->first();
-
-            foreach ($busyHours as $busyHour) {
-                $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
-                $busyDay_start_in = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
-                $busyDay_end_in = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
-                $durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
-
-                if ($dateTimeRequested->between($busyDay_start_in, $busyDay_end_in)) {
-                    array_push($user_nonavailables, $user->id);
-                } elseif($durationRequested->between($busyDay_start_in, $busyDay_end_in)){
-                    array_push($user_nonavailables, $user->id);
-                } else {
-                    if ($user->type == 'soloist') {
-                        if ($user->info->address != 'null') {
-                            if ($request->soloist == 'soloist' && $request->ensemble == null) {
-                                array_push($user_availables, $user->id);
-                            }elseif ($request->soloist == null && $request->ensemble == null) {
-                                array_push($user_availables, $user->id);
-                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user->id);
-                            }else{
-                                array_push($user_nonavailables, $user->id);
-                            }
+            
+            if (empty($busyHours->start) or empty($busyHours->end)) {
+                //array_push($status, 'entre a vacio');
+                if ($user->type == 'soloist') {
+                    if ($user->info->address != 'null') {
+                        if ($request->soloist == 'soloist' && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == null && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }else{
+                            array_push($user_nonavailables, $user->id);
                         }
-                    } elseif ($user->type == 'ensemble') {
-                        if ($user->ensemble->address != 'null') {
-                            if ($request->soloist == null && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user->id);
-                            }elseif ($request->soloist == null && $request->ensemble == null) {
-                                array_push($user_availables, $user->id);
-                            }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
-                                array_push($user_availables, $user->id);
-                            }else{
-                                array_push($user_nonavailables, $user->id);
+                    }
+                } elseif ($user->type == 'ensemble') {
+                    if ($user->ensemble->address != 'null') {
+                        if ($request->soloist == null && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == null && $request->ensemble == null) {
+                            array_push($user_availables, $user->id);
+                        }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                            array_push($user_availables, $user->id);
+                        }else{
+                            array_push($user_nonavailables, $user->id);
+                        }
+                    }
+                }
+            }else{
+                //array_push($status, $busyHours);
+                foreach ($busyHours as $busyHour) {
+                    $dateTimeRequested = Carbon::parse($request->day.' '.$time.':00');
+                    $busyDay_start_in = Carbon::parse($busyHour->start)->subMinute($option->time_before_event);
+                    $busyDay_end_in = Carbon::parse($busyHour->end)->addMinute($option->time_after_event);
+                    $durationRequested = Carbon::parse($request->day.' '.$time.':00')->addMinute($request->duration);
+
+                    if ($dateTimeRequested->between($busyDay_start_in, $busyDay_end_in)) {
+                        array_push($user_nonavailables, $user->id);
+                    } elseif($durationRequested->between($busyDay_start_in, $busyDay_end_in)){
+                        array_push($user_nonavailables, $user->id);
+                    } else {
+                        if ($user->type == 'soloist') {
+                            if ($user->info->address != 'null') {
+                                if ($request->soloist == 'soloist' && $request->ensemble == null) {
+                                    array_push($user_availables, $user->id);
+                                }elseif ($request->soloist == null && $request->ensemble == null) {
+                                    array_push($user_availables, $user->id);
+                                }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user->id);
+                                }else{
+                                    array_push($user_nonavailables, $user->id);
+                                }
+                            }
+                        } elseif ($user->type == 'ensemble') {
+                            if ($user->ensemble->address != 'null') {
+                                if ($request->soloist == null && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user->id);
+                                }elseif ($request->soloist == null && $request->ensemble == null) {
+                                    array_push($user_availables, $user->id);
+                                }elseif ($request->soloist == 'soloist' && $request->ensemble == 'ensemble') {
+                                    array_push($user_availables, $user->id);
+                                }else{
+                                    array_push($user_nonavailables, $user->id);
+                                }
                             }
                         }
                     }
@@ -1221,12 +1281,16 @@ class PublicController extends Controller
                 }
 
                 $tags_request = array_map('intval', $request->tags);
-            
-                foreach ($tags_user as $tag) {
-                    if (in_array($tag, $request->tags)) {
-                        array_push($user_tags_cached, $user->id);
-                    }else{
-                        array_push($user_tags_discarted, $user->id);
+                
+                if(empty($tags_user)){
+                    array_push($user_tags_discarted, $user->id);
+                }else{
+                    foreach ($tags_user as $tag) {
+                        if (in_array($tag, $request->tags)) {
+                            array_push($user_tags_cached, $user->id);
+                        }else{
+                            array_push($user_tags_discarted, $user->id);
+                        }
                     }
                 }
             }
@@ -1243,12 +1307,16 @@ class PublicController extends Controller
                 }
 
                 $instruments_request = array_map('intval', $request->instruments);
-            
-                foreach ($instruments_user as $instrument) {
-                    if (in_array($instrument, $request->instruments)) {
-                        array_push($user_instruments_cached, $user->id);
-                    }else{
-                        array_push($user_instruments_discarted, $user->id);
+                
+                if(empty($instruments_user)){
+                    array_push($user_instruments_discarted, $user->id);
+                }else{
+                    foreach ($instruments_user as $instrument) {
+                        if (in_array($instrument, $request->instruments)) {
+                            array_push($user_instruments_cached, $user->id);
+                        }else{
+                            array_push($user_instruments_discarted, $user->id);
+                        }
                     }
                 }
             }
@@ -1265,12 +1333,16 @@ class PublicController extends Controller
                 }
 
                 $styles_request = array_map('intval', $request->styles);
-            
-                foreach ($styles_user as $style) {
-                    if (in_array($style, $request->styles)) {
-                        array_push($user_styles_cached, $user->id);
-                    }else{
-                        array_push($user_styles_discarted, $user->id);
+                
+                if(empty($styles_user)){
+                    array_push($user_styles_discarted, $user->id);
+                }else{
+                    foreach ($styles_user as $style) {
+                        if (in_array($style, $request->styles)) {
+                            array_push($user_styles_cached, $user->id);
+                        }else{
+                            array_push($user_styles_discarted, $user->id);
+                        }
                     }
                 }
             }
@@ -1318,6 +1390,7 @@ class PublicController extends Controller
             } 
         }
 
+        //return array($array_users_picture, $array_users_name, $array_users_bio, $array_users_slug, $status);
         return array($array_users_picture, $array_users_name, $array_users_bio, $array_users_slug);
     }
 
@@ -1334,12 +1407,14 @@ class PublicController extends Controller
         curl_close($ch);
         $response_a = json_decode($response, true);
         $status = $response_a['rows'][0]['elements'][0]['status'];
-        if ($status != 'ZERO_RESULTS') {
+        if ($status == 'ZERO_RESULTS') {
+            return array('distance' => 'undefined', 'time' => 'undefined');
+        }elseif ($status == 'UNKNOWN_ERROR') {
+            return array('distance' => 'undefined', 'time' => 'undefined');
+        }else {
             $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
             $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
             return array('distance' => $dist, 'time' => $time);
-        } else {
-            return array('distance' => 'undefined', 'time' => 'undefined');
         }
     }
 }

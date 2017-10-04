@@ -168,18 +168,19 @@ class HomeController extends Controller
             if($request->file('image')){
                 $file = $request->file('image');
                 $name = 'profile_picture_'.time().'-'.$file->getClientOriginalName();
+                $name_nice = str_replace(" ","_",$name);
                 $path = public_path().'/images/profile';
-                $file->move($path, $name); 
+                $file->move($path, $name_nice); 
             }
 
             User_info::where('user_id', $user)
             ->update([
-                'profile_picture'   => $name
+                'profile_picture'   => $name_nice
             ]);
 
             $update_profile_photo_object = new stdClass();
             $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
-            $update_profile_photo_object->name = $name;
+            $update_profile_photo_object->name = $name_nice;
             $info[] = $update_profile_photo_object;
 
             return response()->json(array('info' => $info), 200);

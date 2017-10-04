@@ -167,18 +167,19 @@ class EnsembleController extends Controller
             if($request->file('image')){
                 $file = $request->file('image');
                 $name = 'ensemble_picture_'.time().'.'.$file->getClientOriginalExtension();
+                $name_nice = str_replace(" ","_",$name);
                 $path = public_path().'/images/ensemble';
-                $file->move($path, $name); 
+                $file->move($path, $name_nice); 
             }
 
             Ensemble::where('user_id', $user)
             ->update([
-                'profile_picture'   => $name
+                'profile_picture'   => $name_nice
             ]);
 
             $update_profile_photo_object = new stdClass();
             $update_profile_photo_object->status ='<strong style="color: green;">Updated</strong>';
-            $update_profile_photo_object->name = $name;
+            $update_profile_photo_object->name = $name_nice;
             $info[] = $update_profile_photo_object;
 
             return response()->json(array('info' => $info), 200);
@@ -536,7 +537,7 @@ class EnsembleController extends Controller
         }
     }
 
-    public function repertoir(repertoirRequest $request)
+    public function repertoir(Request $request)
     {   
         $info = [];
         $validator = Validator::make($request->all(), [

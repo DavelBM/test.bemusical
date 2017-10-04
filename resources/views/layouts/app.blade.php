@@ -16,8 +16,6 @@
     <link rel="stylesheet" href="{{ asset('chosen/chosen.css') }}">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     @yield('css')
-    
-    <script src="{{ asset('js/app.js') }}"></script>
 </head>
 <body>
     <div id="app">
@@ -75,6 +73,7 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/jquery.js')}}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
     <!-- <script src='https://www.google.com/recaptcha/api.js'></script> -->
     @yield('js')
     <script type="text/javascript">

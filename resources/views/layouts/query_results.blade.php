@@ -29,7 +29,7 @@
                             <input id="place-address-principal" type="hidden" name="place_address" value="{{$place_address}}">
                             <input id="place-geometry-principal" type="hidden" name="place_geometry" value="{{$place_geometry}}">
 
-                            <button type="submit" class="btn btn-default">New Search</button>
+                            <button type="submit" class="btn btn-default" onclick="localStorage.clear();">New Search</button>
                         </form>
                     </div>
                     <div class="row"><center>RESULTS for: {{$address}} on {{$date}}</center></div>
@@ -311,6 +311,7 @@
                         getting_users.push("<strong>We're sorry, we couldn't find any match with your requirements</strong>");
                     }else{
                         for (i = 0; i < data[0].length; i++) { 
+                            //console.log(data[4]);
                             if (data[0][i]) {
                                 var image = data[0][i];
                             }else{

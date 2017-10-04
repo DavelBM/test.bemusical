@@ -705,12 +705,12 @@
                             setTimeout(function() {
                                 $('#videoSuccessfullyAdded').fadeOut();
                             }, 2000 );
-
+                            console.log(video.platform);
                             if(video.platform == 'youtube'){
                                 $('#videos_ensemble_profile').prepend('<div id="video_ensemble_'+video.id+'"><iframe width="100%" height="315" src="https://www.youtube.com/embed/'+video.code+'" frameborder="0" allowfullscreen></iframe><button class="btn btn-danger" onclick="destroyVideo('+video.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_video_ensemble_'+video.id+'">');
                             }
                             else if(video.platform == 'vimeo'){
-                                $('#videos_user_profile').prepend('<div id="video_ensemble_'+video.id+'"><iframe src="https://player.vimeo.com/video/'+video.code+'" width="100%" height="315" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><button class="btn btn-danger" onclick="destroyVideo('+video.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_video_ensemble_'+video.id+'">');
+                                $('#videos_ensemble_profile').prepend('<div id="video_ensemble_'+video.id+'"><iframe src="https://player.vimeo.com/video/'+video.code+'" width="100%" height="315" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><button class="btn btn-danger" onclick="destroyVideo('+video.id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div><p id="status_deleting_video_ensemble_'+video.id+'">');
                             }
                         } else {
                             $('<p/>').html(video.status).appendTo($('#videoSuccessfullyAdded'));

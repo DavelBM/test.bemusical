@@ -113,6 +113,25 @@ Route::post('/ensemble/add/not/member', 'EnsembleController@notmember')->name('e
 Route::get('/ensemble/destroy/member/{id}', 'EnsembleController@destroy_member')->name('ensemble.member.destroy');
 //Ensembles
 
+/**
+ * Here we manipulate all the data for CLIENTS
+ */
+//Login y logout CLIENT
+Route::get('/client/login', 'Auth\ClientLoginController@showLoginForm')->name('client.login');
+Route::post('/client/login', 'Auth\ClientLoginController@login')->name('client.login.submit');
+Route::get('/client', 'ClientController@index')->name('client.dashboard');//UPDATE
+Route::get('/client/logout', 'Auth\ClientLoginController@logout')->name('client.logout');
+
+//Password reset routes
+Route::post('/client/password/email', 'Auth\ClientForgotPasswordController@sendResetLinkEmail')->name('client.password.email');
+
+Route::get('/client/password/reset', 'Auth\ClientForgotPasswordController@showLinkRequestForm')->name('client.password.request');
+
+Route::post('/client/password/reset', 'Auth\ClientResetPasswordController@reset');
+
+Route::get('/client/password/reset/{token}', 'Auth\ClientResetPasswordController@showResetForm')->name('client.password.reset');
+//Clients
+
 //PUBLIC **This routes does not need to be log-in**
 Route::get('/{slug}', 'PublicController@view')->name('index.public');
 Route::get('/review/{slug}', 'PublicController@review_for_slug')->name('review.slug');
