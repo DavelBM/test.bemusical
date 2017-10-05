@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Auth;
+use Client;
 
 class ClientController extends Controller
 {
@@ -13,7 +15,7 @@ class ClientController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:client');
+        $this->middleware('auth:client', ['except' => ['store', 'register']]);
     }
 
     /**
@@ -24,5 +26,22 @@ class ClientController extends Controller
     public function index()
     {
         return view('client.dashboard');
+    }
+
+    /*
+    *REGISTER VIEW CLIENT
+    */
+    public function register()
+    {
+        return view('auth.register-client');
+    }
+
+    /*
+    *STORE CLIENT
+    */
+    public function store(Request $request)
+    {
+        dd($request);
+        //return view('auth.register-client');
     }
 }

@@ -130,6 +130,9 @@ Route::get('/client/password/reset', 'Auth\ClientForgotPasswordController@showLi
 Route::post('/client/password/reset', 'Auth\ClientResetPasswordController@reset');
 
 Route::get('/client/password/reset/{token}', 'Auth\ClientResetPasswordController@showResetForm')->name('client.password.reset');
+
+Route::get('/client/register', 'ClientController@register')->name('client.register');
+Route::post('/client/store', 'ClientController@store')->name('client.store');
 //Clients
 
 //PUBLIC **This routes does not need to be log-in**

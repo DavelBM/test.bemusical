@@ -141,7 +141,7 @@
                                                     <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$pic") }}" alt="{{$pic}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
                                                 </a>
                                             @else
-                                                <a class="btn" href="{{ URL::to('/'.$user->info->slug) }}">
+                                                <a class="btn" href="{{ URL::to('/'.$user->ensemble->slug) }}">
                                                     <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/profile/no-image.png") }}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
                                                 </a>
                                             @endif 
