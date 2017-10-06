@@ -20,7 +20,7 @@
                     <table class="content" align="center" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                             <td class="header" bgcolor="#c7d8a7">
-                                This email was sent it to {{$email}}, if you are not please ignore this
+                                This email was sent it to {{$email}}, if you are this person not please ignore this
                             </td>
                         </tr>
                         <tr>
@@ -33,9 +33,7 @@
                                 <strong>${{$price}}</strong> for {{$duration}} minutes<br>
                                 On: <strong>{{$date}}</strong><br>
                                 At : <strong>{{$address}}</strong><br>
-                                Do you agree?<br>
-                                <a class="btn btn-primary" type="button" href="{{ URL::to('/return/answer/price/'.$token.'1') }}">Yes, I do</a><br>
-                                <a class="btn btn-primary" type="button" href="{{ URL::to('/return/answer/price/'.$token.'0') }}">No, I want to talk with the admin</a> <br>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/return/answer/price/'.$token) }}">click here to confirm</a><br>
                                 </p>
                             </td>
                         </tr>

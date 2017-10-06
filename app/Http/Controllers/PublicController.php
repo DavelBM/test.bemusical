@@ -25,6 +25,7 @@ use Mail;
 use URL;
 use stdClass;
 use App\Client;
+use Stripe\Stripe;
 
 class PublicController extends Controller
 {
@@ -319,101 +320,114 @@ class PublicController extends Controller
         }
     }
 
-    public function price($token)
+    public function price($get_token)
     {
-        return view('user.price_input')->with('token', $token);
+        $available = substr($get_token, -1);
+        $token = substr($get_token, 0, -1);
+        $ask = Ask::select('date', 'duration', 'name', 'available', 'nonavailable')->where('token', $token)->firstOrFail();
+
+        if($ask->available == 1 or $ask->nonavailable == 1){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            $exploded_date = explode('|', $ask->date);
+            $date = explode(' ', $exploded_date[0]);
+            $day = $date[0];
+            $time = $date[1];
+
+            $d = Carbon::parse($day)->format('F j, Y');
+            $ft = Carbon::parse($time);
+            $tt = Carbon::parse($time);
+            $to_time = $tt->addMinutes($ask->duration);
+            $duration_event = $ft->format('h:i A').' - '.$tt->format('h:i A');
+
+            return view('user.price_input')
+                    ->with('name', $ask->name)
+                    ->with('day', $d)
+                    ->with('lenght', $duration_event)
+                    ->with('token', $token);
+        }
     }
 
     public function send_price(Request $request)
     {
-        dd('hola sending price');
         // $available = substr($request->token, -1);
         // $token = substr($request->token, 0, -1);
+        $token = $request->token;
 
-        // $review = Ask::where('token', $token)->firstOrFail();
-        // $user = User::where('id', $review->user_id)->firstOrFail();
+        $review = Ask::where('token', $token)->firstOrFail();
+        $user = User::where('id', $review->user_id)->firstOrFail();
 
-        // if($user->type == "soloist") {
-        //     $info = User_info::select('first_name', 'last_name')->where('user_id', $review->user_id)->firstOrFail();
-        // } elseif($user->type == "ensemble") {
-        //      $ensemble = Ensemble::select('name')->where('user_id', $review->user_id)->firstOrFail();
-        // }
+        if($user->type == "soloist") {
+            $info = User_info::select('first_name', 'last_name')->where('user_id', $review->user_id)->firstOrFail();
+        } elseif($user->type == "ensemble") {
+             $ensemble = Ensemble::select('name')->where('user_id', $review->user_id)->firstOrFail();
+        }
         
-        // if($review->available == 1 or $review->nonavailable == 1 or $review->price != null or $review->accepted_price == 1){
-        //     Flash::error('This token already was used');
-        //     return redirect()->route('login');
-        // }else{
-        //     if($available == 1){
-        //         Ask::where('token', $token)
-        //         ->update([
-        //             'price'       => $request->price,
-        //             'available'   => 1,
-        //             'nonavailable'=> 0,
-        //         ]);
+        if($review->available == 1 || $review->nonavailable == 1 || $review->price != null || $review->accepted_price == 1){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            Ask::where('token', $token)
+            ->update([
+                'price'       => $request->price,
+                'available'   => 1,
+                'nonavailable'=> 0,
+            ]);
 
-        //         $dt = explode("|", $review->date);
-        //         $address = explode("|", $review->address);
-        //         $addrNAME = explode("address:", $address[1]);
-                
-        //         if($user->type == "soloist") {
-        //             $data = [
-        //                 'name'    => $review->name,
-        //                 'name_use'=> $info->first_name.' '.$info->last_name,
-        //                 'email'   => $review->email,
-        //                 'phone'   => $review->phone,
-        //                 'date'    => $dt[1],
-        //                 'address' => $addrNAME[1],
-        //                 'duration'=> $review->duration,
-        //                 'price'   => $request->price,
-        //                 'token'   => $review->token,
-        //             ];
-        //         } elseif($user->type == "ensemble") {
-        //              $data = [
-        //                 'name'    => $review->name,
-        //                 'name_use'=> $ensemble->name,
-        //                 'email'   => $review->email,
-        //                 'phone'   => $review->phone,
-        //                 'date'    => $dt[1],
-        //                 'address' => $addrNAME[1],
-        //                 'duration'=> $review->duration,
-        //                 'price'   => $request->price,
-        //                 'token'   => $review->token,
-        //             ];
-        //         }
+            $dt = explode("|", $review->date);
+            $address = explode("|", $review->address);
+            $addrNAME = explode("address:", $address[1]);
+            
+            if($user->type == "soloist") {
+                $data = [
+                    'name'    => $review->name,
+                    'name_use'=> $info->first_name.' '.$info->last_name,
+                    'email'   => $review->email,
+                    'phone'   => $review->phone,
+                    'date'    => $dt[1],
+                    'address' => $addrNAME[1],
+                    'duration'=> $review->duration,
+                    'price'   => $request->price,
+                    'token'   => $review->token,
+                ];
+            } elseif($user->type == "ensemble") {
+                 $data = [
+                    'name'    => $review->name,
+                    'name_use'=> $ensemble->name,
+                    'email'   => $review->email,
+                    'phone'   => $review->phone,
+                    'date'    => $dt[1],
+                    'address' => $addrNAME[1],
+                    'duration'=> $review->duration,
+                    'price'   => $request->price,
+                    'token'   => $review->token,
+                ];
+            }
 
-        //         Mail::send('email.request_send_price_client', $data, function($message) use ($review){
-        //             $message->from('support@bemusical.us');
-        //             $message->to($review->email);
-        //             $message->subject("Hi, we have a price proposal for your event");
-        //         });
+            Mail::send('email.request_send_price_client', $data, function($message) use ($review){
+                $message->from('support@bemusical.us');
+                $message->to($review->email);
+                $message->subject("Hi, we have a price proposal for your event");
+            });
 
-        //         if($user->type == "soloist") {
-        //             Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $info){
-        //                 $message->from('support@bemusical.us');
-        //                 $message->to('david@bemusic.al');
-        //                 $message->subject('Admin, '.$info->first_name.' '.$info->last_name.' is available and gives the price to '.$review->name);
-        //             });
-        //         } elseif($user->type == "ensemble") {
-        //             Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $ensemble){
-        //                 $message->from('support@bemusical.us');
-        //                 $message->to('david@bemusic.al');
-        //                 $message->subject('Admin, '.$ensemble->name.' is available and gives the price to '.$review->name);
-        //             }); 
-        //         }
+            if($user->type == "soloist") {
+                Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $info){
+                    $message->from('support@bemusical.us');
+                    $message->to('david@bemusic.al');
+                    $message->subject('Admin, '.$info->first_name.' '.$info->last_name.' is available and gives the price to '.$review->name);
+                });
+            } elseif($user->type == "ensemble") {
+                Mail::send('email.admin.request_send_price_client', $data, function($message) use ($review, $ensemble){
+                    $message->from('support@bemusical.us');
+                    $message->to('david@bemusic.al');
+                    $message->subject('Admin, '.$ensemble->name.' is available and gives the price to '.$review->name);
+                }); 
+            }
 
-        //         Flash::success('You accept the request, you can find all the info in your dashboard');
-        //         return redirect()->route('login');
-        //     }elseif($available == 0){
-        //         Ask::where('token', $token)
-        //         ->update([
-        //             'price'       => $request->price,
-        //             'available'   => 0,
-        //             'nonavailable'=> 1,
-        //         ]);
-        //         Flash::warning('You did not accept the request, we will contact you to know what happend.');
-        //         return redirect()->route('login');                
-        //     }
-        // }
+            Flash::success('You accept the request, you can find all the info in your dashboard');
+            return redirect()->route('login');
+        }
     }
 
     public function asking_request($get_token)
@@ -669,14 +683,166 @@ class PublicController extends Controller
         }
     }
 
-    public function return_answer_price($get_token)
+    public function return_answer_price($token)
     {
-        $available = substr($get_token, -1);
-        $token = substr($get_token, 0, -1);
-        $review = Ask::select('available', 'nonavailable', 'user_id', 'accepted_price', 'price')->where('token', $token)->firstOrFail();
-        $user = User::select('type', 'id')->where('id', $review->user_id)->firstOrFail();
+        // Default values when client get here are 
+        // accepted_price => 0,
+        // nonavailable   => 0,
+        // available      => 1,
+        // comment        => null,
+        $stripe = array(
+          "secret_key"      => "sk_test_e7FsM5lCe5UwmUEB4djNWmtz",
+          "publishable_key" => "pk_test_56MwMMhnoEpoqPocMMcXSZQH"
+        );
 
-        if ($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price != 0) {
+        Stripe::setApiKey($stripe['secret_key']);
+
+        $ask = Ask::where('token', $token)->firstOrFail();
+
+        if($ask->available != 0 and $ask->nonavailable == 0 and $ask->price != null and $ask->accepted_price != 0){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }elseif($ask->accepted_price == 1 and $ask->nonavailable == 1 and $ask->available == 0 and $ask->comment != null){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            $exploded_date = explode('|', $ask->date);
+            $date = explode(' ', $exploded_date[0]);
+            $day = $date[0];
+            $time = $date[1];
+
+            $d = Carbon::parse($day)->format('F j, Y');
+            $ft = Carbon::parse($time);
+            $tt = Carbon::parse($time);
+            $to_time = $tt->addMinutes($ask->duration);
+            $duration_event = $ft->format('h:i A').' - '.$tt->format('h:i A');
+            
+            if ($ask->user->type == 'soloist') {
+                $name_user = $ask->user->info->first_name.' '.$ask->user->info->last_name;
+                $slug_user = $ask->user->info->slug;
+            } elseif ($ask->user->type == 'ensemble') {
+                $name_user = $ask->user->ensemble->name;
+                $slug_user = $ask->user->ensemble->slug;
+            }
+
+            return view('user.confirmation_client')
+                    ->with('p_key', $stripe['publishable_key'])
+                    ->with('name_user', $name_user)
+                    ->with('slug_user', $slug_user)
+                    ->with('price', $ask->price)
+                    ->with('name', $ask->name)
+                    ->with('day', $d)
+                    ->with('lenght', $duration_event)
+                    ->with('token', $token);
+        }
+
+        // $available = substr($get_token, -1);
+        // $token = substr($get_token, 0, -1);
+        // $review = Ask::select('available', 'nonavailable', 'user_id', 'accepted_price', 'price')->where('token', $token)->firstOrFail();
+        // $user = User::select('type', 'id')->where('id', $review->user_id)->firstOrFail();
+
+        // if ($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price != 0) {
+        //     if($user->type == 'soloist')
+        //     {
+        //         $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
+        //     }
+        //     elseif($user->type == 'ensemble')
+        //     {
+        //         $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
+        //     }
+        //     Flash::warning('This token was already used');
+        //     return redirect()->route('index.public', $info->slug);
+        // }elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
+        //     if($user->type == 'soloist')
+        //     {
+        //         $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
+        //         if($available == 1){
+        //             $ask = Ask::where('token', $token)->first();
+                
+        //             $start_date = explode('|', $ask->date);
+        //             $format_date =Carbon::parse($start_date[0]);
+        //             $get_data_time = $format_date->addMinutes($ask->duration);
+        //             $end_date = $get_data_time->toDateTimeString();
+
+        //             $gig = new Gig();
+        //             $gig->user_id    = $ask->user_id;
+        //             $gig->request_id = $ask->id;
+        //             $gig->title      = $ask->name.'-'.$ask->company;
+        //             $gig->start      = $start_date[0];
+        //             $gig->end        = $end_date;
+        //             $gig->url        = URL::to('/details/request/'.$ask->id);
+        //             $gig->save(); 
+
+        //             Ask::where('token', $token)
+        //             ->update([
+        //                 'accepted_price'   => 1,
+        //             ]);
+        //             Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+        //             return redirect()->route('index.public', $info->slug);
+        //         }elseif ($available == 0) {
+
+        //             Ask::where('token', $token)
+        //             ->update([
+        //                 'accepted_price'   => 0,
+        //             ]);
+        //             Flash::error('You did no accept the price, and it was sent it to the user.');
+        //             return redirect()->route('index.public', $info->slug);              
+        //         }
+        //     }
+        //     elseif ($user->type == 'ensemble') 
+        //     {
+        //         $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
+        //         if($available == 1){
+        //             $ask = Ask::where('token', $token)->first();
+                    
+        //             $start_date = explode('|', $ask->date);
+        //             $format_date = Carbon::parse($start_date[0]);
+        //             $get_data_time = $format_date->addMinutes($ask->duration);
+        //             $end_date = $get_data_time->toDateTimeString();
+
+        //             $gig = new Gig();
+        //             $gig->user_id    = $ask->user_id;
+        //             $gig->request_id = $ask->id;
+        //             $gig->title      = $ask->name.'-'.$ask->company;
+        //             $gig->start      = $start_date[0];
+        //             $gig->end        = $end_date;
+        //             $gig->url        = URL::to('/details/request/'.$ask->id);
+        //             $gig->save(); 
+
+        //             Ask::where('token', $token)
+        //             ->update([
+        //                 'accepted_price'   => 1,
+        //             ]);
+        //             Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+        //             return redirect()->route('index.public', $info->slug);
+        //         }elseif ($available == 0) {
+        //             Ask::where('token', $token)
+        //             ->update([
+        //                 'accepted_price'   => 0,
+        //             ]);
+        //             Flash::success('You did no accept the price, and it was sent it to the user.');
+        //             return redirect()->route('index.public', $info->slug);              
+        //         }
+        //     }
+        // }
+    }
+
+    public function return_reject(Request $request)
+    {   
+        // When client rejects a quote we are going to 
+        // accepted_price => 1,
+        // nonavailable   => 1,
+        // available      => 0,
+        // comment        => =!null,
+        $ask = Ask::where('token', $request->token)->firstOrFail();
+        $user = User::select('type', 'id', 'email')->where('id', $ask->user_id)->firstOrFail();
+
+        $data = [
+            'client' => $ask->name,
+        ];
+
+        if ($ask->available == 0 and $ask->nonavailable == 1 and $ask->comment != null and $ask->accepted_price == 1) {
+
             if($user->type == 'soloist')
             {
                 $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
@@ -687,79 +853,53 @@ class PublicController extends Controller
             }
             Flash::warning('This token was already used');
             return redirect()->route('index.public', $info->slug);
-        }elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
+        } else {
             if($user->type == 'soloist')
             {
                 $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
-                if($available == 1){
-                    $ask = Ask::where('token', $token)->first();
-                
-                    $start_date = explode('|', $ask->date);
-                    $format_date =Carbon::parse($start_date[0]);
-                    $get_data_time = $format_date->addMinutes($ask->duration);
-                    $end_date = $get_data_time->toDateTimeString();
+                Ask::where('token', $request->token)
+                ->update([
+                    'accepted_price' => 1,
+                    'nonavailable'   => 1,
+                    'available'      => 0,
+                    'comment'        => $request->reject,
+                ]);
 
-                    $gig = new Gig();
-                    $gig->user_id    = $ask->user_id;
-                    $gig->request_id = $ask->id;
-                    $gig->title      = $ask->name.'-'.$ask->company;
-                    $gig->start      = $start_date[0];
-                    $gig->end        = $end_date;
-                    $gig->url        = URL::to('/details/request/'.$ask->id);
-                    $gig->save(); 
+                Mail::send('email.client_rejected', $data, function($message) use ($user){
+                    $message->from('support@bemusical.us');
+                    $message->to($user->email);
+                    $message->subject("we are sorry, but the client rejected your quote");
+                });
 
-                    Ask::where('token', $token)
-                    ->update([
-                        'accepted_price'   => 1,
-                    ]);
-                    Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-                    return redirect()->route('index.public', $info->slug);
-                }elseif ($available == 0) {
-
-                    Ask::where('token', $token)
-                    ->update([
-                        'accepted_price'   => 0,
-                    ]);
-                    Flash::error('You did no accept the price, and it was sent it to the user.');
-                    return redirect()->route('index.public', $info->slug);              
-                }
+                Flash::error('You did no accept the price, and it was sent it to the user.');
+                return redirect()->route('index.public', $info->slug);              
             }
             elseif ($user->type == 'ensemble') 
             {
                 $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
-                if($available == 1){
-                    $ask = Ask::where('token', $token)->first();
-                    
-                    $start_date = explode('|', $ask->date);
-                    $format_date = Carbon::parse($start_date[0]);
-                    $get_data_time = $format_date->addMinutes($ask->duration);
-                    $end_date = $get_data_time->toDateTimeString();
+                Ask::where('token', $request->token)
+                ->update([
+                    'accepted_price' => 1,
+                    'nonavailable'   => 1,
+                    'available'      => 0,
+                    'comment'        => $request->reject,
+                ]);
 
-                    $gig = new Gig();
-                    $gig->user_id    = $ask->user_id;
-                    $gig->request_id = $ask->id;
-                    $gig->title      = $ask->name.'-'.$ask->company;
-                    $gig->start      = $start_date[0];
-                    $gig->end        = $end_date;
-                    $gig->url        = URL::to('/details/request/'.$ask->id);
-                    $gig->save(); 
+                Mail::send('email.client_rejected', $data, function($message) use ($user){
+                    $message->from('support@bemusical.us');
+                    $message->to($user->email);
+                    $message->subject("we are sorry, but the client rejected your quote");
+                });
 
-                    Ask::where('token', $token)
-                    ->update([
-                        'accepted_price'   => 1,
-                    ]);
-                    Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-                    return redirect()->route('index.public', $info->slug);
-                }elseif ($available == 0) {
-                    Ask::where('token', $token)
-                    ->update([
-                        'accepted_price'   => 0,
-                    ]);
-                    Flash::success('You did no accept the price, and it was sent it to the user.');
-                    return redirect()->route('index.public', $info->slug);              
-                }
+                Flash::success('You did no accept the price, and it was sent it to the user.');
+                return redirect()->route('index.public', $info->slug);              
             }
         }
+    }
+
+    public function return_confirmed(Request $request)
+    {
+        
     }
 
     public function general_request(generalRequest $request)
@@ -1617,17 +1757,33 @@ class PublicController extends Controller
         return array($array_users_picture, $array_users_name, $array_users_bio, $array_users_slug);
     }
 
+    // public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
+    // {
+    //     $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    //     curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    //     $response = curl_exec($ch);
+    //     curl_close($ch);
+    //     $response_a = json_decode($response, true);
+    //     $status = $response_a['rows'][0]['elements'][0]['status'];
+    //     if ($status == 'ZERO_RESULTS') {
+    //         return array('distance' => 'undefined', 'time' => 'undefined');
+    //     }elseif ($status == 'UNKNOWN_ERROR') {
+    //         return array('distance' => 'undefined', 'time' => 'undefined');
+    //     }else {
+    //         $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
+    //         $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+    //         return array('distance' => $dist, 'time' => $time);
+    //     }
+    // }
     public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
     {
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        $response = file_get_contents($url);
         $response_a = json_decode($response, true);
         $status = $response_a['rows'][0]['elements'][0]['status'];
         if ($status == 'ZERO_RESULTS') {
