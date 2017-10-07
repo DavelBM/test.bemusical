@@ -183,6 +183,7 @@ return [
         Laracasts\Flash\FlashServiceProvider::class,
         //Calendar
         //MaddHatter\LaravelFullcalendar\ServiceProvider::class,
+        Cartalyst\Stripe\Laravel\StripeServiceProvider::class,
     ],
 
     /*
@@ -234,6 +235,7 @@ return [
         'Form' => Collective\Html\FormFacade::class,
         'Html' => Collective\Html\HtmlFacade::class,
         //'Calendar' => MaddHatter\LaravelFullcalendar\Facades\Calendar::class,
+        'Stripe' => Cartalyst\Stripe\Laravel\Facades\Stripe::class,
     ],
 
 ];

@@ -19,7 +19,7 @@
             <input id="place-address-principal" type="hidden" name="place_address" required>
             <input id="place-geometry-principal" type="hidden" name="place_geometry" required>
             <br>
-            <button type="submit" class="btn btn-block btn-primary">Search</button>
+            <button type="submit" class="btn btn-block btn-primary" onclick="localStorage.clear();">Search</button>
         </form>
         @if ($errors->has('distance'))
             <span class="help-block">

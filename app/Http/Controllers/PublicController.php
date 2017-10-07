@@ -25,7 +25,7 @@ use Mail;
 use URL;
 use stdClass;
 use App\Client;
-use Stripe\Stripe;
+use Cartalyst\Stripe\Stripe;
 
 class PublicController extends Controller
 {
@@ -553,7 +553,9 @@ class PublicController extends Controller
             $availableUsersNoRepited = array_unique($availableUsers);
             $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
             $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
-            
+            $destinations = '';
+            $userDestinations = [];
+            $mile_radious_from_user_array = [];
             foreach ($usersAvailable as $user_email) {
                 $singer = User::where('email', $user_email)->first();
 
@@ -563,6 +565,8 @@ class PublicController extends Controller
                     $lat_from_user = explode('lat:', $addres_from_user[2]);
                     $lng_from_user = explode('long:', $addres_from_user[3]);
                     $mile_radious_from_user = $singer->ensemble->mile_radious;
+                    array_push($userDestinations, $singer->email);
+                    array_push($mile_radious_from_user_array, $mile_radious_from_user);
                 } 
                 else if( $singer->type == 'soloist' )
                 {
@@ -570,14 +574,23 @@ class PublicController extends Controller
                     $lat_from_user = explode('lat:', $addres_from_user[2]);
                     $lng_from_user = explode('long:', $addres_from_user[3]);
                     $mile_radious_from_user = $singer->info->mile_radious;
+                    array_push($userDestinations, $singer->email);
+                    array_push($mile_radious_from_user_array, $mile_radious_from_user);
                 }
-                $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
                 
-                if ($dist['distance'] == 'undefined') {
-                    array_push($nonAvailableUsers, $singer->email);
+                $destinations .= $lat_from_user[1].",".$lng_from_user[1]."|";
+            }
+
+            $origin = $lat_origin.",".$lng_origin;
+            $destinations = trim($destinations, "|");
+            $finalData = $this->GetDrivingDistance($origin, $destinations);
+
+            for ($x=0; $x<count($userDestinations); $x++) {
+                if ($finalData[$x]['distance'] == 'undefined') {
+                    array_push($nonAvailableUsers, $userDestinations[$x]);
                 }
 
-                $distance_exploded = explode(' mi', $dist['distance']);
+                $distance_exploded = explode(' mi', $finalData[$x]['distance']);
 
                 if (strpos($distance_exploded[0], ',')) {
                     $exploded_from_user = explode(",", $distance_exploded[0]);
@@ -587,18 +600,10 @@ class PublicController extends Controller
                     $distance_from_point_to_point = (int)$distance_exploded[0];
                 }
 
-                if ($distance_from_point_to_point > $mile_radious_from_user) {
-                    array_push($nonAvailableUsers, $singer->email);
+                if ($distance_from_point_to_point > $mile_radious_from_user_array[$x]) {
+                    array_push($nonAvailableUsers, $userDestinations[$x]);
                 } else {
-                    array_push($availableUsers, $singer->email);
-                }
-
-                if ($user_searching->type == 'soloist' && $singer->type == 'soloist') {
-                    array_push($availableUsers, $singer->email);
-                } elseif ($user_searching->type == 'ensemble' && $singer->type == 'ensemble') {
-                    array_push($availableUsers, $singer->email);
-                } else {
-                    array_push($nonAvailableUsers, $singer->email);
+                    array_push($availableUsers, $userDestinations[$x]);
                 }
             }
 
@@ -690,13 +695,6 @@ class PublicController extends Controller
         // nonavailable   => 0,
         // available      => 1,
         // comment        => null,
-        $stripe = array(
-          "secret_key"      => "sk_test_e7FsM5lCe5UwmUEB4djNWmtz",
-          "publishable_key" => "pk_test_56MwMMhnoEpoqPocMMcXSZQH"
-        );
-
-        Stripe::setApiKey($stripe['secret_key']);
-
         $ask = Ask::where('token', $token)->firstOrFail();
 
         if($ask->available != 0 and $ask->nonavailable == 0 and $ask->price != null and $ask->accepted_price != 0){
@@ -726,7 +724,7 @@ class PublicController extends Controller
             }
 
             return view('user.confirmation_client')
-                    ->with('p_key', $stripe['publishable_key'])
+                    ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
                     ->with('name_user', $name_user)
                     ->with('slug_user', $slug_user)
                     ->with('price', $ask->price)
@@ -899,7 +897,31 @@ class PublicController extends Controller
 
     public function return_confirmed(Request $request)
     {
+        $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+
+        // $customer = $stripe->customers()->create([
+        //     'email' => 'john@doe.com',
+        // ]);
         
+        // $token = $stripe->tokens()->create([
+        //     'card' => [
+        //         'number'    => '4242424242424242',
+        //         'exp_month' => 10,
+        //         'cvc'       => 314,
+        //         'exp_year'  => 2020,
+        //     ],
+        // ]);
+
+        // $card = $stripe->cards()->create($customer['id'], $token['id']);
+
+        // $charge = $stripe->charges()->create([
+        //     'customer' => $customer['id'],
+        //     'currency' => 'USD',
+        //     'amount'   => 50.49,
+        // ]);
+        $card = $stripe->charges()->find('ch_1BANSSJ9Lejzo9Pi1StXEmON');
+        //dd($stripe, $customer, $charge);
+        dd($card);
     }
 
     public function general_request(generalRequest $request)
@@ -997,7 +1019,9 @@ class PublicController extends Controller
         $availableUsersNoRepited = array_unique($availableUsers);
         $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
         $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
-
+        $destinations = '';
+        $userDestinations = [];
+        $mile_radious_from_user_array = [];
         foreach ($usersAvailable as $user) {
             $singer = User::where('email', $user)->first();
 
@@ -1007,6 +1031,8 @@ class PublicController extends Controller
                 $lat_from_user = explode('lat:', $addres_from_user[2]);
                 $lng_from_user = explode('long:', $addres_from_user[3]);
                 $mile_radious_from_user = $singer->ensemble->mile_radious;
+                array_push($userDestinations, $singer->email);
+                array_push($mile_radious_from_user_array, $mile_radious_from_user);
             } 
             else if( $singer->type == 'soloist' )
             {
@@ -1014,14 +1040,23 @@ class PublicController extends Controller
                 $lat_from_user = explode('lat:', $addres_from_user[2]);
                 $lng_from_user = explode('long:', $addres_from_user[3]);
                 $mile_radious_from_user = $singer->info->mile_radious;
+                array_push($userDestinations, $singer->email);
+                array_push($mile_radious_from_user_array, $mile_radious_from_user);
             }
-            $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
             
-            if ($dist['distance'] == 'undefined') {
-                array_push($nonAvailableUsers, $singer->email);
+            $destinations .= $lat_from_user[1].",".$lng_from_user[1]."|";
+        }
+
+        $origin = $lat_origin.",".$lng_origin;
+        $destinations = trim($destinations, "|");
+        $finalData = $this->GetDrivingDistance($origin, $destinations);
+
+        for ($x=0; $x<count($userDestinations); $x++) {
+            if ($finalData[$x]['distance'] == 'undefined') {
+                array_push($nonAvailableUsers, $userDestinations[$x]);
             }
 
-            $distance_exploded = explode(' mi', $dist['distance']);
+            $distance_exploded = explode(' mi', $finalData[$x]['distance']);
 
             if (strpos($distance_exploded[0], ',')) {
                 $exploded_from_user = explode(",", $distance_exploded[0]);
@@ -1031,10 +1066,10 @@ class PublicController extends Controller
                 $distance_from_point_to_point = (int)$distance_exploded[0];
             }
 
-            if ($distance_from_point_to_point > $mile_radious_from_user) {
-                array_push($nonAvailableUsers, $singer->email);
+            if ($distance_from_point_to_point > $mile_radious_from_user_array[$x]) {
+                array_push($nonAvailableUsers, $userDestinations[$x]);
             } else {
-                array_push($availableUsers, $singer->email);
+                array_push($availableUsers, $userDestinations[$x]);
             }
         }
 
@@ -1459,7 +1494,9 @@ class PublicController extends Controller
         $availableUsersNoRepited = array_unique($availableUsers);
         $nonAvailableUsersNoRepited = array_unique($nonAvailableUsers);
         $usersAvailable = array_diff($availableUsersNoRepited, $nonAvailableUsersNoRepited);
-
+        $destinations = '';
+        $userDestinations = [];
+        $mile_radious_from_user_array = [];
         foreach ($usersAvailable as $user) {
             $singer = User::where('email', $user)->first();
 
@@ -1469,6 +1506,8 @@ class PublicController extends Controller
                 $lat_from_user = explode('lat:', $addres_from_user[2]);
                 $lng_from_user = explode('long:', $addres_from_user[3]);
                 $mile_radious_from_user = $singer->ensemble->mile_radious;
+                array_push($userDestinations, $singer->email);
+                array_push($mile_radious_from_user_array, $mile_radious_from_user);
             } 
             else if( $singer->type == 'soloist' )
             {
@@ -1476,14 +1515,23 @@ class PublicController extends Controller
                 $lat_from_user = explode('lat:', $addres_from_user[2]);
                 $lng_from_user = explode('long:', $addres_from_user[3]);
                 $mile_radious_from_user = $singer->info->mile_radious;
+                array_push($userDestinations, $singer->email);
+                array_push($mile_radious_from_user_array, $mile_radious_from_user);
             }
-            $dist = $this->GetDrivingDistance($lat_origin, $lat_from_user[1], $lng_origin, $lng_from_user[1]);
             
-            if ($dist['distance'] == 'undefined') {
-                array_push($nonAvailableUsers, $singer->email);
+            $destinations .= $lat_from_user[1].",".$lng_from_user[1]."|";
+        }
+
+        $origin = $lat_origin.",".$lng_origin;
+        $destinations = trim($destinations, "|");
+        $finalData = $this->GetDrivingDistance($origin, $destinations);
+
+        for ($x=0; $x<count($userDestinations); $x++) {
+            if ($finalData[$x]['distance'] == 'undefined') {
+                array_push($nonAvailableUsers, $userDestinations[$x]);
             }
 
-            $distance_exploded = explode(' mi', $dist['distance']);
+            $distance_exploded = explode(' mi', $finalData[$x]['distance']);
 
             if (strpos($distance_exploded[0], ',')) {
                 $exploded_from_user = explode(",", $distance_exploded[0]);
@@ -1493,10 +1541,10 @@ class PublicController extends Controller
                 $distance_from_point_to_point = (int)$distance_exploded[0];
             }
 
-            if ($distance_from_point_to_point > $mile_radious_from_user) {
-                array_push($nonAvailableUsers, $singer->email);
+            if ($distance_from_point_to_point > $mile_radious_from_user_array[$x]) {
+                array_push($nonAvailableUsers, $userDestinations[$x]);
             } else {
-                array_push($availableUsers, $singer->email);
+                array_push($availableUsers, $userDestinations[$x]);
             }
         }
 
@@ -1741,12 +1789,21 @@ class PublicController extends Controller
             $java_user = User::where('id', $final_user)->first();
             
             if ($java_user->type == 'ensemble') {
-                array_push($array_users_picture, "images/ensemble/".$java_user->ensemble->profile_picture);
+                if ($java_user->ensemble->profile_picture != 'null') {
+                    array_push($array_users_picture, "images/ensemble/".$java_user->ensemble->profile_picture);
+                } else {
+                    array_push($array_users_picture, "images/profile/no-image.png");
+                }
+                
                 array_push($array_users_name, $java_user->ensemble->name);
                 array_push($array_users_bio, $java_user->ensemble->summary);
                 array_push($array_users_slug, $java_user->ensemble->slug);
             }elseif ($java_user->type == 'soloist') {
-                array_push($array_users_picture, "images/profile/".$java_user->info->profile_picture);
+                if ($java_user->info->profile_picture != 'null') {
+                    array_push($array_users_picture, "images/profile/".$java_user->info->profile_picture);
+                } else {
+                    array_push($array_users_picture, "images/profile/no-image.png");
+                }
                 array_push($array_users_name, $java_user->info->first_name.' '.$java_user->info->last_name);
                 array_push($array_users_bio, $java_user->info->bio);
                 array_push($array_users_slug, $java_user->info->slug);
@@ -1780,20 +1837,49 @@ class PublicController extends Controller
     //         return array('distance' => $dist, 'time' => $time);
     //     }
     // }
-    public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
+
+
+    // public function GetDrivingDistance($lat1, $lat2, $long1, $long2)
+    // {
+    //     $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
+    //     $response = file_get_contents($url);
+    //     $response_a = json_decode($response, true);
+    //     $status = $response_a['rows'][0]['elements'][0]['status'];
+    //     if ($status == 'ZERO_RESULTS') {
+    //         return array('distance' => 'undefined', 'time' => 'undefined');
+    //     }elseif ($status == 'UNKNOWN_ERROR') {
+    //         return array('distance' => 'undefined', 'time' => 'undefined');
+    //     }else {
+    //         $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
+    //         $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+    //         return array('distance' => $dist, 'time' => $time);
+    //     }
+    // }
+
+    public function GetDrivingDistance($origin, $destinations)
     {
-        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$long1."&destinations=".$lat2.",".$long2."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$origin."&destinations=".$destinations."&mode=driving&key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&units=imperial";
         $response = file_get_contents($url);
         $response_a = json_decode($response, true);
-        $status = $response_a['rows'][0]['elements'][0]['status'];
-        if ($status == 'ZERO_RESULTS') {
-            return array('distance' => 'undefined', 'time' => 'undefined');
-        }elseif ($status == 'UNKNOWN_ERROR') {
-            return array('distance' => 'undefined', 'time' => 'undefined');
-        }else {
-            $dist = $response_a['rows'][0]['elements'][0]['distance']['text'];
-            $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
-            return array('distance' => $dist, 'time' => $time);
+        $data = [];
+        $i = 0;
+        foreach ($response_a['rows'][0]['elements'] as $destData) {
+            $status = $destData['status'];
+            if ($status == 'ZERO_RESULTS') {
+                $data[$i]['distance'] = "undefined";
+                $data[$i]['duration'] = "undefined";
+            }elseif ($status == 'UNKNOWN_ERROR') {
+                $data[$i]['distance'] = "undefined";
+                $data[$i]['duration'] = "undefined";
+            }elseif ($status == 'OK') {
+                $data[$i]['distance'] = $destData['distance']['text'];
+                $data[$i]['duration'] = $destData['duration']['text'];
+            }else {
+                $data[$i]['distance'] = "undefined";
+                $data[$i]['duration'] = "undefined";
+            }
+            $i++;
         }
+        return $data;
     }
 }
