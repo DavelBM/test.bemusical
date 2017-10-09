@@ -14,7 +14,7 @@ class AlterRequest1Table extends Migration
     public function up()
     {
         Schema::table('requests', function (Blueprint $table) {
-            $table->integer('price')->nullable()->after('duration');
+            $table->decimal('price', 5, 2)->nullable()->after('duration');
             $table->boolean('accepted_price')->after('price');
         });
     }

@@ -20,6 +20,7 @@ use App\GigOption;
 use App\Tag;
 use App\Instrument;
 use App\Style;
+use App\Payment;
 use Auth;
 use Mail;
 use URL;
@@ -731,98 +732,9 @@ class PublicController extends Controller
                     ->with('name', $ask->name)
                     ->with('day', $d)
                     ->with('lenght', $duration_event)
+                    ->with('id', $ask->id)
                     ->with('token', $token);
         }
-
-        // $available = substr($get_token, -1);
-        // $token = substr($get_token, 0, -1);
-        // $review = Ask::select('available', 'nonavailable', 'user_id', 'accepted_price', 'price')->where('token', $token)->firstOrFail();
-        // $user = User::select('type', 'id')->where('id', $review->user_id)->firstOrFail();
-
-        // if ($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price != 0) {
-        //     if($user->type == 'soloist')
-        //     {
-        //         $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
-        //     }
-        //     elseif($user->type == 'ensemble')
-        //     {
-        //         $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
-        //     }
-        //     Flash::warning('This token was already used');
-        //     return redirect()->route('index.public', $info->slug);
-        // }elseif($review->available != 0 and $review->nonavailable == 0 and $review->price != null and $review->accepted_price == 0) {
-        //     if($user->type == 'soloist')
-        //     {
-        //         $info = User_info::select('slug')->where('user_id', $user->id)->firstOrFail();
-        //         if($available == 1){
-        //             $ask = Ask::where('token', $token)->first();
-                
-        //             $start_date = explode('|', $ask->date);
-        //             $format_date =Carbon::parse($start_date[0]);
-        //             $get_data_time = $format_date->addMinutes($ask->duration);
-        //             $end_date = $get_data_time->toDateTimeString();
-
-        //             $gig = new Gig();
-        //             $gig->user_id    = $ask->user_id;
-        //             $gig->request_id = $ask->id;
-        //             $gig->title      = $ask->name.'-'.$ask->company;
-        //             $gig->start      = $start_date[0];
-        //             $gig->end        = $end_date;
-        //             $gig->url        = URL::to('/details/request/'.$ask->id);
-        //             $gig->save(); 
-
-        //             Ask::where('token', $token)
-        //             ->update([
-        //                 'accepted_price'   => 1,
-        //             ]);
-        //             Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-        //             return redirect()->route('index.public', $info->slug);
-        //         }elseif ($available == 0) {
-
-        //             Ask::where('token', $token)
-        //             ->update([
-        //                 'accepted_price'   => 0,
-        //             ]);
-        //             Flash::error('You did no accept the price, and it was sent it to the user.');
-        //             return redirect()->route('index.public', $info->slug);              
-        //         }
-        //     }
-        //     elseif ($user->type == 'ensemble') 
-        //     {
-        //         $info = Ensemble::select('slug')->where('user_id', $user->id)->firstOrFail();
-        //         if($available == 1){
-        //             $ask = Ask::where('token', $token)->first();
-                    
-        //             $start_date = explode('|', $ask->date);
-        //             $format_date = Carbon::parse($start_date[0]);
-        //             $get_data_time = $format_date->addMinutes($ask->duration);
-        //             $end_date = $get_data_time->toDateTimeString();
-
-        //             $gig = new Gig();
-        //             $gig->user_id    = $ask->user_id;
-        //             $gig->request_id = $ask->id;
-        //             $gig->title      = $ask->name.'-'.$ask->company;
-        //             $gig->start      = $start_date[0];
-        //             $gig->end        = $end_date;
-        //             $gig->url        = URL::to('/details/request/'.$ask->id);
-        //             $gig->save(); 
-
-        //             Ask::where('token', $token)
-        //             ->update([
-        //                 'accepted_price'   => 1,
-        //             ]);
-        //             Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-        //             return redirect()->route('index.public', $info->slug);
-        //         }elseif ($available == 0) {
-        //             Ask::where('token', $token)
-        //             ->update([
-        //                 'accepted_price'   => 0,
-        //             ]);
-        //             Flash::success('You did no accept the price, and it was sent it to the user.');
-        //             return redirect()->route('index.public', $info->slug);              
-        //         }
-        //     }
-        // }
     }
 
     public function return_reject(Request $request)
@@ -839,7 +751,7 @@ class PublicController extends Controller
             'client' => $ask->name,
         ];
 
-        if ($ask->available == 0 and $ask->nonavailable == 1 and $ask->comment != null and $ask->accepted_price == 1) {
+        if (($ask->available == 0 and $ask->nonavailable == 1 and $ask->comment != null and $ask->accepted_price == 1) or (($ask->available == 1 and $ask->nonavailable == 0 and $ask->comment == null and $ask->accepted_price == 1))) {
 
             if($user->type == 'soloist')
             {
@@ -895,33 +807,248 @@ class PublicController extends Controller
         }
     }
 
-    public function return_confirmed(Request $request)
+    public function return_confirmed(Request $request, $id)
     {
-        $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+        //////////////STRIPE////////////////
+        if ($request->_s_name != null) {
+            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            $token = $request->stripeToken;
+            $ask = Ask::where('id', $id)->firstOrFail();
+            
+            if (strpos($ask->price, '.')) {
+                $i_d_price = explode(".", $ask->price);
+            }
 
-        // $customer = $stripe->customers()->create([
-        //     'email' => 'john@doe.com',
-        // ]);
-        
-        // $token = $stripe->tokens()->create([
-        //     'card' => [
-        //         'number'    => '4242424242424242',
-        //         'exp_month' => 10,
-        //         'cvc'       => 314,
-        //         'exp_year'  => 2020,
-        //     ],
-        // ]);
+            if ($request->_s_save == 'save') {
+                
+                $customer = $stripe->customers()->create([
+                    'description' => $ask->name,
+                    'email' => $ask->email,
+                ]);
 
-        // $card = $stripe->cards()->create($customer['id'], $token['id']);
+                $card = $stripe->cards()->create($customer['id'], $token);
 
-        // $charge = $stripe->charges()->create([
-        //     'customer' => $customer['id'],
-        //     'currency' => 'USD',
-        //     'amount'   => 50.49,
-        // ]);
-        $card = $stripe->charges()->find('ch_1BANSSJ9Lejzo9Pi1StXEmON');
-        //dd($stripe, $customer, $charge);
-        dd($card);
+                $charge = $stripe->charges()->create([
+                    "customer" => $customer['id'],
+                    "amount" => $i_d_price[0],
+                    "currency" => "USD",
+                    "description" => $ask->id.".Bemusical Gig",
+                ]);
+
+                Payment::create([
+                    'request_id'       => $ask->id,
+                    'email'            => $ask->email,
+                    'phone'            => $ask->phone,
+                    '_billing_address' => $request->_s_address,
+                    '_billing_zip'     => $card['address_zip'],
+                    '_id_costumer'     => $customer['id'],
+                    '_id_card'         => $card['id'],
+                    '_id_token'        => $token,
+                    '_id_charge'       => $charge['id'],
+                    'amount'           => $i_d_price[0],
+                    'payed'            => 1,
+                    'type'             => 'stripe'
+                ]);
+
+                // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
+                // $token = $stripe->tokens()->create([
+                //     'card' => [
+                //         'number'    => '4242424242424242',
+                //         'exp_month' => 10,
+                //         'cvc'       => 314,
+                //         'exp_year'  => 2020,
+                //     ],
+                // ]);
+
+                // WE USE THIS WHEN ALREADY SAVED THE INFORMATION AT LEAST ONCE.
+                // $charge = $stripe->charges()->create([
+                //     'customer' => $customer['id'],
+                //     'currency' => 'USD',
+                //     'amount'   => 50.49,
+                // ]);
+
+            }else{
+                $charge = $stripe->charges()->create([
+                    "amount" => $i_d_price[0],
+                    "currency" => "USD",
+                    "description" => $ask->id.".Bemusical Gig",
+                    "source" => $token,
+                ]);
+
+                Payment::create([
+                    'request_id' => $ask->id,
+                    '_id_charge' => $charge['id'],
+                    'amount'     => $i_d_price[0],
+                    'payed'      => 1,
+                    'type'       => 'stripe'
+                ]);
+            }
+
+            if($ask->user->type == 'soloist')
+            {
+                $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                return redirect()->route('index.public', $info->slug);
+            }
+            elseif($ask->user->type == 'ensemble') 
+            {
+                $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                $start_date = explode('|', $ask->date);
+                $format_date = Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                return redirect()->route('index.public', $info->slug);
+            }
+        }
+        //////////////CASH////////////////
+        if ($request->_c_name != null) {
+            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            $token = $request->_c_stripeToken;
+            $ask = Ask::where('id', $id)->firstOrFail();
+            
+            if (strpos($ask->price, '.')) {
+                $i_d_price = explode(".", $ask->price);
+            }
+
+            if ($request->_c_save == 'save') {
+                
+                $customer = $stripe->customers()->create([
+                    'description' => $ask->name,
+                    'email' => $ask->email,
+                ]);
+
+                $card = $stripe->cards()->create($customer['id'], $token);
+
+                $charge = $stripe->charges()->create([
+                    "customer" => $customer['id'],
+                    "amount" => $i_d_price[0]*(0.12),
+                    "currency" => "USD",
+                    "description" => $ask->id.".Bemusical Gig",
+                ]);
+
+                Payment::create([
+                    'request_id'       => $ask->id,
+                    'email'            => $ask->email,
+                    'phone'            => $ask->phone,
+                    '_billing_address' => $request->_c_address,
+                    '_billing_zip'     => $card['address_zip'],
+                    '_id_costumer'     => $customer['id'],
+                    '_id_card'         => $card['id'],
+                    '_id_token'        => $token,
+                    '_id_charge'       => $charge['id'],
+                    'amount'           => $i_d_price[0]*(0.12),
+                    'payed'            => 1,
+                    'type'             => 'cash'
+                ]);
+
+                // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
+                // $token = $stripe->tokens()->create([
+                //     'card' => [
+                //         'number'    => '4242424242424242',
+                //         'exp_month' => 10,
+                //         'cvc'       => 314,
+                //         'exp_year'  => 2020,
+                //     ],
+                // ]);
+
+                // WE USE THIS WHEN ALREADY SAVED THE INFORMATION AT LEAST ONCE.
+                // $charge = $stripe->charges()->create([
+                //     'customer' => $customer['id'],
+                //     'currency' => 'USD',
+                //     'amount'   => 50.49,
+                // ]);
+
+            }else{
+                $charge = $stripe->charges()->create([
+                    "amount" => $i_d_price[0]*(0.12),
+                    "currency" => "USD",
+                    "description" => $ask->id.".Bemusical Gig",
+                    "source" => $token,
+                ]);
+
+                Payment::create([
+                    'request_id' => $ask->id,
+                    '_id_charge' => $charge['id'],
+                    'amount'     => $i_d_price[0]*(0.12),
+                    'payed'      => 1,
+                    'type'       => 'cash'
+                ]);
+            }
+
+            if($ask->user->type == 'soloist')
+            {
+                $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                return redirect()->route('index.public', $info->slug);
+            }
+            elseif($ask->user->type == 'ensemble') 
+            {
+                $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                $start_date = explode('|', $ask->date);
+                $format_date = Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+                
+                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                return redirect()->route('index.public', $info->slug);
+            }
+        }
     }
 
     public function general_request(generalRequest $request)
