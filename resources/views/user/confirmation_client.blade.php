@@ -142,52 +142,14 @@
                     </div>
                     </div> -->
 
-                    <button id="transfer" class="btn btn-block btn-default">
+                    <button id="linkButton" class="btn btn-block btn-default">
                         Bank Transfer
                     </button>
 
-                    <div id="transferDetails">
-                    <div class="col-md-10 col-md-offset-1">
-                        <button id='linkButton'>Open Plaid Link</button>
-                    </div>
-                    </div>
-
-                    <button id="cash" class="btn btn-block btn-default">
+                    <a href="{{route('general.return.answer.price.cash', $token)}}" id="cash" class="btn btn-block btn-default">
                         Cash
-                    </button>
+                    </a>
 
-                    <div id="cashDetails">
-                    <div class="col-md-10 col-md-offset-1">
-                        <center><h2 style="color: orange;"><strong>For this option you have to pay at least 12% of ${{$price}} (${{$price*(0.12)}})</strong></h2></center>
-                        <script src="https://js.stripe.com/v3/"></script>
-                        <form action="{{ route('general.return.confirmed', $id) }}" method="post" id="payment-form-cash">
-                            {{ csrf_field() }}
-                            <div class="form-row">
-                                <label for="name-element">
-                                    Name
-                                </label>
-                                <input id="_c_name" type="text" class="form-control" name="_c_name" placeholder="Name" required>
-                            </div>
-                            <div class="form-row">
-                                <label for="address-element">
-                                    Billing Address
-                                </label>
-                                <input id="_c_address" type="text" class="form-control" name="_c_address" placeholder="Address" required>
-                            </div>
-                            <div class="form-row">
-                                <label for="card-element-cash">
-                                    Credit or debit card
-                                </label>
-                                <div id="card-element-cash"></div>
-                                <div id="card-errors-cash" role="alert"></div>
-                            </div>
-                            <div class="checkbox">
-                                <label><input name="_c_save" type="checkbox" value="save">Save information</label>
-                            </div>
-                            <button type="submit">Submit Payment</button>
-                        </form>
-                    </div>
-                    </div>
 
                     <div class="row">
                     <div class="col-md-10 col-md-offset-1">
@@ -240,34 +202,57 @@
 @endsection
 
 @section('js')
-
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <script>
-var linkHandler = Plaid.create({
-  env: 'sandbox',
-  clientName: 'Stripe/Plaid Test',
-  key: '[Plaid key]',
-  product: ['auth'],
-  selectAccount: true,
-  onSuccess: function(public_token, metadata) {
-    // Send the public_token and account ID to your app server.
-    console.log('public_token: ' + public_token);
-    console.log('account ID: ' + metadata.account_id);
-  },
-  onExit: function(err, metadata) {
-    // The user exited the Link flow.
-    if (err != null) {
-      // The user encountered a Plaid API error prior to exiting.
-    }
-  },
-});
+    var linkHandler = Plaid.create({
+        apiVersion: 'v2',
+        env: 'sandbox',
+        clientName: 'Stripe/Plaid Test',
+        key: 'bbbb161e192cf8202379b91f186ab7',
+        product: ['auth'],
+        selectAccount: true,
+        forceIframe: true,
+        onSuccess: function(public_token, metadata) {
+            $.ajax({
+                type: "POST",
+                url: "/return/answer/confirmed/{{$id}}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "public_token": public_token,
+                    "account_ID": metadata.account_id,
+                },
+                dataType: 'json',
+                beforeSend: function(){
+                    console.log('Sending info');
+                },
+                success: function(response){
+                    $.each(response.info, function (index, info) {
+                        // console.log(info.status);
+                        // console.log(info.ba_stripe);
+                        // console.log(info.rid_stripe);
+                        console.log(info.customer);
+                        console.log(info.charge);
+                        // location.href = "";
+                    });
+                },
+                error: function(xhr){
+                    console.log('Error');
+                }
+            });
+        },
+        onExit: function(err, metadata) {
+            // The user exited the Link flow.
+            if (err != null) {
+              // The user encountered a Plaid API error prior to exiting.
+            }
+        },
+    });
 
 // Trigger the Link UI
 document.getElementById('linkButton').onclick = function() {
   linkHandler.open();
 };
 </script>
-
 <script type="text/javascript">
 
     $(document).ready(function(){
@@ -311,11 +296,9 @@ document.getElementById('linkButton').onclick = function() {
 
     // Create a Stripe client
     var stripe = Stripe('{{$p_key}}');
-    var stripeCash = Stripe('{{$p_key}}');
 
     // Create an instance of Elements
     var elements = stripe.elements();
-    var elementsCash = stripeCash.elements();
 
     // Custom styling can be passed to options when creating an Element.
     // (Note that this demo uses a wider set of styles than the guide below.)
@@ -338,11 +321,9 @@ document.getElementById('linkButton').onclick = function() {
 
     // Create an instance of the card Element
     var card = elements.create('card', {style: style});
-    var cardCash = elementsCash.create('card', {style: style});
 
     // Add an instance of the card Element into the `card-element` <div>
     card.mount('#card-element');
-    cardCash.mount('#card-element-cash');
 
     // Handle real-time validation errors from the card Element.
     card.addEventListener('change', function(event) {
@@ -351,15 +332,6 @@ document.getElementById('linkButton').onclick = function() {
             displayError.textContent = event.error.message;
         } else {
             displayError.textContent = '';
-        }
-    });
-
-    cardCash.addEventListener('change', function(event) {
-        var displayErrorCash = document.getElementById('card-errors-cash');
-        if (event.error) {
-            displayErrorCash.textContent = event.error.message;
-        } else {
-            displayErrorCash.textContent = '';
         }
     });
 
@@ -379,35 +351,6 @@ document.getElementById('linkButton').onclick = function() {
             }
         });
     });
-
-    var formCash = document.getElementById('payment-form-cash');
-    formCash.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        stripeCash.createToken(cardCash).then(function(result) {
-            if (result.error) {
-                // Inform the user if there was an error
-                var errorElementCash = document.getElementById('card-errors-cash');
-                errorElementCash.textContent = result.error.message;
-            } else {
-                // Send the token to your server
-                stripeTokenHandlerCash(result.token);
-            }
-        });
-    });
-
-    function stripeTokenHandlerCash(token) {
-        // Insert the token ID into the form so it gets submitted to the server
-        var formCash = document.getElementById('payment-form-cash');
-        var hiddenInputCash = document.createElement('input');
-        hiddenInputCash.setAttribute('type', 'hidden');
-        hiddenInputCash.setAttribute('name', '_c_stripeToken');
-        hiddenInputCash.setAttribute('value', token.id);
-        formCash.appendChild(hiddenInputCash);
-
-        // Submit the form
-        formformCash.submit();
-    }
 
     function stripeTokenHandler(token) {
         // Insert the token ID into the form so it gets submitted to the server

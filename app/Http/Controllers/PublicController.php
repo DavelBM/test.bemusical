@@ -659,7 +659,7 @@ class PublicController extends Controller
             } else {
                 $flag_client = 0;
             }
-
+            
             $data = [ 
                 'names'       => $recomendation_name,
                 'slugs'       => $recomendation_slug,
@@ -725,6 +725,49 @@ class PublicController extends Controller
             }
 
             return view('user.confirmation_client')
+                    ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
+                    ->with('name_user', $name_user)
+                    ->with('slug_user', $slug_user)
+                    ->with('price', $ask->price)
+                    ->with('name', $ask->name)
+                    ->with('day', $d)
+                    ->with('lenght', $duration_event)
+                    ->with('id', $ask->id)
+                    ->with('token', $token);
+        }
+    }
+
+    public function return_answer_price_cash($token)
+    {
+        $ask = Ask::where('token', $token)->firstOrFail();
+
+        if($ask->available != 0 and $ask->nonavailable == 0 and $ask->price != null and $ask->accepted_price != 0){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }elseif($ask->accepted_price == 1 and $ask->nonavailable == 1 and $ask->available == 0 and $ask->comment != null){
+            Flash::error('This token already was used');
+            return redirect()->route('login');
+        }else{
+            $exploded_date = explode('|', $ask->date);
+            $date = explode(' ', $exploded_date[0]);
+            $day = $date[0];
+            $time = $date[1];
+
+            $d = Carbon::parse($day)->format('F j, Y');
+            $ft = Carbon::parse($time);
+            $tt = Carbon::parse($time);
+            $to_time = $tt->addMinutes($ask->duration);
+            $duration_event = $ft->format('h:i A').' - '.$tt->format('h:i A');
+            
+            if ($ask->user->type == 'soloist') {
+                $name_user = $ask->user->info->first_name.' '.$ask->user->info->last_name;
+                $slug_user = $ask->user->info->slug;
+            } elseif ($ask->user->type == 'ensemble') {
+                $name_user = $ask->user->ensemble->name;
+                $slug_user = $ask->user->ensemble->slug;
+            }
+
+            return view('user.confirmation_client_cash')
                     ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
                     ->with('name_user', $name_user)
                     ->with('slug_user', $slug_user)
@@ -952,7 +995,7 @@ class PublicController extends Controller
                     "customer" => $customer['id'],
                     "amount" => $i_d_price[0]*(0.12),
                     "currency" => "USD",
-                    "description" => $ask->id.".Bemusical Gig",
+                    "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
                 ]);
 
                 Payment::create([
@@ -1048,6 +1091,204 @@ class PublicController extends Controller
                 Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
                 return redirect()->route('index.public', $info->slug);
             }
+        }
+        //////////////BANK TRANSFER////////////////
+        if ($request->public_token != null && $request->account_ID != null) {
+            $info = [];
+
+            $ask = Ask::where('id', $id)->firstOrFail();
+            if (strpos($ask->price, '.')) {
+                $i_d_price = explode(".", $ask->price);
+            }
+
+            $headers[] = 'Content-Type: application/json';
+            $params = array(
+               'client_id' => '576eebcb0259902a3980f33a',
+               'secret' => 'ddab6b25ee1c214666fcd7a6861c51',
+               'public_token' => $request->public_token,
+            );
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://sandbox.plaid.com/item/public_token/exchange");
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 80);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            if(!$result = curl_exec($ch)) {
+               trigger_error(curl_error($ch));
+            }
+            curl_close($ch);
+
+            $jsonParsed = json_decode($result);
+
+            $btok_params = array(
+               'client_id' => '576eebcb0259902a3980f33a',
+               'secret' => 'ddab6b25ee1c214666fcd7a6861c51',
+               'access_token' => $jsonParsed->access_token,
+               'account_id' => $request->account_ID,
+            );
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://sandbox.plaid.com/processor/stripe/bank_account_token/create");
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($btok_params));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 80);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            if(!$result = curl_exec($ch)) {
+               trigger_error(curl_error($ch));
+            }
+            curl_close($ch);
+
+            $btok_parsed = json_decode($result);
+
+            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            try{
+                $customer = $stripe->customers()->create([
+                    "source"      => $btok_parsed->stripe_bank_account_token,
+                    "email"       => $ask->email,
+                    "description" => "Storing ".$ask->name." with bank account",
+                ]);
+
+                $charge = $stripe->charges()->create([
+                    "customer" => $customer['id'],
+                    "amount"   => $i_d_price[0],
+                    "currency" => "USD",
+                ]); 
+            }catch(ModelNotFoundException $e) {
+
+            }
+
+            $payment_object = new stdClass();
+            $payment_object->customer = $customer;
+            $payment_object->charge = $charge;
+
+            $info[] = $payment_object;
+            return response()->json(array('info' => $info), 200);
+            // $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            // $token = $request->_c_stripeToken;
+            // $ask = Ask::where('id', $id)->firstOrFail();
+            
+            // if (strpos($ask->price, '.')) {
+            //     $i_d_price = explode(".", $ask->price);
+            // }
+
+            // if ($request->_c_save == 'save') {
+                
+            //     $customer = $stripe->customers()->create([
+            //         'description' => $ask->name,
+            //         'email' => $ask->email,
+            //     ]);
+
+            //     $card = $stripe->cards()->create($customer['id'], $token);
+
+            //     $charge = $stripe->charges()->create([
+            //         "customer" => $customer['id'],
+            //         "amount" => $i_d_price[0]*(0.12),
+            //         "currency" => "USD",
+            //         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
+            //     ]);
+
+            //     Payment::create([
+            //         'request_id'       => $ask->id,
+            //         'email'            => $ask->email,
+            //         'phone'            => $ask->phone,
+            //         '_billing_address' => $request->_c_address,
+            //         '_billing_zip'     => $card['address_zip'],
+            //         '_id_costumer'     => $customer['id'],
+            //         '_id_card'         => $card['id'],
+            //         '_id_token'        => $token,
+            //         '_id_charge'       => $charge['id'],
+            //         'amount'           => $i_d_price[0]*(0.12),
+            //         'payed'            => 1,
+            //         'type'             => 'cash'
+            //     ]);
+
+            //     // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
+            //     // $token = $stripe->tokens()->create([
+            //     //     'card' => [
+            //     //         'number'    => '4242424242424242',
+            //     //         'exp_month' => 10,
+            //     //         'cvc'       => 314,
+            //     //         'exp_year'  => 2020,
+            //     //     ],
+            //     // ]);
+
+            //     // WE USE THIS WHEN ALREADY SAVED THE INFORMATION AT LEAST ONCE.
+            //     // $charge = $stripe->charges()->create([
+            //     //     'customer' => $customer['id'],
+            //     //     'currency' => 'USD',
+            //     //     'amount'   => 50.49,
+            //     // ]);
+
+            // }else{
+            //     $charge = $stripe->charges()->create([
+            //         "amount" => $i_d_price[0]*(0.12),
+            //         "currency" => "USD",
+            //         "description" => $ask->id.".Bemusical Gig",
+            //         "source" => $token,
+            //     ]);
+
+            //     Payment::create([
+            //         'request_id' => $ask->id,
+            //         '_id_charge' => $charge['id'],
+            //         'amount'     => $i_d_price[0]*(0.12),
+            //         'payed'      => 1,
+            //         'type'       => 'cash'
+            //     ]);
+            // }
+
+            // if($ask->user->type == 'soloist')
+            // {
+            //     $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+            //     $start_date = explode('|', $ask->date);
+            //     $format_date =Carbon::parse($start_date[0]);
+            //     $get_data_time = $format_date->addMinutes($ask->duration);
+            //     $end_date = $get_data_time->toDateTimeString();
+
+            //     $gig = new Gig();
+            //     $gig->user_id    = $ask->user_id;
+            //     $gig->request_id = $ask->id;
+            //     $gig->title      = $ask->name.'-'.$ask->company;
+            //     $gig->start      = $start_date[0];
+            //     $gig->end        = $end_date;
+            //     $gig->url        = URL::to('/details/request/'.$ask->id);
+            //     $gig->save(); 
+
+            //     Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+            //     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+            //     return redirect()->route('index.public', $info->slug);
+            // }
+            // elseif($ask->user->type == 'ensemble') 
+            // {
+            //     $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+            //     $start_date = explode('|', $ask->date);
+            //     $format_date = Carbon::parse($start_date[0]);
+            //     $get_data_time = $format_date->addMinutes($ask->duration);
+            //     $end_date = $get_data_time->toDateTimeString();
+
+            //     $gig = new Gig();
+            //     $gig->user_id    = $ask->user_id;
+            //     $gig->request_id = $ask->id;
+            //     $gig->title      = $ask->name.'-'.$ask->company;
+            //     $gig->start      = $start_date[0];
+            //     $gig->end        = $end_date;
+            //     $gig->url        = URL::to('/details/request/'.$ask->id);
+            //     $gig->save(); 
+
+            //     Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+                
+            //     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+            //     return redirect()->route('index.public', $info->slug);
+            // }
         }
     }
 

@@ -147,6 +147,7 @@ Route::get('/specified/request/invitation/{token}', 'PublicController@asking_req
 Route::get('/price/{token}', 'PublicController@price')->name('request.price');
 Route::post('/send/price', 'PublicController@send_price')->name('general.request.send_price');
 Route::get('/return/answer/price/{token}', 'PublicController@return_answer_price')->name('general.return.answer.price');
+Route::get('/return/answer/price/cash/{token}', 'PublicController@return_answer_price_cash')->name('general.return.answer.price.cash');
 Route::post('/return/answer/reject', 'PublicController@return_reject')->name('general.return.reject');
 Route::post('/return/answer/confirmed/{id}', 'PublicController@return_confirmed')->name('general.return.confirmed');
 Route::get('/allow/times/{day}', 'PublicController@allowtimes')->name('allow.times');

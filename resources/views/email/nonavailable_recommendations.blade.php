@@ -36,7 +36,7 @@
                                         @if($type == 'ensembles')
                                             @if($images[$i] != 'null')
                                                 <a class="btn" href="{{ URL::to('/'.$slugs[$i]) }}">
-                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$images[$i]") }}" alt="{{images[$i]}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
+                                                    <img alt="100%x200" data-src="holder.js/100%x200" src="{{ asset("images/ensemble/$images[$i]") }}" alt="{{$images[$i]}}" data-holder-rendered="true" style="height: 200px; width: 100%; display: block;">
                                                 </a>
                                             @else
                                                 <a class="btn" href="{{ URL::to('/'.$slugs[$i]) }}">
