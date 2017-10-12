@@ -320,7 +320,7 @@
             return false;
         }
     });
-
+$('div.alert').not('.alert-important').delay(3000).fadeOut(350);
     //////////////Maps////////////////////
     function initialize() {
 

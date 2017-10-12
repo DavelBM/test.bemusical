@@ -47,7 +47,8 @@
                     <ul class="nav navbar-nav navbar-right">
                         <!-- Authentication Links -->
                         @if (Auth::guest())
-                            <li><a href="{{ route('login') }}">Login</a></li>
+                            <li><a href="{{ route('client.login') }}">Login as client</a></li>
+                            <li><a href="{{ route('login') }}">Login as musician</a></li>
                             <li><a href="{{ route('register') }}">Register</a></li>
                         @else
                             <li><a href="{{ url('/dashboard') }}">Home</a></li>

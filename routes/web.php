@@ -30,6 +30,8 @@ Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'stor
 //Verification
 Route::get('/verify', 'HomeController@unconfirmed')->name('user.unconfirmed');
 Route::get('register/verify/{confirmationCode}', 'HomeController@confirm')->name('confirmation_path');
+Route::post('/user/confirm/phone', 'HomeController@confirm_phone')->name('user.confirm.phone');
+Route::post('/user/send/code/phone', 'HomeController@send_code_phone')->name('user.send.code.phone');
 //Verification
 
 //Login Logout//
@@ -164,3 +166,7 @@ Route::get('/events/data', 'CalendarController@get_calendar')->name('get_data.ca
 Route::get('/add/calendar/options/{option}', 'CalendarController@calendarOptions')->name('user.calendar.options');
 Route::post('/block/day', 'CalendarController@block_day')->name('user.block.day');
 //CALENDAR
+
+// //PDF
+// Route::get('/get/invoice', 'PDFController@index')->name('get.invoice');;
+// //PDF

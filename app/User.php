@@ -100,4 +100,14 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Gig');
     }
+
+    public function messages()
+    {
+        return $this->hasMany('App\Message');
+    }
+
+    public function phone()
+    {
+        return $this->hasOne('App\Phone');
+    }
 }

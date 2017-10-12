@@ -14,6 +14,6 @@ class Payment extends Model
 
     public function request()
     {
-        return $this->belongsTo('App\Ask');
+        return $this->hasOne('App\Ask');
     }
 }

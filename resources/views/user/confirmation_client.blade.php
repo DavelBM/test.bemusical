@@ -31,6 +31,7 @@
                         Confirm
                     </button></div>
                     @include('flash::message')
+                    <h3><p id="statusPayment" style="color: gray;"></p></h3>
                 </div>
             </div>
         </div>
@@ -223,32 +224,42 @@
                 },
                 dataType: 'json',
                 beforeSend: function(){
-                    console.log('Sending info');
+                    $('#successModal').modal('hide');
+                    $('#statusPayment').show();
+                    $('#statusPayment').empty();
+                    $('<p/>').html('receiving information... please wait').appendTo($('#statusPayment'));
                 },
                 success: function(response){
+                    $('#statusPayment').show();
+                    $('#statusPayment').empty();
                     $.each(response.info, function (index, info) {
-                        // console.log(info.status);
-                        // console.log(info.ba_stripe);
-                        // console.log(info.rid_stripe);
-                        console.log(info.customer);
-                        console.log(info.charge);
-                        // location.href = "";
+                        if (info.status == 'OK') {
+                            $('<p/>').html(info.message).appendTo($('#statusPayment'));
+                            var myVar = setInterval(myTimer, 2000);
+                            function myTimer() {
+                                location.href = "{{ url('/') }}/"+info.slug;
+                            }
+                        } else if (info.status == 'ERROR') {
+                            console.log(info.status);
+                            $('<p/>').html(info.message).appendTo($('#statusPayment'));
+                        }
                     });
                 },
                 error: function(xhr){
-                    console.log('Error');
+                    $('#statusPayment').show();
+                    $('#statusPayment').empty();
+                    $('<p/>').html('an error ocurred, please try again').appendTo($('#statusPayment'));
                 }
             });
         },
         onExit: function(err, metadata) {
-            // The user exited the Link flow.
+            
             if (err != null) {
-              // The user encountered a Plaid API error prior to exiting.
+
             }
         },
     });
 
-// Trigger the Link UI
 document.getElementById('linkButton').onclick = function() {
   linkHandler.open();
 };

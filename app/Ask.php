@@ -21,4 +21,9 @@ class Ask extends Model
     {
         return $this->hasOne('App\Gig');
     }
+
+    public function payment()
+    {
+        return $this->hasOne('App\Payment');
+    }
 }

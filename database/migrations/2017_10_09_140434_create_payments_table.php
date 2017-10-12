@@ -24,7 +24,7 @@ class CreatePaymentsTable extends Migration
             $table->string('_id_card')->nullable();
             $table->string('_id_token')->nullable();
             $table->string('_id_charge');
-            $table->decimal('amount', 5, 2);
+            $table->decimal('amount', 7, 2);
             $table->boolean('payed'); // 1 = payed && 0 = not payed
             $table->enum('type', ['stripe', 'paypal', 'transfer', 'cash']);
 

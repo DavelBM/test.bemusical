@@ -3,6 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;//Exceptions for failOrFail
+use Cartalyst\Stripe\Exception\BadRequestException;//This exception will be thrown when the data sent through the request is mal formed.
+use Cartalyst\Stripe\Exception\UnauthorizedException;//This exception will be thrown if your Stripe API Key is incorrect.
+use Cartalyst\Stripe\Exception\InvalidRequestException;//This exception will be thrown whenever the request fails for some reason.
+use Cartalyst\Stripe\Exception\NotFoundException;//This exception will be thrown whenever a request results on a 404.
+use Cartalyst\Stripe\Exception\CardErrorException;//This exception will be thrown whenever the credit card is invalid.
+use Cartalyst\Stripe\Exception\ServerErrorException;//This exception will be thrown whenever Stripe does something wrong.
 use Illuminate\Http\Request;
 use App\Http\Requests\newMemberRequest;
 use App\Http\Requests\specificRequest;
@@ -854,31 +860,56 @@ class PublicController extends Controller
     {
         //////////////STRIPE////////////////
         if ($request->_s_name != null) {
+
             $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
             $token = $request->stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
+            if (Client::where('email', $ask->email)->exists()) {
+                $flag_client = 1;
+            } else {
+                $flag_client = 0;
+            }
             
             if (strpos($ask->price, '.')) {
                 $i_d_price = explode(".", $ask->price);
             }
 
             if ($request->_s_save == 'save') {
-                
-                $customer = $stripe->customers()->create([
-                    'description' => $ask->name,
-                    'email' => $ask->email,
-                ]);
+                try{
+                    $customer = $stripe->customers()->create([
+                        'description' => $ask->name,
+                        'email' => $ask->email,
+                    ]);
 
-                $card = $stripe->cards()->create($customer['id'], $token);
+                    $card = $stripe->cards()->create($customer['id'], $token);
 
-                $charge = $stripe->charges()->create([
-                    "customer" => $customer['id'],
-                    "amount" => $i_d_price[0],
-                    "currency" => "USD",
-                    "description" => $ask->id.".Bemusical Gig",
-                ]);
+                    $charge = $stripe->charges()->create([
+                        "customer" => $customer['id'],
+                        "amount" => $i_d_price[0],
+                        "currency" => "USD",
+                        "description" => $ask->id.".Bemusical Gig",
+                    ]);
+                }catch(ServerErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(BadRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(UnauthorizedException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(InvalidRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(NotFoundException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(CardErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }
 
-                Payment::create([
+                $payment = Payment::create([
                     'request_id'       => $ask->id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
@@ -911,15 +942,36 @@ class PublicController extends Controller
                 // ]);
 
             }else{
-                $charge = $stripe->charges()->create([
-                    "amount" => $i_d_price[0],
-                    "currency" => "USD",
-                    "description" => $ask->id.".Bemusical Gig",
-                    "source" => $token,
-                ]);
+                try{
+                    $charge = $stripe->charges()->create([
+                        "amount" => $i_d_price[0],
+                        "currency" => "USD",
+                        "description" => $ask->id.".Bemusical Gig",
+                        "source" => $token,
+                    ]);
+                }catch(ServerErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(BadRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(UnauthorizedException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(InvalidRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(NotFoundException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(CardErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }
 
-                Payment::create([
+                $payment = Payment::create([
                     'request_id' => $ask->id,
+                    'email'      => $ask->email,
                     '_id_charge' => $charge['id'],
                     'amount'     => $i_d_price[0],
                     'payed'      => 1,
@@ -944,9 +996,23 @@ class PublicController extends Controller
                 $gig->url        = URL::to('/details/request/'.$ask->id);
                 $gig->save(); 
 
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
 
-                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                Flash::success('We sent you an email with all the information that you need');
                 return redirect()->route('index.public', $info->slug);
             }
             elseif($ask->user->type == 'ensemble') 
@@ -966,9 +1032,23 @@ class PublicController extends Controller
                 $gig->url        = URL::to('/details/request/'.$ask->id);
                 $gig->save(); 
 
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->ensemble->name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
 
-                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                Flash::success('We sent you an email with all the information that you need');
                 return redirect()->route('index.public', $info->slug);
             }
         }
@@ -977,28 +1057,52 @@ class PublicController extends Controller
             $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
             $token = $request->_c_stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
-            
+            if (Client::where('email', $ask->email)->exists()) {
+                $flag_client = 1;
+            } else {
+                $flag_client = 0;
+            }
+
             if (strpos($ask->price, '.')) {
                 $i_d_price = explode(".", $ask->price);
             }
 
             if ($request->_c_save == 'save') {
-                
-                $customer = $stripe->customers()->create([
-                    'description' => $ask->name,
-                    'email' => $ask->email,
-                ]);
+                try{   
+                    $customer = $stripe->customers()->create([
+                        'description' => $ask->name,
+                        'email' => $ask->email,
+                    ]);
 
-                $card = $stripe->cards()->create($customer['id'], $token);
+                    $card = $stripe->cards()->create($customer['id'], $token);
 
-                $charge = $stripe->charges()->create([
-                    "customer" => $customer['id'],
-                    "amount" => $i_d_price[0]*(0.12),
-                    "currency" => "USD",
-                    "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
-                ]);
+                    $charge = $stripe->charges()->create([
+                        "customer" => $customer['id'],
+                        "amount" => $i_d_price[0]*(0.12),
+                        "currency" => "USD",
+                        "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
+                    ]);
+                }catch(ServerErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(BadRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(UnauthorizedException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(InvalidRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(NotFoundException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(CardErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }
 
-                Payment::create([
+                $payment = Payment::create([
                     'request_id'       => $ask->id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
@@ -1013,33 +1117,37 @@ class PublicController extends Controller
                     'type'             => 'cash'
                 ]);
 
-                // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
-                // $token = $stripe->tokens()->create([
-                //     'card' => [
-                //         'number'    => '4242424242424242',
-                //         'exp_month' => 10,
-                //         'cvc'       => 314,
-                //         'exp_year'  => 2020,
-                //     ],
-                // ]);
-
-                // WE USE THIS WHEN ALREADY SAVED THE INFORMATION AT LEAST ONCE.
-                // $charge = $stripe->charges()->create([
-                //     'customer' => $customer['id'],
-                //     'currency' => 'USD',
-                //     'amount'   => 50.49,
-                // ]);
-
             }else{
-                $charge = $stripe->charges()->create([
-                    "amount" => $i_d_price[0]*(0.12),
-                    "currency" => "USD",
-                    "description" => $ask->id.".Bemusical Gig",
-                    "source" => $token,
-                ]);
+                try{
+                    $charge = $stripe->charges()->create([
+                        "amount" => $i_d_price[0]*(0.12),
+                        "currency" => "USD",
+                        "description" => $ask->id.".Bemusical Gig",
+                        "source" => $token,
+                    ]);
+                }catch(ServerErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(BadRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(UnauthorizedException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(InvalidRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(NotFoundException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(CardErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }
 
-                Payment::create([
+                $payment = Payment::create([
                     'request_id' => $ask->id,
+                    'email'      => $ask->email,
                     '_id_charge' => $charge['id'],
                     'amount'     => $i_d_price[0]*(0.12),
                     'payed'      => 1,
@@ -1066,7 +1174,21 @@ class PublicController extends Controller
 
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
 
-                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
+                Flash::success('We sent you an email with all the information that you need');
                 return redirect()->route('index.public', $info->slug);
             }
             elseif($ask->user->type == 'ensemble') 
@@ -1087,19 +1209,27 @@ class PublicController extends Controller
                 $gig->save(); 
 
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
-                
-                Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->ensemble->name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
+                Flash::success('We sent you an email with all the information that you need');
                 return redirect()->route('index.public', $info->slug);
             }
         }
         //////////////BANK TRANSFER////////////////
         if ($request->public_token != null && $request->account_ID != null) {
             $info = [];
-
-            $ask = Ask::where('id', $id)->firstOrFail();
-            if (strpos($ask->price, '.')) {
-                $i_d_price = explode(".", $ask->price);
-            }
 
             $headers[] = 'Content-Type: application/json';
             $params = array(
@@ -1150,6 +1280,18 @@ class PublicController extends Controller
             $btok_parsed = json_decode($result);
 
             $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            $payment_object = new stdClass();
+            $ask = Ask::where('id', $id)->firstOrFail();
+            if (Client::where('email', $ask->email)->exists()) {
+                $flag_client = 1;
+            } else {
+                $flag_client = 0;
+            }
+            
+            if (strpos($ask->price, '.')) {
+                $i_d_price = explode(".", $ask->price);
+            }
+
             try{
                 $customer = $stripe->customers()->create([
                     "source"      => $btok_parsed->stripe_bank_account_token,
@@ -1162,134 +1304,130 @@ class PublicController extends Controller
                     "amount"   => $i_d_price[0],
                     "currency" => "USD",
                 ]); 
-            }catch(ModelNotFoundException $e) {
-
+            }catch(ServerErrorException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(BadRequestException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(UnauthorizedException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(InvalidRequestException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(NotFoundException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(CardErrorException $e) {
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
             }
+            $payment = Payment::create([
+                'request_id'       => $ask->id,
+                'email'            => $ask->email,
+                'phone'            => $ask->phone,
+                '_id_costumer'     => $customer['id'],
+                '_id_charge'       => $charge['id'],
+                'amount'           => $i_d_price[0],
+                'payed'            => 1,
+                'type'             => 'transfer'
+            ]);
 
-            $payment_object = new stdClass();
-            $payment_object->customer = $customer;
-            $payment_object->charge = $charge;
+            if($ask->user->type == 'soloist')
+            {
+                $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
 
-            $info[] = $payment_object;
-            return response()->json(array('info' => $info), 200);
-            // $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
-            // $token = $request->_c_stripeToken;
-            // $ask = Ask::where('id', $id)->firstOrFail();
-            
-            // if (strpos($ask->price, '.')) {
-            //     $i_d_price = explode(".", $ask->price);
-            // }
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
 
-            // if ($request->_c_save == 'save') {
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+                $payment_object->status ='OK';
+                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                $payment_object->slug = $info->slug;
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }
+            elseif($ask->user->type == 'ensemble') 
+            {
+                $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->get();
+
+                $start_date = explode('|', $ask->date);
+                $format_date = Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                $data = [ 
+                    'u_email' => $ask->user->email,
+                    'u_name'  => $ask->user->ensemble->name,
+                    'c_email' => $ask->email,
+                    'c_name'  => $ask->name,
+                    'price'   => $ask->price,
+                    'type'    => $payment->type,
+                    'amount'  => $payment->amount,
+                    'day'     => $start_date[1],
+                    'flag'    => $flag_client,
+                ];
+
+                $this->SendMailApproved($data);
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
                 
-            //     $customer = $stripe->customers()->create([
-            //         'description' => $ask->name,
-            //         'email' => $ask->email,
-            //     ]);
-
-            //     $card = $stripe->cards()->create($customer['id'], $token);
-
-            //     $charge = $stripe->charges()->create([
-            //         "customer" => $customer['id'],
-            //         "amount" => $i_d_price[0]*(0.12),
-            //         "currency" => "USD",
-            //         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
-            //     ]);
-
-            //     Payment::create([
-            //         'request_id'       => $ask->id,
-            //         'email'            => $ask->email,
-            //         'phone'            => $ask->phone,
-            //         '_billing_address' => $request->_c_address,
-            //         '_billing_zip'     => $card['address_zip'],
-            //         '_id_costumer'     => $customer['id'],
-            //         '_id_card'         => $card['id'],
-            //         '_id_token'        => $token,
-            //         '_id_charge'       => $charge['id'],
-            //         'amount'           => $i_d_price[0]*(0.12),
-            //         'payed'            => 1,
-            //         'type'             => 'cash'
-            //     ]);
-
-            //     // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
-            //     // $token = $stripe->tokens()->create([
-            //     //     'card' => [
-            //     //         'number'    => '4242424242424242',
-            //     //         'exp_month' => 10,
-            //     //         'cvc'       => 314,
-            //     //         'exp_year'  => 2020,
-            //     //     ],
-            //     // ]);
-
-            //     // WE USE THIS WHEN ALREADY SAVED THE INFORMATION AT LEAST ONCE.
-            //     // $charge = $stripe->charges()->create([
-            //     //     'customer' => $customer['id'],
-            //     //     'currency' => 'USD',
-            //     //     'amount'   => 50.49,
-            //     // ]);
-
-            // }else{
-            //     $charge = $stripe->charges()->create([
-            //         "amount" => $i_d_price[0]*(0.12),
-            //         "currency" => "USD",
-            //         "description" => $ask->id.".Bemusical Gig",
-            //         "source" => $token,
-            //     ]);
-
-            //     Payment::create([
-            //         'request_id' => $ask->id,
-            //         '_id_charge' => $charge['id'],
-            //         'amount'     => $i_d_price[0]*(0.12),
-            //         'payed'      => 1,
-            //         'type'       => 'cash'
-            //     ]);
-            // }
-
-            // if($ask->user->type == 'soloist')
-            // {
-            //     $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-            //     $start_date = explode('|', $ask->date);
-            //     $format_date =Carbon::parse($start_date[0]);
-            //     $get_data_time = $format_date->addMinutes($ask->duration);
-            //     $end_date = $get_data_time->toDateTimeString();
-
-            //     $gig = new Gig();
-            //     $gig->user_id    = $ask->user_id;
-            //     $gig->request_id = $ask->id;
-            //     $gig->title      = $ask->name.'-'.$ask->company;
-            //     $gig->start      = $start_date[0];
-            //     $gig->end        = $end_date;
-            //     $gig->url        = URL::to('/details/request/'.$ask->id);
-            //     $gig->save(); 
-
-            //     Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
-
-            //     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-            //     return redirect()->route('index.public', $info->slug);
-            // }
-            // elseif($ask->user->type == 'ensemble') 
-            // {
-            //     $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-            //     $start_date = explode('|', $ask->date);
-            //     $format_date = Carbon::parse($start_date[0]);
-            //     $get_data_time = $format_date->addMinutes($ask->duration);
-            //     $end_date = $get_data_time->toDateTimeString();
-
-            //     $gig = new Gig();
-            //     $gig->user_id    = $ask->user_id;
-            //     $gig->request_id = $ask->id;
-            //     $gig->title      = $ask->name.'-'.$ask->company;
-            //     $gig->start      = $start_date[0];
-            //     $gig->end        = $end_date;
-            //     $gig->url        = URL::to('/details/request/'.$ask->id);
-            //     $gig->save(); 
-
-            //     Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
-                
-            //     Flash::success('You accept the price, and it was sent it to the user. Everithing is done. Just wait until the day of your event');
-            //     return redirect()->route('index.public', $info->slug);
-            // }
+                $payment_object->status ='OK';
+                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                $payment_object->slug = $info[0]->slug;
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }
         }
+
+
     }
 
     public function general_request(generalRequest $request)
@@ -2249,5 +2387,41 @@ class PublicController extends Controller
             $i++;
         }
         return $data;
+    }
+
+    public function SendMailApproved($data)
+    {
+        Mail::send('email.confirmation_client', $data, function($message) use ($data){
+            $message->from('support@bemusical.us');
+            $message->to($data['c_email']);
+            $message->subject($data['c_name']." Details of payment and gig");
+        });
+
+        Mail::send('email.confirmation_user', $data, function($message) use ($data){
+            $message->from('support@bemusical.us');
+            $message->to($data['u_email']);
+            $message->subject($data['u_name']." your quote was approved - Details");
+        });
+
+        Mail::send('email.confirmation_admin', $data, function($message) use ($data){
+            $message->from('support@bemusical.us');
+            $message->to('david@bemusic.al');
+            $message->subject("Payment approved");
+        });
+    }
+
+    public function SendTextMessage($message_info, $phone)
+    {
+        $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
+        $token = "d340b51f8ff42b20daeb1607d0459713";
+        $client = new Twilio\Rest\Client($sid, $token);
+        
+        $message = $client->messages->create(
+          $phone,
+          array(
+            'from' => '+16502156754',
+            'body' => $message_info
+          )
+        );
     }
 }

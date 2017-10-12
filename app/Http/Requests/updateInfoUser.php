@@ -34,6 +34,7 @@ class updateInfoUser extends FormRequest
             'location'     => 'min:2|max:191|required',
             'mile_radious' => 'digits_between:0,3|required',
             'place_id'     => 'required',
+            'country'      => 'required',
         ];
     }
 }

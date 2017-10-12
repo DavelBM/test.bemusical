@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;//Exceptions for failOrFail
 use Illuminate\Http\Request;
 use App\Http\Requests\updateInfoUser;
 use App\Http\Requests\updateImageUser;
@@ -21,8 +22,12 @@ use App\User_image;
 use App\User_video;
 use App\User_song;
 use App\Member;
+use App\Phone;
 use App\Ask;
+use App\Code;
 use App\GigOption;
+use Carbon\Carbon;
+use Twilio\Rest\Client;
 use Hash;
 use Auth;
 use Storage;
@@ -97,6 +102,15 @@ class HomeController extends Controller
                              ->where('read', 0)
                              //->where('available', 0)
                              ->count();
+            $codes = Code::all();
+            try{
+                $phone = Phone::select('country', 'country_code', 'confirmed')->where('user_id', $user)->firstOrFail();
+            } catch(ModelNotFoundException $e) {
+                $phone = new stdClass();
+                $phone->country = 'null';
+                $phone->country_code = '';
+                $phone->confirmed = 0;
+            }
 
             return view('user.dashboard')
                    ->with('info', $info)
@@ -113,7 +127,9 @@ class HomeController extends Controller
                    ->with('total_repertoires', $total_repertoires)
                    ->with('member_requests', $member_request)
                    ->with('asks', $asks)
-                   ->with('asks_count', $asks_count);
+                   ->with('asks_count', $asks_count)
+                   ->with('codes', $codes)
+                   ->with('phone', $phone);
         }
     }
 
@@ -126,6 +142,35 @@ class HomeController extends Controller
      */
     public function update(updateInfoUser $request, $id)
     {
+        $user = Auth::user()->id;
+
+        $exploding_code = explode("|", $request->country);
+        $code_country = $exploding_code[0];
+        $name_country = $exploding_code[1];
+
+        if (Phone::where('user_id', $user)->exists()) {
+            Phone::where('user_id', $user)->update([
+                'user_id'      => $user, 
+                'country'      => $name_country,
+                'country_code' => $code_country, 
+                'confirmed'    => 0, 
+                'token'        => 0,
+                'message_id'   => 'null',
+                'times_token'  => 0,
+            ]);
+        } else {
+            Phone::create([
+                'user_id'      => $user, 
+                'country'      => $name_country,
+                'country_code' => $code_country, 
+                'confirmed'    => 0, 
+                'token'        => 0, 
+                'times'        => 0, 
+                'message_id'   => 'null',
+                'times_token'  => 0,
+            ]);
+        }
+        
         $geometry = substr($request->place_geometry, 1, -1);
         $get_geometry_trimed = explode(", ", $geometry);
         $lat = $get_geometry_trimed[0];
@@ -133,7 +178,6 @@ class HomeController extends Controller
 
         $address = 'id:'.$request->place_id.'|address:'.$request->place_address.'|lat:'.$lat.'|long:'.$lng;
         
-        $user = Auth::user()->id;
         User_info::where('user_id', $user)
         ->update([
             'first_name'   => $request->first_name,
@@ -147,6 +191,148 @@ class HomeController extends Controller
             'mile_radious' => $request->mile_radious
         ]);
         return redirect()->route('user.dashboard');
+    }
+
+    public function confirm_phone(Request $request)
+    {
+        $user = Auth::user()->id;
+        $phone = Phone::where('user_id', $user);
+        $update_timestamp = Carbon::parse($phone->first()->updated_at);
+        $now_timestamp = Carbon::now();
+        $now = Carbon::parse($now_timestamp);
+        $minutes_diference = $update_timestamp->diffInMinutes($now);
+
+        if ($request->_c_phone == $phone->first()->token && $phone->first()->confirmed == 0) {
+            if ($phone->first()->times_token >= 4 && $minutes_diference < 15) {
+                if ($minutes_diference >= 15) {
+                    $phone->update([
+                        'times'        => 1,
+                        'confirmed'    => 1,
+                        'times_token'  => 1,
+                    ]);
+                }else{
+                    dd('entre qu');
+                    return redirect()->back()->withErrors(['_c_phone'=>"Wait 15 minutes out of ".$minutes_diference]);
+                }
+            }else{
+                if ($minutes_diference >= 15) {
+                    $phone->update([
+                        'times'        => 1,
+                        'confirmed'    => 1,
+                        'times_token'  => 1,
+                    ]);
+                    return redirect()->back();
+                }else{
+                    return redirect()->back()->withErrors(['_c_phone'=>"Wait 15 minutes to try again, and ask for another token"]);
+                }
+            }
+        }else{
+            if ($phone->first()->times_token < 3) {
+                
+                $phone->update([
+                    'times_token' => $phone->first()->times_token+1,
+                    'updated_at'  => $phone->first()->updated_at,
+                ]);
+
+                if ($phone->first()->times_token == 1) {
+                    return redirect()->back()->withErrors(['_c_phone'=>"This token does not exist"]);
+                }elseif ($phone->first()->times_token == 2) {
+                    return redirect()->back()->withErrors(['_c_phone'=>"This token does not exist - One more chance"]);
+                }elseif ($phone->first()->times_token == 3) {
+                    return redirect()->back()->withErrors(['_c_phone'=>"That was your last chance"]);
+                }
+            }else{
+                return redirect()->back()->withErrors(['_c_phone'=>"Wait 15 minutes to try again, and ask for another token"]);
+            }
+        }
+    }
+
+    public function send_code_phone(Request $request)
+    {
+        $info = [];
+        $mensaje_status = '';
+        $user = Auth::user()->id;
+        $six_digit_random_number = mt_rand(100000, 999999);
+        $phone = Phone::where('user_id', $user);
+        
+        if (Auth::user()->type == 'soloist') {
+            $phone_number = $phone->first()->country_code.Auth::user()->info->phone;
+        }elseif (Auth::user()->type == 'ensemble') {
+            $phone_number = $phone->first()->country_code.Auth::user()->ensemble->phone;
+        }
+
+        $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
+        $token = "d340b51f8ff42b20daeb1607d0459713";
+        $client = new Client($sid, $token);
+
+        $update_timestamp = Carbon::parse($phone->first()->updated_at);
+        $now_timestamp = Carbon::now();
+        $now = Carbon::parse($now_timestamp);
+        $minutes_diference = $update_timestamp->diffInMinutes($now);
+
+        if ($phone->first()->confirmed == 0) {
+            if ($phone->first()->times >= 3) {
+                if ($minutes_diference >= 60) {
+                    
+                    $message = $client->messages->create(
+                      $phone_number,
+                      array(
+                        'from' => '+16502156754',
+                        'body' => 'Bemusical code: '.$six_digit_random_number
+                      )
+                    );
+
+                    $phone->update([
+                        'user_id'      => $user,
+                        'token'        => $six_digit_random_number,
+                        'times'        => 1,
+                        'message_id'   => $message->sid,
+                        'updated_at'  => $phone->first()->updated_at,
+                    ]);
+                    if ($phone->first()->times == 1) {
+                        $mensaje_status = 'Message already sent - you have one more chance';
+                    }
+                    elseif ($phone->first()->times == 2) {
+                        $mensaje_status = 'Message already sent - this was your last chance';
+                    }elseif($phone->first()->times == 0){
+                        $mensaje_status = 'Message already sent';
+                    }
+                } else {
+                    $mensaje_status = 'Wait 60 minutes to re-send the message ('.$minutes_diference.')';
+                }
+            } else {
+            
+                $message = $client->messages->create(
+                  $phone_number,
+                  array(
+                    'from' => '+16502156754',
+                    'body' => 'Bemusical code: '.$six_digit_random_number
+                  )
+                );
+
+                if ($phone->first()->times == 1) {
+                    $mensaje_status = 'Message already sent - you have one more chance';
+                }
+                elseif ($phone->first()->times == 2) {
+                    $mensaje_status = 'Message already sent - this was your last chance';
+                }elseif($phone->first()->times == 0){
+                    $mensaje_status = 'Message already sent';
+                }
+                $phone->update([
+                    'user_id'      => $user,
+                    'token'        => $six_digit_random_number,
+                    'times'        => $phone->first()->times+1,
+                    'message_id'   => $message->sid,
+                    'updated_at'   => $phone->first()->updated_at,
+                ]);
+            }
+        }
+
+        $phone_object = new stdClass();
+        $phone_object->status = $mensaje_status;
+        $info[] = $phone_object;
+
+        return response()->json(array('info' => $info), 200);
     }
 
     public function updateImage(Request $request, $id)
