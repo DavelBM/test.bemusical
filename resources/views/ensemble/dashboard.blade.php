@@ -119,7 +119,25 @@
                             <strong>Type of ensemble:</strong> {{$ensemble->type}}<br>
                             <strong>Bio summary:</strong> {{$ensemble->summary}}<br>
                             <strong>My Address:</strong> {{$data_address[1]}}<br>
-                            <strong>My phone:</strong> {{$ensemble->phone}}<br>
+                            @if($phone->confirmed == 0)
+                                @if($phone->phone == 0)
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#phoneModal">
+                                    Send my phone
+                                </button>
+                                @else
+                                <strong>My phone:</strong> {{$phone->country_code}}{{$phone->phone}}<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#phoneModal">
+                                    Confirm my phone
+                                </button>
+                                @endif
+                            @else
+                                <strong>My phone:</strong> {{$phone->country_code}}{{$phone->phone}} <strong style="color: green;">Confirmed</strong>
+                                @if($minutes >= 15)
+                                {!! Form::open(['route' => 'user.reset.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
+                                    <input type="submit" class="btn btn-xs btn-warning" value="Reset phone">
+                                {!! Form::close() !!}
+                                @endif
+                            @endif
+                            <br>
                             <strong>Location:</strong> {{$ensemble->location}}<br>
                             <strong>Mile Radius:</strong> {{$ensemble->mile_radious}} miles<br>
                             <strong>About Me:</strong> {{$ensemble->about}}<br>
@@ -418,17 +436,6 @@
                             @endif
                         </div>
                     </div>
-                    <div class="row form-group{{ $errors->has('phone') ? ' has-error' : '' }}">
-                        {!! Form::label('phone', "Ensemble's phone", ['class' => 'col-md-4 control-label']) !!}
-                        <div class="col-md-6">
-                            {!! Form::number('phone', $ensemble->phone, ['class'=>'form-control', 'placeholder'=>"What's your contact number", 'required']) !!}
-                            @if ($errors->has('phone'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('phone') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
                     <!-- <div class="row form-group{{ $errors->has('location') ? ' has-error' : '' }}">
                         {!! Form::label('location', 'Location', ['class' => 'col-md-4 control-label']) !!}
                         <div class="col-md-6">
@@ -549,6 +556,110 @@
 </div>
 <!-- /Modal Password -->
 
+<!-- Modal PHONE -->
+<div class="modal fade" id="phoneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm your phone
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+            @if($phone->phone == 0)
+                <div class="modal-body">
+                    {!! Form::open(['route' => 'user.send.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
+                        <div class="row form-group{{ $errors->has('phone') ? ' has-error' : '' }}">
+                            {!! Form::label('phone', 'Phone', ['class' => 'col-md-4 control-label']) !!}
+                            <div class="input-group col-md-6">
+                                <span>
+                                    <select class="form-control" name="country">
+                                        @if($phone->country != 'null')
+                                            <option value="{{$phone->country_code}}|{{$phone->country}}" selected="selected">
+                                            {{$phone->country}}</option>
+                                            <option value="+1|United States">United States</option>
+                                            <option value="">-</option>
+                                            @foreach($codes as $code)
+                                                @if($code->country != 'United States' or $code->country != $phone->country)
+                                                    <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <option value="+1|United States" selected="selected">United States</option>
+                                            <option value="">-</option>
+                                            @foreach($codes as $code)
+                                                @if($code->country != 'United States')
+                                                    <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('country') }}</strong>
+                                    </span>
+                                </span>
+                                {!! Form::number('phone', null, ['class'=>'form-control', 'placeholder'=>"What's your contact number", 'required']) !!}
+                                @if ($errors->has('phone'))
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('phone') }}</strong>
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="input-group col-md-6">
+                            <input type="submit" class="btn btn-primary" value="Send my phone">
+                            </div>
+                        </div>
+                    {!! Form::close() !!}
+                </div>
+            @else
+            <div class="modal-body">
+                <p id="phoneCodeStatus"></p>
+
+                {!! Form::open(['route' => 'user.confirm.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
+
+                    <div class="row form-group{{ $errors->has('_c_phone') ? ' has-error' : '' }}">
+                        <label for="_c_phone" class="col-md-4 control-label">Phone code</label>
+
+                        <div class="col-md-6">
+                            <input id="_c_phone" type="number" class="form-control" name="_c_phone" required>
+                        </div>
+                        @if ($errors->has('_c_phone'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('_c_phone') }}</strong>
+                                </span>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('user.confirm.phone') }}"
+                    class="btn btn-primary" 
+                    onclick="event.preventDefault();
+                    var x = document.forms['phone-form']['_c_phone'].value;
+                    if (x == '') {
+                        alert('Ask for your code');
+                        return false;
+                    }else{
+                        document.getElementById('phone-form').submit();
+                    }
+                   ">Send code</a>
+
+                {!! Form::close() !!}
+
+            </div>
+            <!-- <form class="form-horizontal" method="POST" action="{{ route('user.send.code.phone') }}">
+            {{ csrf_field() }}
+            <input type="submit" value="confirm"></input>
+            </form> -->
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="askPhoneCode()">Ask for code</button>
+            </div>
+            @endif
+        </div>       
+    </div>
+</div>
+<!-- /Modal PHONE -->
+
 @endsection
 
 @section('js')
@@ -559,6 +670,29 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+
+    function askPhoneCode(){
+        $.ajax({
+            type: "POST",
+            url: "/user/send/code/phone",
+            data: {
+                "_token": "{{ csrf_token() }}",
+            },
+            dataType: 'json',
+            beforeSend: function(){
+                $('#phoneCodeStatus').text('Loading...');
+            },
+            success: function(response){
+                $.each(response.info, function (index, info) {
+                    $('#phoneCodeStatus').text(info.status);
+                });
+            },
+            error: function(xhr){
+
+            }
+        });
+        return false;
+    }
 
     function destroyRepertoir(id){
         var url = "/ensemble/delete/repertoir/"+id;

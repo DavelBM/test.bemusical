@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Input;
 use App\User;
 use App\User_info;
 use App\Ensemble;
+use App\Phone;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -103,7 +104,6 @@ class RegisterController extends Controller
             $info->profile_picture = 'null';
             $info->bio             = 'null';
             $info->address         = 'id:no-addres|address:no-address|lat:0|long:0';
-            $info->phone           = 0;
             $info->location        = 'null';
             $info->degree          = 'null';
             $info->mile_radious    = 20;
@@ -129,12 +129,23 @@ class RegisterController extends Controller
             $ensemble->summary         = 'null';
             $ensemble->about           = 'null';
             $ensemble->address         = 'id:no-addres|address:no-address|lat:0|long:0';
-            $ensemble->phone           = 0;
             $ensemble->location        = 'null';
             $ensemble->mile_radious    = 20;
             $ensemble->save();
 
         }
+
+        Phone::create([
+            'user_id'      => $user->id, 
+            'phone'        => 0,
+            'country'      => 'null',
+            'country_code' => 'null', 
+            'confirmed'    => 0, 
+            'token'        => 0, 
+            'times'        => 0, 
+            'message_id'   => 'null',
+            'times_token'  => 0,
+        ]);
 
         Mail::send('email.verify', ['token' => $user->token], function($message) {
             $message->to(Input::get('email'), Input::get('id'))

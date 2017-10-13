@@ -32,6 +32,13 @@
                     </button></div>
                     @include('flash::message')
                     <h3><p id="statusPayment" style="color: gray;"></p></h3>
+                    <div id="payment-request-button"></div>
+                    <!-- <form action="{{ route('general.return.confirmed', $id) }}" method="post">
+                            {{ csrf_field() }}
+                        <input name="public_token">
+                        <input name="account_ID">
+                        <button type="submit">Submit</button>
+                    </form> -->
                 </div>
             </div>
         </div>
@@ -151,7 +158,6 @@
                         Cash
                     </a>
 
-
                     <div class="row">
                     <div class="col-md-10 col-md-offset-1">
                         <hr>
@@ -240,7 +246,6 @@
                                 location.href = "{{ url('/') }}/"+info.slug;
                             }
                         } else if (info.status == 'ERROR') {
-                            console.log(info.status);
                             $('<p/>').html(info.message).appendTo($('#statusPayment'));
                         }
                     });
@@ -375,5 +380,38 @@ document.getElementById('linkButton').onclick = function() {
         // Submit the form
         form.submit();
     }
+
+    var paymentRequest = stripe.paymentRequest({
+  country: 'US',
+  currency: 'usd',
+  total: {
+    label: 'Demo total',
+    amount: 1000,
+  },
+});
+
+    var elements = stripe.elements();
+
+
+// Check the availability of the Payment Request API first.
+paymentRequest.canMakePayment().then(function(result) {
+  if (result) {
+    prButton.mount('#payment-request-button');
+  } else {
+
+    document.getElementById('payment-request-button').innerHTML = 'Not available for this broswer';
+  }
+});
+
+elements.create('paymentRequestButton', {
+  paymentRequest: paymentRequest,
+  style: {
+    paymentRequestButton: {
+      type: 'default' | 'donate' | 'buy', // default: 'default'
+      theme: 'dark' | 'light' | 'light-outline', // default: 'dark'
+      height: '64px', // default: '40px', the width is always '100%'
+    },
+  },
+});
 </script>
 @endsection

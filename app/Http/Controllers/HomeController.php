@@ -102,15 +102,23 @@ class HomeController extends Controller
                              ->where('read', 0)
                              //->where('available', 0)
                              ->count();
+            
             $codes = Code::all();
+            
             try{
-                $phone = Phone::select('country', 'country_code', 'confirmed')->where('user_id', $user)->firstOrFail();
+                $phone = Phone::select('phone', 'country', 'country_code', 'confirmed', 'updated_at')->where('user_id', $user)->firstOrFail();
             } catch(ModelNotFoundException $e) {
                 $phone = new stdClass();
                 $phone->country = 'null';
                 $phone->country_code = '';
+                $phone->phone = 0;
                 $phone->confirmed = 0;
             }
+
+            $update_timestamp = Carbon::parse($phone->updated_at);
+            $now_timestamp = Carbon::now();
+            $now = Carbon::parse($now_timestamp);
+            $minutes_diference = $update_timestamp->diffInMinutes($now);
 
             return view('user.dashboard')
                    ->with('info', $info)
@@ -129,7 +137,8 @@ class HomeController extends Controller
                    ->with('asks', $asks)
                    ->with('asks_count', $asks_count)
                    ->with('codes', $codes)
-                   ->with('phone', $phone);
+                   ->with('phone', $phone)
+                   ->with('minutes', $minutes_diference);
         }
     }
 
@@ -143,33 +152,6 @@ class HomeController extends Controller
     public function update(updateInfoUser $request, $id)
     {
         $user = Auth::user()->id;
-
-        $exploding_code = explode("|", $request->country);
-        $code_country = $exploding_code[0];
-        $name_country = $exploding_code[1];
-
-        if (Phone::where('user_id', $user)->exists()) {
-            Phone::where('user_id', $user)->update([
-                'user_id'      => $user, 
-                'country'      => $name_country,
-                'country_code' => $code_country, 
-                'confirmed'    => 0, 
-                'token'        => 0,
-                'message_id'   => 'null',
-                'times_token'  => 0,
-            ]);
-        } else {
-            Phone::create([
-                'user_id'      => $user, 
-                'country'      => $name_country,
-                'country_code' => $code_country, 
-                'confirmed'    => 0, 
-                'token'        => 0, 
-                'times'        => 0, 
-                'message_id'   => 'null',
-                'times_token'  => 0,
-            ]);
-        }
         
         $geometry = substr($request->place_geometry, 1, -1);
         $get_geometry_trimed = explode(", ", $geometry);
@@ -184,7 +166,7 @@ class HomeController extends Controller
             'last_name'    => $request->last_name,
             'about'        => $request->about,
             'bio'          => $request->bio,
-            'phone'        => $request->phone,
+            // 'phone'        => $request->phone,
             'degree'       => $request->degree,
             'address'      => $address,
             'location'     => $request->location,
@@ -193,17 +175,59 @@ class HomeController extends Controller
         return redirect()->route('user.dashboard');
     }
 
+    public function send_phone(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone'   => 'digits:10|required',
+            'country' => 'required',
+        ])->validate();
+
+        $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
+        $token = "d340b51f8ff42b20daeb1607d0459713";
+        $client = new Client($sid, $token);
+
+        $user = Auth::user()->id;
+        $phone = Phone::where('user_id', $user);
+        $six_digit_random_number = mt_rand(100000, 999999);
+
+        $exploding_code = explode("|", $request->country);
+        $code_country = $exploding_code[0];
+        $name_country = $exploding_code[1];
+        $phone_number = $code_country.$request->phone;
+        
+        $message = $client->messages->create(
+            $phone_number,
+            array(
+                'from' => '+16502156754',
+                'body' => 'Bemusical code: '.$six_digit_random_number
+            )
+        );
+
+        $phone->update([
+            'phone'        => $request->phone, 
+            'country'      => $name_country,
+            'country_code' => $code_country,
+            'token'        => $six_digit_random_number,
+            'times'        => $phone->first()->times+1,
+            'message_id'   => $message->sid,
+            'times_token'  => 0,
+            'updated_at'   => $phone->first()->updated_at,
+        ]);
+
+        return redirect()->back();
+    }
     public function confirm_phone(Request $request)
     {
         $user = Auth::user()->id;
         $phone = Phone::where('user_id', $user);
+
         $update_timestamp = Carbon::parse($phone->first()->updated_at);
         $now_timestamp = Carbon::now();
         $now = Carbon::parse($now_timestamp);
         $minutes_diference = $update_timestamp->diffInMinutes($now);
 
         if ($request->_c_phone == $phone->first()->token && $phone->first()->confirmed == 0) {
-            if ($phone->first()->times_token >= 4 && $minutes_diference < 15) {
+            if ($phone->first()->times_token > 3 && $minutes_diference < 15) {
                 if ($minutes_diference >= 15) {
                     $phone->update([
                         'times'        => 1,
@@ -211,9 +235,15 @@ class HomeController extends Controller
                         'times_token'  => 1,
                     ]);
                 }else{
-                    dd('entre qu');
                     return redirect()->back()->withErrors(['_c_phone'=>"Wait 15 minutes out of ".$minutes_diference]);
                 }
+            }elseif ($phone->first()->times_token <= 3 && $minutes_diference < 15){
+                    $phone->update([
+                        'times'        => 1,
+                        'confirmed'    => 1,
+                        'times_token'  => 1,
+                    ]);
+                    return redirect()->back();
             }else{
                 if ($minutes_diference >= 15) {
                     $phone->update([
@@ -255,11 +285,7 @@ class HomeController extends Controller
         $six_digit_random_number = mt_rand(100000, 999999);
         $phone = Phone::where('user_id', $user);
         
-        if (Auth::user()->type == 'soloist') {
-            $phone_number = $phone->first()->country_code.Auth::user()->info->phone;
-        }elseif (Auth::user()->type == 'ensemble') {
-            $phone_number = $phone->first()->country_code.Auth::user()->ensemble->phone;
-        }
+        $phone_number = $phone->first()->country_code.$phone->first()->phone;
 
         $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
         $token = "d340b51f8ff42b20daeb1607d0459713";
@@ -333,6 +359,25 @@ class HomeController extends Controller
         $info[] = $phone_object;
 
         return response()->json(array('info' => $info), 200);
+    }
+
+    public function reset_phone(Request $request)
+    {
+        $user = Auth::user()->id;
+        $phone = Phone::where('user_id', $user);
+        
+        $phone->update([
+            'user_id'      => $user, 
+            'phone'        => 0,
+            'country'      => 'null',
+            'country_code' => 'null', 
+            'confirmed'    => 0, 
+            'token'        => 0, 
+            'times'        => 0, 
+            'message_id'   => 'null',
+            'times_token'  => 0,
+        ]);
+        return redirect()->back();
     }
 
     public function updateImage(Request $request, $id)

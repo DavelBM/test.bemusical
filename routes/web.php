@@ -30,8 +30,10 @@ Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'stor
 //Verification
 Route::get('/verify', 'HomeController@unconfirmed')->name('user.unconfirmed');
 Route::get('register/verify/{confirmationCode}', 'HomeController@confirm')->name('confirmation_path');
+Route::post('/user/send/phone', 'HomeController@send_phone')->name('user.send.phone');
 Route::post('/user/confirm/phone', 'HomeController@confirm_phone')->name('user.confirm.phone');
 Route::post('/user/send/code/phone', 'HomeController@send_code_phone')->name('user.send.code.phone');
+Route::post('/user/reset/phone', 'HomeController@reset_phone')->name('user.reset.phone');
 //Verification
 
 //Login Logout//
@@ -113,6 +115,10 @@ Route::get('/ensemble/update/repertoir/{id}', 'EnsembleController@update_reperto
 Route::post('/ensemble/add/member', 'EnsembleController@member')->name('ensemble.member');
 Route::post('/ensemble/add/not/member', 'EnsembleController@notmember')->name('ensemble.not.member');
 Route::get('/ensemble/destroy/member/{id}', 'EnsembleController@destroy_member')->name('ensemble.member.destroy');
+Route::post('/ensemble/send/phone', 'EnsembleController@send_phone')->name('ensemble.send.phone');
+Route::post('/ensemble/confirm/phone', 'EnsembleController@confirm_phone')->name('ensemble.confirm.phone');
+Route::post('/ensemble/send/code/phone', 'EnsembleController@send_code_phone')->name('ensemble.send.code.phone');
+Route::post('/ensemble/reset/phone', 'EnsembleController@reset_phone')->name('ensemble.reset.phone');
 //Ensembles
 
 /**

@@ -159,16 +159,24 @@
                             <strong>e-mail*:</strong> {{$info->user->email}}<br>
                             <strong>Bio summary:</strong> {{$info->bio}}<br>
                             <strong>My Address:</strong> {{$data_address[1]}}<br>
-                            <strong>My phone:</strong> {{$phone->country_code}}{{$info->phone}}
-                                @if($phone->confirmed == 0)
-                                    @if($info->phone != 0)
-                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#phoneModal">
-                                            confirm my phone
-                                        </button>
-                                    @endif
+                            @if($phone->confirmed == 0)
+                                @if($phone->phone == 0)
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#phoneModal">
+                                    Send my phone
+                                </button>
                                 @else
-                                    <strong style="color: green;">Confirmed</strong>
+                                <strong>My phone:</strong> {{$phone->country_code}}{{$phone->phone}}<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#phoneModal">
+                                    Confirm my phone
+                                </button>
                                 @endif
+                            @else
+                                <strong>My phone:</strong> {{$phone->country_code}}{{$phone->phone}} <strong style="color: green;">Confirmed</strong>
+                                @if($minutes >= 15)
+                                {!! Form::open(['route' => 'user.reset.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
+                                    <input type="submit" class="btn btn-xs btn-warning" value="Reset phone">
+                                {!! Form::close() !!}
+                                @endif
+                            @endif
                             <br>
                             <strong>Location:</strong> {{$info->location}}<br>
                             <strong>Degree:</strong> {{$info->degree}}<br>
@@ -422,43 +430,6 @@
                             @endif
                         </div>
                     </div>
-                    <div class="row form-group{{ $errors->has('phone') ? ' has-error' : '' }}">
-                        {!! Form::label('phone', 'Phone', ['class' => 'col-md-4 control-label']) !!}
-                        <div class="input-group col-md-6">
-                            <span>
-                                <select class="form-control" name="country">
-                                    @if($phone->country != 'null')
-                                        <option value="{{$phone->country_code}}|{{$phone->country}}" selected="selected">
-                                        {{$phone->country}}</option>
-                                        <option value="+1|United States">United States</option>
-                                        <option value="">-</option>
-                                        @foreach($codes as $code)
-                                            @if($code->country != 'United States' or $code->country != $phone->country)
-                                                <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <option value="+1|United States" selected="selected">United States</option>
-                                        <option value="">-</option>
-                                        @foreach($codes as $code)
-                                            @if($code->country != 'United States')
-                                                <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                </select>
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('country') }}</strong>
-                                </span>
-                            </span>
-                            {!! Form::number('phone', $info->phone, ['class'=>'form-control', 'placeholder'=>"What's your contact number", 'required']) !!}
-                            @if ($errors->has('phone'))
-                                <span class="help-block">
-                                    <strong>{{ $errors->first('phone') }}</strong>
-                                </span>
-                            @endif
-                        </div>
-                    </div>
                     <div class="row form-group{{ $errors->has('degree') ? ' has-error' : '' }}">
                         {!! Form::label('degree', 'Education', ['class' => 'col-md-4 control-label']) !!}
                         <div class="col-md-6">
@@ -590,9 +561,55 @@
                     </button>
                 </h5>
             </div>
-
+            @if($phone->phone == 0)
+                <div class="modal-body">
+                    {!! Form::open(['route' => 'user.send.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
+                        <div class="row form-group{{ $errors->has('phone') ? ' has-error' : '' }}">
+                            {!! Form::label('phone', 'Phone', ['class' => 'col-md-4 control-label']) !!}
+                            <div class="input-group col-md-6">
+                                <span>
+                                    <select class="form-control" name="country">
+                                        @if($phone->country != 'null')
+                                            <option value="{{$phone->country_code}}|{{$phone->country}}" selected="selected">
+                                            {{$phone->country}}</option>
+                                            <option value="+1|United States">United States</option>
+                                            <option value="">-</option>
+                                            @foreach($codes as $code)
+                                                @if($code->country != 'United States' or $code->country != $phone->country)
+                                                    <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <option value="+1|United States" selected="selected">United States</option>
+                                            <option value="">-</option>
+                                            @foreach($codes as $code)
+                                                @if($code->country != 'United States')
+                                                    <option value="+{{$code->code}}|{{$code->country}}">{{$code->country}}</option>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('country') }}</strong>
+                                    </span>
+                                </span>
+                                {!! Form::number('phone', null, ['class'=>'form-control', 'placeholder'=>"What's your contact number", 'required']) !!}
+                                @if ($errors->has('phone'))
+                                    <span class="help-block">
+                                        <strong>{{ $errors->first('phone') }}</strong>
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="input-group col-md-6">
+                            <input type="submit" class="btn btn-primary" value="Send my phone">
+                            </div>
+                        </div>
+                    {!! Form::close() !!}
+                </div>
+            @else
             <div class="modal-body">
                 <p id="phoneCodeStatus"></p>
+
                 {!! Form::open(['route' => 'user.confirm.phone', 'id' => 'phone-form', 'method' => 'POST']) !!}
 
                     <div class="row form-group{{ $errors->has('_c_phone') ? ' has-error' : '' }}">
@@ -609,9 +626,9 @@
                     </div>
 
                     <a href="{{ route('user.confirm.phone') }}"
-                   class="btn btn-primary" 
-                   onclick="event.preventDefault();
-                   var x = document.forms['phone-form']['_c_phone'].value;
+                    class="btn btn-primary" 
+                    onclick="event.preventDefault();
+                    var x = document.forms['phone-form']['_c_phone'].value;
                     if (x == '') {
                         alert('Ask for your code');
                         return false;
@@ -630,6 +647,7 @@
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="askPhoneCode()">Ask for code</button>
             </div>
+            @endif
         </div>       
     </div>
 </div>

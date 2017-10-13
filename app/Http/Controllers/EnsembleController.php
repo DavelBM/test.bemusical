@@ -22,7 +22,10 @@ use App\User_info;
 use App\EnsembleRepertoire;
 use App\Member;
 use App\GigOption;
+use App\Phone;
 use App\Ask;
+use App\Code;
+use Carbon\Carbon;
 use Hash;
 use Mail;
 use Storage;
@@ -96,7 +99,24 @@ class EnsembleController extends Controller
             $asks = Ask::where('user_id', $user)->get();
             $asks_count = Ask::where('user_id', $user)
                              ->where('read', 0)
-                             ->count();         
+                             ->count(); 
+
+            $codes = Code::all();
+            
+            try{
+                $phone = Phone::select('phone', 'country', 'country_code', 'confirmed', 'updated_at')->where('user_id', $user)->firstOrFail();
+            } catch(ModelNotFoundException $e) {
+                $phone = new stdClass();
+                $phone->country = 'null';
+                $phone->country_code = '';
+                $phone->phone = 0;
+                $phone->confirmed = 0;
+            }
+
+            $update_timestamp = Carbon::parse($phone->updated_at);
+            $now_timestamp = Carbon::now();
+            $now = Carbon::parse($now_timestamp);
+            $minutes_diference = $update_timestamp->diffInMinutes($now);       
 
             return view('ensemble.dashboard')
                    ->with('ensemble', $ensemble)
@@ -113,7 +133,10 @@ class EnsembleController extends Controller
                    ->with('total_repertoires', $total_repertoires)
                    ->with('members', $members)
                    ->with('asks', $asks)
-                   ->with('asks_count', $asks_count);
+                   ->with('asks_count', $asks_count)
+                   ->with('codes', $codes)
+                   ->with('phone', $phone)
+                   ->with('minutes', $minutes_diference);
         }
     }
 
@@ -141,7 +164,7 @@ class EnsembleController extends Controller
             'type'         => $request->type,
             'about'        => $request->about,
             'summary'      => $request->summary,
-            'phone'        => $request->phone,
+            // 'phone'        => $request->phone,
             'address'      => $address,
             'location'     => $request->location,
             'mile_radious' => $request->mile_radious

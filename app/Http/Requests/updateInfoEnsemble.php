@@ -29,7 +29,7 @@ class updateInfoEnsemble extends FormRequest
             'type'         => 'min:3|max:100|required',
             'about'        => 'min:10|max:2000|required',
             'summary'      => 'min:10|max:191|required',
-            'phone'        => 'digits:10|required',
+            // 'phone'        => 'digits:10|required',
             'address'      => 'min:4|max:191|required',
             'location'     => 'min:2|max:191|required',
             'mile_radious' => 'digits_between:0,3|required',

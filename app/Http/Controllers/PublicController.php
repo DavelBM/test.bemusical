@@ -33,6 +33,7 @@ use URL;
 use stdClass;
 use App\Client;
 use Cartalyst\Stripe\Stripe;
+use App\Phone;
 
 class PublicController extends Controller
 {
@@ -317,6 +318,7 @@ class PublicController extends Controller
             $message->subject('Somebody has a request for '.$user->email);
         });
 
+        $this->SendTextMessage('Bemusical: Somebody has a request', $request->user_id);
 
         if($user->type == "soloist") {
             Flash::success('Thanks '.$request->name.', we already sent a message to '.$user->info->first_name.' asking for availability. You will hear soon about your request.');
@@ -997,6 +999,7 @@ class PublicController extends Controller
                 $gig->save(); 
 
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
                     'c_email' => $ask->email,
@@ -1033,6 +1036,7 @@ class PublicController extends Controller
                 $gig->save(); 
 
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->ensemble->name,
                     'c_email' => $ask->email,
@@ -1175,6 +1179,7 @@ class PublicController extends Controller
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
 
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
                     'c_email' => $ask->email,
@@ -1210,6 +1215,7 @@ class PublicController extends Controller
 
                 Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->ensemble->name,
                     'c_email' => $ask->email,
@@ -1364,6 +1370,7 @@ class PublicController extends Controller
                 $gig->save(); 
 
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
                     'c_email' => $ask->email,
@@ -1404,6 +1411,7 @@ class PublicController extends Controller
                 $gig->save(); 
 
                 $data = [ 
+                    'id'      => $ask->user->id,
                     'u_email' => $ask->user->email,
                     'u_name'  => $ask->user->ensemble->name,
                     'c_email' => $ask->email,
@@ -2408,20 +2416,28 @@ class PublicController extends Controller
             $message->to('david@bemusic.al');
             $message->subject("Payment approved");
         });
+
+        $this->SendTextMessage('Bemusical: Gig confirmated', $data['id']);
     }
 
-    public function SendTextMessage($message_info, $phone)
+    public function SendTextMessage($text_message, $user_id)
     {
-        $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
-        $token = "d340b51f8ff42b20daeb1607d0459713";
-        $client = new Twilio\Rest\Client($sid, $token);
-        
-        $message = $client->messages->create(
-          $phone,
-          array(
-            'from' => '+16502156754',
-            'body' => $message_info
-          )
-        );
+        $phone = Phone::where('user_id', $user_id);
+        if ($phone->first()->confirmed == 1) {
+            $code_country = $phone->first()->country_code;
+            $phone_number = $code_country.$phone->first()->phone;
+
+            $sid = "ACf29b73d8c11a7d9d84656693aac302f5";
+            $token = "d340b51f8ff42b20daeb1607d0459713";
+            $client = new \Twilio\Rest\Client($sid, $token);
+            
+            $message = $client->messages->create(
+                $phone_number,
+                array(
+                    'from' => '+16502156754',
+                    'body' => $text_message
+                )
+            );
+        }
     }
 }
