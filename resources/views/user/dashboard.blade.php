@@ -141,6 +141,7 @@
                                 </form>
                             <!-- /Form for upload profile picture -->
                         </div>
+
                         <div class="col-md-7">
                             <!-- Displaying data -->
                             @php
@@ -153,7 +154,7 @@
                                 $data_lat = explode("lat:", $data[2]);
                                 $data_long = explode("long:", $data[3]);
                             @endphp
-                            <strong>Name:</strong> {{$info->first_name." ".$info->last_name}}<br>
+                            <strong>Name:</strong> <div id="name-user-display">{{$info->first_name." ".$info->last_name}}</div><br>
                             <strong>username*:</strong> {{$info->slug}}<br>
                             <strong>url*:</strong> <a href="{{URL::to('/'.$info->slug)}}">bemusical.us/{{$info->slug}}</a><br>
                             <strong>e-mail*:</strong> {{$info->user->email}}<br>
@@ -362,6 +363,22 @@
                         @endforeach                        
                     </div>                  
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="vue-app" class="container">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-comment"></span> Do you need help?
+                </div>
+                <div class="panel-body-chat">
+                    <chat-log :messages="messages"></chat-log>          
+                </div>
+                <chat-composer v-on:messagesent="addMessage"></chat-composer>
             </div>
         </div>
     </div>
@@ -655,6 +672,70 @@
 
 @endsection
 
+@section('css')
+<style type="text/css">
+.chat
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.chat li
+{
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px dotted #B3A9A9;
+}
+
+.chat li.left .chat-body
+{
+    margin-left: 60px;
+}
+
+.chat li.right .chat-body
+{
+    margin-right: 60px;
+}
+
+
+.chat li .chat-body p
+{
+    margin: 0;
+    color: #777777;
+}
+
+.panel .slidedown .glyphicon, .chat .glyphicon
+{
+    margin-right: 5px;
+}
+
+.panel-body-chat
+{
+    overflow-y: scroll;
+    height: 250px;
+}
+
+::-webkit-scrollbar-track
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar
+{
+    width: 12px;
+    background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #555;
+}
+</style>
+@endsection
+
 @section('js')
     <script src="/js/jquery.ui.widget.js"></script>
     <script src="/js/jquery.iframe-transport.js"></script>
@@ -663,7 +744,81 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+// var me = {};
+// me.avatar = "https://lh6.googleusercontent.com/-lr2nyjhhjXw/AAAAAAAAAAI/AAAAAAAARmE/MdtfUmC0M4s/photo.jpg?sz=48";
 
+// var you = {};
+// you.avatar = "https://a11.t26.net/taringa/avatares/9/1/2/F/7/8/Demon_King1/48x48_5C5.jpg";
+
+// function formatAMPM(date) {
+//     var hours = date.getHours();
+//     var minutes = date.getMinutes();
+//     var ampm = hours >= 12 ? 'PM' : 'AM';
+//     hours = hours % 12;
+//     hours = hours ? hours : 12; // the hour '0' should be '12'
+//     minutes = minutes < 10 ? '0'+minutes : minutes;
+//     var strTime = hours + ':' + minutes + ' ' + ampm;
+//     return strTime;
+// }            
+
+// //-- No use time. It is a javaScript effect.
+// function insertChat(who, text, time = 0){
+//     var control = "";
+//     var date = formatAMPM(new Date());
+    
+//     if (who == "me"){
+        
+//         control = '<li style="width:100%">' +
+//                         '<div class="msj macro">' +
+//                         '<div class="avatar"><img class="img-circle" style="width:100%;" src="'+ me.avatar +'" /></div>' +
+//                             '<div class="text text-l">' +
+//                                 '<p>'+ text +'</p>' +
+//                                 '<p><small>'+date+'</small></p>' +
+//                             '</div>' +
+//                         '</div>' +
+//                     '</li>';                    
+//     }else{
+//         control = '<li style="width:100%;">' +
+//                         '<div class="msj-rta macro">' +
+//                             '<div class="text text-r">' +
+//                                 '<p>'+text+'</p>' +
+//                                 '<p><small>'+date+'</small></p>' +
+//                             '</div>' +
+//                         '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="img-circle" style="width:100%;" src="'+you.avatar+'" /></div>' +                                
+//                   '</li>';
+//     }
+//     setTimeout(
+//         function(){                        
+//             $("ul").append(control);
+
+//         }, time);
+    
+// }
+
+// function resetChat(){
+//     $("ul").empty();
+// }
+
+// $(".mytext").on("keyup", function(e){
+//     if (e.which == 13){
+//         var text = $(this).val();
+//         if (text !== ""){
+//             insertChat("me", text);              
+//             $(this).val('');
+//         }
+//     }
+// });
+
+// //-- Clear Chat
+// resetChat();
+
+// //-- Print Messages
+// insertChat("me", "Hello Tom...", 0);  
+// insertChat("you", "Hi, Pablo", 1500);
+// insertChat("me", "What would you like to talk about today?", 3500);
+// insertChat("you", "Tell me a joke",7000);
+// insertChat("me", "Spaceman: Computer! Computer! Do we bring battery?!", 9500);
+// insertChat("you", "LOL", 12000);
     function askPhoneCode(){
         $.ajax({
             type: "POST",

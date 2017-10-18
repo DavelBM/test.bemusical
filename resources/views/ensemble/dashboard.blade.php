@@ -362,6 +362,22 @@
     </div>
 </div>
 
+<div id="vue-app" class="container">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-comment"></span> Do you need help?
+                </div>
+                <div class="panel-body-chat">
+                    <chat-log :messages="messages"></chat-log>          
+                </div>
+                <chat-composer v-on:messagesent="addMessage"></chat-composer>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Data -->
 <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

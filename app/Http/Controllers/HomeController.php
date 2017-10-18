@@ -26,6 +26,7 @@ use App\Phone;
 use App\Ask;
 use App\Code;
 use App\GigOption;
+use App\Message;
 use Carbon\Carbon;
 use Twilio\Rest\Client;
 use Hash;
@@ -994,5 +995,4 @@ class HomeController extends Controller
             return view('user.details')->with('request', $ask);
         }
     }
-    
 }

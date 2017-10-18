@@ -14,6 +14,7 @@
         "laravelcollective/html": "^5.4.0",
         "maddhatter/laravel-fullcalendar": "^1.2",
         "nesbot/carbon": "^1.22",
+        "pusher/pusher-php-server": "~2.6",
         "twilio/sdk": "^5.15"
     },
     "require-dev": {

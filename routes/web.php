@@ -176,3 +176,14 @@ Route::post('/block/day', 'CalendarController@block_day')->name('user.block.day'
 // //PDF
 // Route::get('/get/invoice', 'PDFController@index')->name('get.invoice');;
 // //PDF
+
+//CHAT CONTROLLER
+Route::get('/get/messages', 'ChatController@messages')->name('get.messages')->middleware('auth:web');
+Route::post('/post/messages', 'ChatController@post_messages')->name('post.messages')->middleware('auth:web');
+
+Route::get('/admin/get/messages/{id}', 'ChatController@messages_admin')->name('admin.get.messages')->middleware('auth:admin');
+
+Route::get('/chat/log/{id}', 'ChatController@admin_chat')->name('admin.chat')->middleware('auth:admin');
+
+Route::post('/admin/post/messages/{id}', 'ChatController@post_messages_admin')->name('admin.post.messages')->middleware('auth:admin');
+//CHAT CONTROLLER

@@ -27,7 +27,7 @@
                             <tbody>
                                 @foreach($users as $user)
                                     <tr>
-                                        <td>{{ $user->id }}</td>
+                                        <td>{{ $user->id }}<a href="{{ route('admin.chat', $user->id) }}">Mensaje</a></td>
                                         @if($user->type == 'soloist')
                                             <td><a href="{{ URL::to('/'.$user->info->slug) }}">bemusical.us/{{ $user->info->slug }}</a></td>
                                         @elseif($user->type == 'ensemble')
