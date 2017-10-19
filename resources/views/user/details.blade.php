@@ -67,7 +67,9 @@
 
                                 <div class="form-group">
                                     <div class="col-md-6 col-md-offset-4">
-                                        <button onclick="confirmation_price(this)" type="button" class="btn btn-primary" data-toggle="modal" data-target="#priceModal">
+                                        <button onclick="
+                                        $('#button_send_price').attr('class', 'btn btn-primary disable');
+                                        confirmation_price(this);" type="button" class="btn btn-primary" data-toggle="modal" data-target="#priceModal">
                                             Send
                                         </button>
                                     </div>
@@ -177,9 +179,14 @@
         document.getElementById("priceSent").innerHTML = '$'+price;
         
         if(priceperhour < 80){
-        document.getElementById("info_quote").innerHTML = 'In our experience, this is cheaper than other quotes from pro musicians. Please consider raising your quote to at least $80 per hour';
+        document.getElementById("info_quote").innerHTML = 'In our experience, this is cheaper than other quotes from pro musicians. Please consider raising your quote to at least $80 per hour ($'+priceperhour+').';
+            $('#button_send_price').hide();
         }else if(priceperhour > 150){
-            document.getElementById("info_quote").innerHTML = 'In our experience, this is more expensive than quotes from other pro musicians. Please consider lowering your quote to at least $150 per hour';
+            document.getElementById("info_quote").innerHTML = 'In our experience, this is more expensive than quotes from other pro musicians. Please consider lowering your quote to at least $150 per hour($'+priceperhour+').';
+            $('#button_send_price').hide();
+        }else{
+            document.getElementById("info_quote").innerHTML = 'You are earning $'+priceperhour+' per hour.';
+            $('#button_send_price').show();
         }
     }
 </script>
