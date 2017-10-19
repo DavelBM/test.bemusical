@@ -34,6 +34,9 @@ Route::post('/user/send/phone', 'HomeController@send_phone')->name('user.send.ph
 Route::post('/user/confirm/phone', 'HomeController@confirm_phone')->name('user.confirm.phone');
 Route::post('/user/send/code/phone', 'HomeController@send_code_phone')->name('user.send.code.phone');
 Route::post('/user/reset/phone', 'HomeController@reset_phone')->name('user.reset.phone');
+Route::post('/change/email', 'HomeController@change_email')->name('change.email');
+Route::get('/update/email/{token}', 'HomeController@update_email')->name('update.email');
+Route::post('/updating/email', 'HomeController@updating_email')->name('updating.email');
 //Verification
 
 //Login Logout//

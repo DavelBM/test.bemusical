@@ -45,6 +45,10 @@
                                                 <span class="badge">
                                                     not accepted!
                                                 </span>
+                                            @elseif($ask->available != 0 and $ask->nonavailable == 0 and $ask->read == 1 and $ask->accepted_price == 1)
+                                                <span class="badge">
+                                                    Client paid!
+                                                </span>
                                             @elseif($ask->available != 0 and $ask->nonavailable == 0 and $ask->read == 1)
                                                 <span class="badge">
                                                     accepted!
@@ -114,7 +118,14 @@
                             <strong>Ensemble:</strong> {{$ensemble->name}}<br>
                             <strong>username*:</strong> {{$ensemble->slug}}<br>
                             <strong>url*:</strong> <a href="{{URL::to('/'.$ensemble->slug)}}">bemusical.us/{{$ensemble->slug}}</a><br>
-                            <strong>e-mail*:</strong> {{$ensemble->user->email}}<br>
+                            @if($user_days >= 5)
+                                <strong>e-mail*:</strong> {{$ensemble->user->email}}
+                                <button type="button" class="btn btn-xs btn-warning" onclick="changeEmail({{$ensemble->user->id}})">Change my email</button>
+                            @else
+                                <strong>e-mail*:</strong> {{$ensemble->user->email}}
+                            @endif
+                            <br>
+                            <br>
                             <strong>Manager name:</strong> {{$ensemble->manager_name}}<br>
                             <strong>Type of ensemble:</strong> {{$ensemble->type}}<br>
                             <strong>Bio summary:</strong> {{$ensemble->summary}}<br>
@@ -676,6 +687,26 @@
 </div>
 <!-- /Modal PHONE -->
 
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update email
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+
+            <div class="modal-body">
+                
+            <center><h3><strong>We already sent you an Email to change your password, you have 30 minutes to do it</strong></h3></center>
+
+            </div>
+        </div>       
+    </div>
+</div>
 @endsection
 
 @section('js')
@@ -686,6 +717,29 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
 
     <script type="text/javascript">
+
+    function changeEmail(id){
+        
+        $.ajax({
+            type: "POST",
+            url: "/change/email",
+            data: {
+                "_token": "{{ csrf_token() }}",
+            },
+            dataType: 'json',
+            beforeSend: function(){
+                $("#emailModal").modal();
+            },
+            success: function(response){
+                setTimeout(function(){
+                    $('#emailModal').modal('hide');
+                }, 2000);
+            },
+            error: function(xhr){
+
+            }
+        });
+    }
 
     function askPhoneCode(){
         $.ajax({

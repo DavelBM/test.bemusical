@@ -31,6 +31,8 @@ use Mail;
 use Storage;
 use stdClass;
 use Validator;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class EnsembleController extends Controller
 {
@@ -118,6 +120,11 @@ class EnsembleController extends Controller
             $now = Carbon::parse($now_timestamp);
             $minutes_diference = $update_timestamp->diffInMinutes($now);       
 
+            $user_update_timestamp = Carbon::parse($ensemble->created_at);
+            $user_now_timestamp = Carbon::now();
+            $user_now = Carbon::parse($user_now_timestamp);
+            $user_days_diference = $user_update_timestamp->diffInDays($now);
+
             return view('ensemble.dashboard')
                    ->with('ensemble', $ensemble)
                    ->with('tags', $tags)
@@ -136,7 +143,8 @@ class EnsembleController extends Controller
                    ->with('asks_count', $asks_count)
                    ->with('codes', $codes)
                    ->with('phone', $phone)
-                   ->with('minutes', $minutes_diference);
+                   ->with('minutes', $minutes_diference)
+                   ->with('user_days', $user_days_diference);
         }
     }
 

@@ -349,12 +349,14 @@ class PublicController extends Controller
             $tt = Carbon::parse($time);
             $to_time = $tt->addMinutes($ask->duration);
             $duration_event = $ft->format('h:i A').' - '.$tt->format('h:i A');
+            $time_hours = $ask->duration/60;
 
             return view('user.price_input')
                     ->with('name', $ask->name)
                     ->with('day', $d)
                     ->with('lenght', $duration_event)
-                    ->with('token', $token);
+                    ->with('token', $token)
+                    ->with('time_hours', $time_hours);
         }
     }
 

@@ -31,9 +31,12 @@ use Carbon\Carbon;
 use Twilio\Rest\Client;
 use Hash;
 use Auth;
+use Mail;
 use Storage;
 use stdClass;
 use Validator;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class HomeController extends Controller
 {
@@ -98,7 +101,7 @@ class HomeController extends Controller
             $repertoires = $IDuser->user_repertoires->all();
             $total_repertoires = UserRepertoir::where('user_id', $user)->where('visible', 1)->count();
             $member_request = Member::where('user_id', $user)->get();
-            $asks = Ask::where('user_id', $user)->get();
+            $asks = Ask::orderBy('id', 'DES')->where('user_id', $user)->get();
             $asks_count = Ask::where('user_id', $user)
                              ->where('read', 0)
                              //->where('available', 0)
@@ -121,6 +124,11 @@ class HomeController extends Controller
             $now = Carbon::parse($now_timestamp);
             $minutes_diference = $update_timestamp->diffInMinutes($now);
 
+            $user_update_timestamp = Carbon::parse($IDuser->created_at);
+            $user_now_timestamp = Carbon::now();
+            $user_now = Carbon::parse($user_now_timestamp);
+            $user_days_diference = $user_update_timestamp->diffInDays($now);
+
             return view('user.dashboard')
                    ->with('info', $info)
                    ->with('tags', $tags)
@@ -139,7 +147,8 @@ class HomeController extends Controller
                    ->with('asks_count', $asks_count)
                    ->with('codes', $codes)
                    ->with('phone', $phone)
-                   ->with('minutes', $minutes_diference);
+                   ->with('minutes', $minutes_diference)
+                   ->with('user_days', $user_days_diference);
         }
     }
 
@@ -174,6 +183,80 @@ class HomeController extends Controller
             'mile_radious' => $request->mile_radious
         ]);
         return redirect()->route('user.dashboard');
+    }
+
+    public function change_email(Request $request)
+    {
+        $code = str_random(10);
+        $token = $code.time();
+        $encrypted = Crypt::encryptString($token);
+        // $decrypted = Crypt::decryptString($encrypted);
+        // $now = date("F j, Y, g:i a", time());
+        $user = User::where('id', Auth::user()->id);
+        
+        $user->update([
+            'token'               => $encrypted
+        ]);
+
+        if($user->first()->type == 'soloist'){
+            $data = [ 
+                'email' => $user->first()->email,
+                'name'  => $user->first()->info->first_name.' '.$user->first()->info->last_name,
+                'token' => $encrypted
+            ];
+        } elseif($user->first()->type == 'ensemble'){
+            $data = [ 
+                'email' => $user->first()->email,
+                'name'  => $user->first()->ensemble->first_name,
+                'token' => $encrypted
+            ];
+        }
+
+        Mail::send('email.update_email', $data, function($message) use ($data){
+            $message->from('support@bemusical.us');
+            $message->to($data['email']);
+            $message->subject("Change email");
+        });
+
+        return ['status' => 'OK'];
+    }
+
+    public function update_email($token)
+    {
+        try {
+            $decrypted = Crypt::decryptString($token);
+            $user = User::where('id', Auth::user()->id)->first();
+        } catch (DecryptException $e) {
+            return view('user.update_email')->with('time', 0)->with('status', 'ERROR');
+        }
+        if ($token == $user->token) {
+            $array_token = str_split($decrypted, 10);
+            $created_to_explode = date("n|j|Y|G|i|s|", $array_token[1]);
+            $_e = explode('|', $created_to_explode);
+            $timestamp_created = Carbon::create($_e[2],$_e[0],$_e[1],$_e[3],$_e[4],$_e[5]);
+
+            $now = Carbon::now();
+            $verify_now = Carbon::parse($now);
+            $timestamp_difference = $timestamp_created->diffInMinutes($verify_now);
+
+            return view('user.update_email')->with('time', $timestamp_difference)->with('status', 'OK');
+        } else {
+            return view('user.update_email')->with('time', 0)->with('status', 'ERROR');
+        }
+    }
+
+    public function updating_email(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email'   => 'email|required'
+        ])->validate();
+
+        User::where('id', Auth::user()->id)->update([
+            'email'               => $request->email,
+            'times_email_changed' => User::where('id', Auth::user()->id)->first()->times_email_changed+1,
+        ]); 
+
+        return redirect()->route('user.dashboard');     
     }
 
     public function send_phone(Request $request)

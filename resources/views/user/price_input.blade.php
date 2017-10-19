@@ -64,6 +64,7 @@
                 <div class="modal-body">
                     <h3><center><strong>You are about to send a quote to {{$name}} for</strong></center></h3>
                     <h1><center><strong id="priceSent"></strong></center></h1>
+                    <h5><center id="info_quote" class="text-muted"></center></h5>
                 </div>
 
                 <div class="modal-footer">
@@ -93,7 +94,14 @@
 
         function confirmation_price(){
             var price = document.getElementById('price').value;
+            var priceperhour = price/{{$time_hours}};
             document.getElementById("priceSent").innerHTML = '$'+price;
+            
+            if(priceperhour < 80){
+            document.getElementById("info_quote").innerHTML = 'In our experience, this is cheaper than other quotes from pro musicians. Please consider raising your quote to at least $80 per hour';
+            }else if(priceperhour > 150){
+                document.getElementById("info_quote").innerHTML = 'In our experience, this is more expensive than quotes from other pro musicians. Please consider lowering your quote to at least $150 per hour';
+            }
         }
     </script>
 @endsection
