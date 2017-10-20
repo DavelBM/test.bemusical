@@ -2,7 +2,7 @@
 
 @section('logout')
     @if(Auth::guard('client')->check())
-        <a href="{{ url('/user/logout') }}">Logout user</a>
+        <a href="{{ url('/client/logout') }}">Logout client</a>
     @endif
 @endsection
 
@@ -12,10 +12,14 @@
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
                 
-                <div class="panel-heading">dashboard CLIENT page</div>
-                    HELLO
-                <div class="panel-body">
+                <div class="panel-heading">dashboard CLIENT</div>
                     
+                <div class="panel-body">
+                    <strong>Name:</strong>{{$client->name}} <br>
+                    <strong>Email:</strong>{{$client->email}} <br>
+                    <strong>My Address:</strong> {{$client->address}}<br>
+                    <strong>Company:</strong>{{$client->company}} <br>
+                    <strong>My phone:</strong> {{$client->phone}}<br>
                 </div> 
             </div>
         </div>

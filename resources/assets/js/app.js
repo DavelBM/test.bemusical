@@ -8,6 +8,7 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+window.socialmedia = require('vue');
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -22,6 +23,8 @@ Vue.component('chat-composer', require('./components/ChatComposer.vue'));
 Vue.component('admin-chat-message', require('./components/AdminChatMessage.vue'));
 Vue.component('admin-chat-log', require('./components/AdminChatLog.vue'));
 Vue.component('admin-chat-composer', require('./components/AdminChatComposer.vue'));
+socialmedia.component('facebook', require('./components/facebook.vue'));
+socialmedia.component('twitter', require('./components/twitter.vue'));
 
 function formatAMPM(date) 
 {
@@ -48,6 +51,10 @@ function getDate()
     var date = day_formatted+' '+time_formatted;
     return date;
 }
+
+const sm = new socialmedia({
+    el: '#sm'
+});
 
 const app = new Vue({
     el: '#vue-app',

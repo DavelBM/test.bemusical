@@ -1375,7 +1375,7 @@ module.exports = Cancel;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(13);
-module.exports = __webpack_require__(77);
+module.exports = __webpack_require__(85);
 
 
 /***/ }),
@@ -1392,6 +1392,7 @@ module.exports = __webpack_require__(77);
 __webpack_require__(14);
 
 window.Vue = __webpack_require__(40);
+window.socialmedia = __webpack_require__(40);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -1406,6 +1407,8 @@ Vue.component('chat-composer', __webpack_require__(57));
 Vue.component('admin-chat-message', __webpack_require__(62));
 Vue.component('admin-chat-log', __webpack_require__(67));
 Vue.component('admin-chat-composer', __webpack_require__(72));
+socialmedia.component('facebook', __webpack_require__(77));
+socialmedia.component('twitter', __webpack_require__(80));
 
 function formatAMPM(date) {
     var hours = date.getHours();
@@ -1429,6 +1432,10 @@ function getDate() {
     var date = day_formatted + ' ' + time_formatted;
     return date;
 }
+
+var sm = new socialmedia({
+    el: '#sm'
+});
 
 var app = new Vue({
     el: '#vue-app',
@@ -49345,6 +49352,200 @@ if (false) {
 
 /***/ }),
 /* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(78)
+/* template */
+var __vue_template__ = __webpack_require__(79)
+/* template functional */
+  var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/facebook.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {  return key !== "default" && key.substr(0, 2) !== "__"})) {  console.error("named exports are not supported in *.vue files.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-d0d82bf6", Component.options)
+  } else {
+    hotAPI.reload("data-v-d0d82bf6", Component.options)
+' + '  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports) {
+
+//
+//
+//
+//
+(function (d, s, id) {
+  var js,
+      fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s);js.id = id;
+  js.src = 'https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v2.10';
+  fjs.parentNode.insertBefore(js, fjs);
+})(document, 'script', 'facebook-jssdk');
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { attrs: { id: "fb-root" } })
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-d0d82bf6", module.exports)
+  }
+}
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(81)
+/* template */
+var __vue_template__ = __webpack_require__(82)
+/* template functional */
+  var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/twitter.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {  return key !== "default" && key.substr(0, 2) !== "__"})) {  console.error("named exports are not supported in *.vue files.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-9d7529f8", Component.options)
+  } else {
+    hotAPI.reload("data-v-9d7529f8", Component.options)
+' + '  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports) {
+
+//
+//
+//
+//
+//
+//
+//
+window.twttr = function (d, s, id) {
+  var js,
+      fjs = d.getElementsByTagName(s)[0],
+      t = window.twttr || {};
+  if (d.getElementById(id)) return t;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  fjs.parentNode.insertBefore(js, fjs);
+
+  t._e = [];
+  t.ready = function (f) {
+    t._e.push(f);
+  };
+
+  return t;
+}(document, "script", "twitter-wjs");
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "a",
+    {
+      staticClass: "twitter-share-button",
+      attrs: {
+        href: "https://twitter.com/intent/tweet?text=bemusical%20profile:%20",
+        "data-size": "large"
+      }
+    },
+    [_vm._v("\n\tTweet")]
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-9d7529f8", module.exports)
+  }
+}
+
+/***/ }),
+/* 83 */,
+/* 84 */,
+/* 85 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

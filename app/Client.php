@@ -16,7 +16,7 @@ class Client extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'address', 'company', 'phone',
+        'email', 'password'
     ];
 
     /**
@@ -31,5 +31,10 @@ class Client extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ClientResetPasswordNotification($token));
+    }
+
+    public function info()
+    {
+        return $this->hasOne('App\Client_info');
     }
 }

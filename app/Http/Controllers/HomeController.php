@@ -545,7 +545,7 @@ class HomeController extends Controller
     //This function helps to confirm the user when returns from the email to our page
     public function confirm($confirmation_code)
     {
-        $user = User::select('id', 'token', 'confirmed', 'type')
+        $user = User::select('id', 'token', 'confirmed', 'type', 'redirected')
                     ->where('token', $confirmation_code)
                     ->first();   
 
@@ -562,7 +562,8 @@ class HomeController extends Controller
             User::where('id', $user->id)
                 ->update([
                     'confirmed' => 1,
-                    'token' => null
+                    'token' => null,
+                    'redirected' => 1
                 ]);
 
             if ($user->type == 'soloist') {
@@ -589,7 +590,11 @@ class HomeController extends Controller
                         'slug' => $slug
                     ]);
 
-                return redirect()->route('user.dashboard');
+                if($user->redirected != 1){
+                    return view('layouts.redirect');
+                }else{
+                    return redirect()->route('user.dashboard');
+                }
 
             }elseif ($user->type == 'ensemble') {
                 
@@ -616,7 +621,11 @@ class HomeController extends Controller
                             'slug' => $slug
                         ]);
 
-                return redirect()->route('ensemble.dashboard'); 
+                if($user->redirected != 1){
+                    return view('layouts.redirect');
+                }else{
+                    return redirect()->route('ensemble.dashboard'); 
+                }
             }
         }
         
