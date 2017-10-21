@@ -130,7 +130,7 @@ Route::post('/ensemble/reset/phone', 'EnsembleController@reset_phone')->name('en
 //Login y logout CLIENT
 Route::get('/client/login', 'Auth\ClientLoginController@showLoginForm')->name('client.login');
 Route::post('/client/login', 'Auth\ClientLoginController@login')->name('client.login.submit');
-Route::get('/client', 'ClientController@index')->name('client.dashboard');//UPDATE
+Route::get('/dashboard', 'ClientController@index')->name('client.dashboard');//UPDATE
 Route::get('/client/logout', 'Auth\ClientLoginController@logout')->name('client.logout');
 
 //Password reset routes
@@ -144,6 +144,7 @@ Route::get('/client/password/reset/{token}', 'Auth\ClientResetPasswordController
 
 Route::get('/client/register', 'ClientController@register')->name('client.register');
 Route::post('/client/store', 'ClientController@store')->name('client.store');
+Route::post('/client/update/{id}', 'ClientController@update')->name('client.update');
 //Clients
 
 //PUBLIC **This routes does not need to be log-in**

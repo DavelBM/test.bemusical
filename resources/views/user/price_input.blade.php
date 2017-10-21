@@ -70,6 +70,7 @@
                 <div class="modal-footer">
                     <a href="{{ route('general.request.send_price') }}"
                        class="btn btn-primary" 
+                       id="button_send_price" 
                        onclick="event.preventDefault();
                        document.getElementById('sendPrice').submit();">Continue</a>
                        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Close</button>

@@ -716,7 +716,7 @@
     <script src="/js/jquery.fileupload.js"></script>
     <script src="/chosen/chosen.jquery.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer/>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 
     <script type="text/javascript">
 

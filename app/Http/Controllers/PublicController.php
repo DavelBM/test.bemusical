@@ -1312,32 +1312,7 @@ class PublicController extends Controller
                     "amount"   => $i_d_price[0],
                     "currency" => "USD",
                 ]); 
-            }catch(ServerErrorException $e) {
-                $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }catch(BadRequestException $e) {
-                $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }catch(UnauthorizedException $e) {
-                $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }catch(InvalidRequestException $e) {
-                $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }catch(NotFoundException $e) {
-                $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }catch(CardErrorException $e) {
+            }catch(ModelNotFoundException $e) {
                 $payment_object->status ='ERROR';
                 $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
                 $info[] = $payment_object;

@@ -116,7 +116,7 @@
                        id="button_send_price" 
                        class="btn btn-primary" 
                        onclick="event.preventDefault();
-                       document.getElementById('sendPrice').submit();" disable>Continue</a>
+                       document.getElementById('sendPrice').submit();">Continue</a>
                        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Close</button>
                 </div>
             </div>       
@@ -165,14 +165,14 @@
         });
       }
 
-      $('#sendPrice').on('keyup keypress', function(e) {
+    $('#sendPrice').on('keyup keypress', function(e) {
         var keyCode = e.keyCode || e.which;
         if (keyCode === 13) { 
             e.preventDefault();
             return false;
         }
     });
-
+    
     function confirmation_price(){
         var price = document.getElementById('price').value;
         var priceperhour = price/{{$time_hours}};

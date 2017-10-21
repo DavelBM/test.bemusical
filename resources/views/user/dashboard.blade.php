@@ -167,7 +167,7 @@
                             </form> -->
                             @if($user_days >= 5)
                                 <strong>e-mail*:</strong> {{$info->user->email}}
-                                <button type="button" class="btn btn-xs btn-warning" onclick="changeEmail({{$info->user->id}})">Change my email</button>
+                                <button type="button" class="btn btn-xs btn-warning" onclick="changeEmail(this); return false;">Change my email</button>
                             @else
                                 <strong>e-mail*:</strong> {{$info->user->email}}
                             @endif
@@ -776,12 +776,11 @@
     <script src="/js/jquery.fileupload.js"></script>
     <script src="/chosen/chosen.jquery.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiSpxjqWzkCFUzn6l1H-Lh-6mNA8OnKzI&v=3.exp&libraries=places"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer/>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 
     <script type="text/javascript">
 
-    function changeEmail(id){
-        
+    function changeEmail(){
         $.ajax({
             type: "POST",
             url: "/change/email",
@@ -801,6 +800,7 @@
 
             }
         });
+        return false;
     }
 
     function askPhoneCode(){
