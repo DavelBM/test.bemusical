@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Client_info;
 use App\GeneralAsk;
 use App\Payment;
 use App\Client;
 use App\Ask;
+use Cartalyst\Stripe\Stripe;
 use Auth;
 use Hash;
+use Validator;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class ClientController extends Controller
 {
@@ -33,10 +37,20 @@ class ClientController extends Controller
         $user = Auth::user();
         $client = Client::where('id', $user->id)->firstOrFail();
         $info_client = Client_info::where('client_id', $user->id)->firstOrFail();
-        
+        $gigs_requests = Ask::orderBy('date', 'asc')->where('email', $client->email)->with('user')->get();
+        $gigs_general_requests = GeneralAsk::orderBy('date', 'asc')->where('email', $client->email)->get();
+        // $gigs_payed = Payment::orderBy('created_at', 'asc')->with('request')->where('email', $client->email)->get();
+        $gigs_payed = Ask::orderBy('date', 'asc')->where('email', $client->email)->with('payment')->with('user')->get();
+
+        $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+
         return view('client.dashboard')
             ->with('client', $client)
-            ->with('info', $info_client);
+            ->with('info', $info_client)
+            ->with('requests', $gigs_requests)
+            ->with('grequests', $gigs_general_requests)
+            ->with('prequests', $gigs_payed)
+            ->with('stripe', $stripe);
     }
 
     /*
@@ -44,7 +58,11 @@ class ClientController extends Controller
     */
     public function register()
     {
-        return view('auth.register-client');
+        // if( (Auth::guest('client'))  ){
+        //     return redirect()->route('client.dashboard');
+        // }else{
+            return view('auth.register-client');
+        // }
     }
 
     /*
@@ -67,7 +85,7 @@ class ClientController extends Controller
                 array_push($id_ask_array, $_ask->id);
             }
             for ($i=0; $i < count($id_ask_array); $i++) { 
-                $object_payment = Payment::where('request_id', $id_ask_array[$i])->first();
+                $object_payment = Payment::where('ask_id', $id_ask_array[$i])->first();
                 if($object_payment != null){
                     array_push($payments_array, $object_payment);
                 }
@@ -159,6 +177,41 @@ class ClientController extends Controller
 
     public function update(Request $request)
     {
-        return ['status' => 'OK'];
+        Validator::make($request->all(), [
+            'first_name' => 'max:50|required',
+            'last_name'  => 'max:50|required',
+            'address'    => 'max:120|required',
+            'zip'        => 'digits_between:4,6|required',
+            'company'    => 'max:120|required',
+            'phone'      => 'digits:10|required',
+        ])->validate();
+
+        Client_info::where('client_id', Auth::user()->id)
+        ->update([
+            'name' => $request->first_name.' '.$request->last_name,
+            'address' => $request->address,
+            'company' => $request->company,
+            'phone' => $request->phone,
+            'zip' => $request->zip
+        ]);
+
+        return redirect()->route('client.dashboard');
+    }
+
+    public static function encode($string) {
+        $encrypted = Illuminate\Support\Facades\Crypt::encryptString($string);
+        $data = base64_encode($encrypted);
+        $data = str_replace(array('+','/','='),array('-','_',''),$data);
+        return $data;
+    }
+
+    public static function decode($string) {
+        $data = str_replace(array('-','_'),array('+','/'),$string);
+        $mod4 = strlen($data) % 4;
+        if ($mod4) {
+            $data .= substr('====', $mod4);
+        }
+        $decrypted = Illuminate\Support\Facades\Crypt::decryptString(base64_decode($data));
+        return $decrypted;
     }
 }

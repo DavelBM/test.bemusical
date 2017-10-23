@@ -33,7 +33,7 @@
                                 <strong>${{$price}}</strong> for {{$duration}} minutes<br>
                                 On: <strong>{{$date}}</strong><br>
                                 At : <strong>{{$address}}</strong><br>
-                                <a class="btn btn-primary" type="button" href="{{ URL::to('/return/answer/price/'.$token) }}">click here to confirm</a><br>
+                                <a class="btn btn-primary" type="button" href="{{ URL::to('/return/answer/price/'.$token) }}">see details</a><br>
                                 </p>
                             </td>
                         </tr>

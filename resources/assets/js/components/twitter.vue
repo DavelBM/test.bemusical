@@ -1,8 +1,7 @@
 <template>
     <a class="twitter-share-button"
 	  href="https://twitter.com/intent/tweet?text=bemusical%20profile:%20"
-	  data-size="large">
-	Tweet</a>
+	  data-size="large">Tweet</a>
 </template>
 
 <script>window.twttr = (function(d, s, id) {

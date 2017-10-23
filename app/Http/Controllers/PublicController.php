@@ -94,9 +94,7 @@ class PublicController extends Controller
 	   		}
 
     	}else{
-
     		dd('no existe el slug');
-
     	}
 
     }
@@ -914,7 +912,7 @@ class PublicController extends Controller
                 }
 
                 $payment = Payment::create([
-                    'request_id'       => $ask->id,
+                    'ask_id'       => $ask->id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
                     '_billing_address' => $request->_s_address,
@@ -974,7 +972,7 @@ class PublicController extends Controller
                 }
 
                 $payment = Payment::create([
-                    'request_id' => $ask->id,
+                    'ask_id' => $ask->id,
                     'email'      => $ask->email,
                     '_id_charge' => $charge['id'],
                     'amount'     => $i_d_price[0],
@@ -1109,7 +1107,7 @@ class PublicController extends Controller
                 }
 
                 $payment = Payment::create([
-                    'request_id'       => $ask->id,
+                    'ask_id'       => $ask->id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
                     '_billing_address' => $request->_c_address,
@@ -1152,7 +1150,7 @@ class PublicController extends Controller
                 }
 
                 $payment = Payment::create([
-                    'request_id' => $ask->id,
+                    'ask_id' => $ask->id,
                     'email'      => $ask->email,
                     '_id_charge' => $charge['id'],
                     'amount'     => $i_d_price[0]*(0.12),
@@ -1312,101 +1310,102 @@ class PublicController extends Controller
                     "amount"   => $i_d_price[0],
                     "currency" => "USD",
                 ]); 
+
+                $payment = Payment::create([
+                    'ask_id'       => $ask->id,
+                    'email'            => $ask->email,
+                    'phone'            => $ask->phone,
+                    '_id_costumer'     => $customer['id'],
+                    '_id_charge'       => $charge['id'],
+                    'amount'           => $i_d_price[0],
+                    'payed'            => 1,
+                    'type'             => 'transfer'
+                ]);
+
+                if($ask->user->type == 'soloist')
+                {
+                    $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                    $start_date = explode('|', $ask->date);
+                    $format_date =Carbon::parse($start_date[0]);
+                    $get_data_time = $format_date->addMinutes($ask->duration);
+                    $end_date = $get_data_time->toDateTimeString();
+
+                    $gig = new Gig();
+                    $gig->user_id    = $ask->user_id;
+                    $gig->request_id = $ask->id;
+                    $gig->title      = $ask->name.'-'.$ask->company;
+                    $gig->start      = $start_date[0];
+                    $gig->end        = $end_date;
+                    $gig->url        = URL::to('/details/request/'.$ask->id);
+                    $gig->save(); 
+
+                    $data = [ 
+                        'id'      => $ask->user->id,
+                        'u_email' => $ask->user->email,
+                        'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                        'c_email' => $ask->email,
+                        'c_name'  => $ask->name,
+                        'price'   => $ask->price,
+                        'type'    => $payment->type,
+                        'amount'  => $payment->amount,
+                        'day'     => $start_date[1],
+                        'flag'    => $flag_client,
+                    ];
+
+                    $this->SendMailApproved($data);
+
+                    Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
+                    $payment_object->status ='OK';
+                    $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                    $payment_object->slug = $info->slug;
+                    $info[] = $payment_object;
+                    return response()->json(array('info' => $info), 200);
+                }
+                elseif($ask->user->type == 'ensemble') 
+                {
+                    $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->get();
+
+                    $start_date = explode('|', $ask->date);
+                    $format_date = Carbon::parse($start_date[0]);
+                    $get_data_time = $format_date->addMinutes($ask->duration);
+                    $end_date = $get_data_time->toDateTimeString();
+
+                    $gig = new Gig();
+                    $gig->user_id    = $ask->user_id;
+                    $gig->request_id = $ask->id;
+                    $gig->title      = $ask->name.'-'.$ask->company;
+                    $gig->start      = $start_date[0];
+                    $gig->end        = $end_date;
+                    $gig->url        = URL::to('/details/request/'.$ask->id);
+                    $gig->save(); 
+
+                    $data = [ 
+                        'id'      => $ask->user->id,
+                        'u_email' => $ask->user->email,
+                        'u_name'  => $ask->user->ensemble->name,
+                        'c_email' => $ask->email,
+                        'c_name'  => $ask->name,
+                        'price'   => $ask->price,
+                        'type'    => $payment->type,
+                        'amount'  => $payment->amount,
+                        'day'     => $start_date[1],
+                        'flag'    => $flag_client,
+                    ];
+
+                    $this->SendMailApproved($data);
+
+                    Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+                    
+                    $payment_object->status ='OK';
+                    $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                    $payment_object->slug = $info[0]->slug;
+                    $info[] = $payment_object;
+                    return response()->json(array('info' => $info), 200);
+                }
             }catch(ModelNotFoundException $e) {
                 $payment_object->status ='ERROR';
                 $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }
-            $payment = Payment::create([
-                'request_id'       => $ask->id,
-                'email'            => $ask->email,
-                'phone'            => $ask->phone,
-                '_id_costumer'     => $customer['id'],
-                '_id_charge'       => $charge['id'],
-                'amount'           => $i_d_price[0],
-                'payed'            => 1,
-                'type'             => 'transfer'
-            ]);
-
-            if($ask->user->type == 'soloist')
-            {
-                $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-                $start_date = explode('|', $ask->date);
-                $format_date =Carbon::parse($start_date[0]);
-                $get_data_time = $format_date->addMinutes($ask->duration);
-                $end_date = $get_data_time->toDateTimeString();
-
-                $gig = new Gig();
-                $gig->user_id    = $ask->user_id;
-                $gig->request_id = $ask->id;
-                $gig->title      = $ask->name.'-'.$ask->company;
-                $gig->start      = $start_date[0];
-                $gig->end        = $end_date;
-                $gig->url        = URL::to('/details/request/'.$ask->id);
-                $gig->save(); 
-
-                $data = [ 
-                    'id'      => $ask->user->id,
-                    'u_email' => $ask->user->email,
-                    'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
-                    'c_email' => $ask->email,
-                    'c_name'  => $ask->name,
-                    'price'   => $ask->price,
-                    'type'    => $payment->type,
-                    'amount'  => $payment->amount,
-                    'day'     => $start_date[1],
-                    'flag'    => $flag_client,
-                ];
-
-                $this->SendMailApproved($data);
-
-                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
-
-                $payment_object->status ='OK';
-                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
-                $payment_object->slug = $info->slug;
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            }
-            elseif($ask->user->type == 'ensemble') 
-            {
-                $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->get();
-
-                $start_date = explode('|', $ask->date);
-                $format_date = Carbon::parse($start_date[0]);
-                $get_data_time = $format_date->addMinutes($ask->duration);
-                $end_date = $get_data_time->toDateTimeString();
-
-                $gig = new Gig();
-                $gig->user_id    = $ask->user_id;
-                $gig->request_id = $ask->id;
-                $gig->title      = $ask->name.'-'.$ask->company;
-                $gig->start      = $start_date[0];
-                $gig->end        = $end_date;
-                $gig->url        = URL::to('/details/request/'.$ask->id);
-                $gig->save(); 
-
-                $data = [ 
-                    'id'      => $ask->user->id,
-                    'u_email' => $ask->user->email,
-                    'u_name'  => $ask->user->ensemble->name,
-                    'c_email' => $ask->email,
-                    'c_name'  => $ask->name,
-                    'price'   => $ask->price,
-                    'type'    => $payment->type,
-                    'amount'  => $payment->amount,
-                    'day'     => $start_date[1],
-                    'flag'    => $flag_client,
-                ];
-
-                $this->SendMailApproved($data);
-
-                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
-                
-                $payment_object->status ='OK';
-                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
-                $payment_object->slug = $info[0]->slug;
                 $info[] = $payment_object;
                 return response()->json(array('info' => $info), 200);
             }
