@@ -17,6 +17,10 @@ class EventServiceProvider extends ServiceProvider
             'App\Listeners\SendVerifierMail',
             //'App\Listeners\CreateInfo',
         ],
+
+        'App\Events\UserLogedEvent' => [
+            'App\Listeners\UserLoged'
+        ],
     ];
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserLogedEvent;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Auth;
@@ -40,8 +41,8 @@ class LoginController extends Controller
 
     public function userLogout()
     {
+        event(new UserLogedEvent(Auth::user()));
         Auth::guard('web')->logout();
-
         return redirect('/');
     }
 }
