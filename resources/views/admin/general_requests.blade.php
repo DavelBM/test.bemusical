@@ -12,7 +12,8 @@
                     @if(!empty($general_asks))
                     @foreach($general_asks as $ask)
                         @php
-                            $dt = explode("|", $ask->date);
+                            $dt = \Carbon\Carbon::parse($ask->date)->toDayDateTimeString();
+                             // = explode("|", );
                             $get_data_address = explode("|", $ask->address);
                             $id_place = explode("id:", $get_data_address[0]);
                             $name_place = explode("address:", $get_data_address[1]);
@@ -25,11 +26,11 @@
                                 <span class="badge">
                                     new!
                                 </span>
-                                On {{$dt[1]}}<span class="glyphicon glyphicon-menu-down"></span>
+                                On {{$dt}}<span class="glyphicon glyphicon-menu-down"></span>
                             </button>
                             @else
                             <button id="trigger{{$ask->id}}" class="btn btn-block btn-default">
-                                On {{$dt[1]}}<span class="glyphicon glyphicon-menu-down"></span>
+                                On {{$dt}}<span class="glyphicon glyphicon-menu-down"></span>
                             </button>
                             @endif
 
@@ -41,7 +42,7 @@
                                 @if($ask->phone != null)
                                     <p>Phone: <strong>{{$ask->phone}}</strong></p>
                                 @endif
-                                <p>Date: <strong>{{$dt[1]}}</strong></p>
+                                <p>Date: <strong>{{$dt}}</strong></p>
                                 <p>Address: <strong>{{$name_place[1]}}</strong> <a href="{{URL::to('/admin/maps/id='.$id_place[1].'&lat='.$lat_place[1].'&lng='.$lng_place[1])}}">see on google maps</a></p>
                                 <p>Length: <strong>{{$ask->duration}}</strong></p>
                                 <p>Type: <strong>{{$ask->type}}</strong></p>
@@ -67,7 +68,7 @@
                                             <input type="hidden" name="id_request" value="{{$ask->id}}">
 
                                             <div class="form-group">
-                                                    {!! Form::submit('Assign', ['class' => 'btn btn-primary btn-block']) !!}
+                                                    {!! Form::submit('Give to', ['class' => 'btn btn-primary btn-block']) !!}
                                             </div>
                                         {!! Form::close() !!}
                                     </div>

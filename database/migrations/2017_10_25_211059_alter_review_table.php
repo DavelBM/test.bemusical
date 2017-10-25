@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AlterLastLoginTable extends Migration
+class AlterReviewTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class AlterLastLoginTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('last_login_at')->default('0000-00-00 00:00:00')->after('updated_at');
-            $table->integer('login_reminder')->default(0)->after('last_login_at');
+        Schema::table('reviews', function (Blueprint $table) {
+            $table->string('token')->nullable()->after('visible');
         });
     }
 
@@ -26,7 +25,7 @@ class AlterLastLoginTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('general_reviews', function (Blueprint $table) {
             //
         });
     }

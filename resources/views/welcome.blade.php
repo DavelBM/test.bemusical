@@ -36,7 +36,7 @@
         <div class="title m-b-md">
             BeMusical.us
             <div class="row col-md-6 col-md-offset-3">
-                <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#formRequest">Do you need a service?</button>
+                <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#formRequest">General Request</button>
             </div>
         </div>
     </div>
@@ -225,7 +225,7 @@
                     <input id="place-geometry" type="hidden" name="place_geometry" value="{{ old('place_geometry') }}" required>
 
                     <div class="form-group">
-                        {!! Form::submit('Ask for service', ['class' => 'btn btn-primary']) !!}
+                        {!! Form::submit('Ask for service', ['class' => 'btn btn-primary', 'onclick' => 'localStorage.clear();']) !!}
                     </div>
 
                 {!! Form::close() !!}

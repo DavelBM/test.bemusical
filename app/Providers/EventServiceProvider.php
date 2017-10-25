@@ -18,7 +18,8 @@ class EventServiceProvider extends ServiceProvider
             //'App\Listeners\CreateInfo',
         ],
 
-        'App\Events\UserLogedEvent' => [
+        //'App\Events\UserLogedEvent' => [
+        'Illuminate\Auth\Events\Login' => [
             'App\Listeners\UserLoged'
         ],
     ];

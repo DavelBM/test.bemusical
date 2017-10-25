@@ -28,6 +28,8 @@ class UserLoged
      */
     public function handle($event)
     {
-        User::where('id', $event->user->id)->update(['last_login_at' => Carbon::now()->toDateTimeString()]);
+        if (!empty($event->user->ask_review)) {
+            User::where('id', $event->user->id)->update(['last_login_at' => Carbon::now()->toDateTimeString()]);
+        }
     }
 }

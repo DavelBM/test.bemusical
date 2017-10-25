@@ -3,6 +3,9 @@
 namespace App\Console;
 
 use App\Console\Commands\lastLogin;
+use App\Console\Commands\clientRecommendation;
+use App\Console\Commands\beforeGig;
+use App\Console\Commands\afterGig;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,7 +17,10 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        lastLogin::class
+        lastLogin::class,
+        clientRecommendation::class,
+        beforeGig::class,
+        afterGig::class
     ];
 
     /**
@@ -27,7 +33,10 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->command('llogin:user')->everyMinute();
+        $schedule->command('user:llogin')->dailyAt('16:00');
+        $schedule->command('client:recommendation')->hourly();
+        $schedule->command('user:reminder')->hourly();
+        $schedule->command('user:review')->dailyAt('16:00');
     }
 
     /**
