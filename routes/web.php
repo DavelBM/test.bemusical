@@ -57,6 +57,10 @@ Route::get('/admin/{id}/nonvisible', 'AdminController@nonvisible')->name('admin.
 Route::get('/admin/{id}/visible', 'AdminController@visible')->name('admin.visible');
 Route::get('/admin/general/requests', 'AdminController@general_requests')->name('admin.general.request');
 Route::get('/admin/general/requests/update/{id}', 'AdminController@general_requests_update')->name('admin.general.request.update');
+Route::put('/admin/pass/{admin}', 'AdminController@updatePassAdmin')->name('admin.updatePassAdmin');
+Route::post('/admin/change/email', 'AdminController@change_email')->name('admin.change.email');
+Route::get('/admin/update/email/{token}', 'AdminController@update_email')->name('admin.update.email');
+Route::post('/admin/updating/email', 'AdminController@updating_email')->name('admin.updating.email');
 
 //Reset Passwords//
 Route::post('/admin/password/email', 'Auth\AdminForgotPasswordController@sendResetLinkEmail')->name('admin.password.email');
@@ -145,6 +149,8 @@ Route::get('/client/password/reset/{token}', 'Auth\ClientResetPasswordController
 Route::get('/client/register', 'ClientController@register')->name('client.register');
 Route::post('/client/store', 'ClientController@store')->name('client.store');
 Route::post('/client/update/{id}', 'ClientController@update')->name('client.update');
+Route::get('/review/{id}', 'ClientController@review')->name('client.review');
+Route::post('/store/review/', 'ClientController@store_review')->name('client.store_review');
 //Clients
 
 //PUBLIC **This routes does not need to be log-in**

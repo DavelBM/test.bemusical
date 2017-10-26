@@ -202,13 +202,13 @@ class HomeController extends Controller
             $data = [ 
                 'email' => $user->first()->email,
                 'name'  => $user->first()->info->first_name.' '.$user->first()->info->last_name,
-                'token' => $encrypted
+                'token' => '/update/email/'.$encrypted
             ];
         } elseif($user->first()->type == 'ensemble'){
             $data = [ 
                 'email' => $user->first()->email,
                 'name'  => $user->first()->ensemble->first_name,
-                'token' => $encrypted
+                'token' => '/update/email/'.$encrypted
             ];
         }
 
@@ -254,6 +254,7 @@ class HomeController extends Controller
         User::where('id', Auth::user()->id)->update([
             'email'               => $request->email,
             'times_email_changed' => User::where('id', Auth::user()->id)->first()->times_email_changed+1,
+            'token'               => null,
         ]); 
 
         return redirect()->route('user.dashboard');     

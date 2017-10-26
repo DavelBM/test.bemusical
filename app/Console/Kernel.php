@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('user:llogin')->dailyAt('16:00');
         $schedule->command('client:recommendation')->hourly();
         $schedule->command('user:reminder')->hourly();
-        $schedule->command('user:review')->dailyAt('16:00');
+        $schedule->command('user:review')->hourly();
     }
 
     /**

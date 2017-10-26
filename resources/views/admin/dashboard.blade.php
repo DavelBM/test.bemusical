@@ -11,8 +11,14 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                
+                <form action="/admin/change/email" method="POST">
+                    {{ csrf_field() }}
+                    <button type="submit">Enviar</button>
+                </form>
                 <div class="panel-heading">Welcome {{ Auth::user()->name }}, currently we have {{$number_of_members}} 
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#passModal">
+                    Change my password
+                </button>
                 <a href="{{ route('admin.manage_user') }}" class="btn btn-primary">
                     members
                 </a>
@@ -28,7 +34,11 @@
                 </div>
 
                     <div class="row panel-body">
+                        <strong>e-mail*:</strong> {{$me->email}}
+                        <button type="button" class="btn btn-xs btn-warning" onclick="changeEmail(this); return false;">Change my email</button>
+                        @if(Auth::user()->permission=='higher')
                         <a href="{{ route('admin.create') }}" type="button" class="btn btn-primary btn-block">New Admin</a>
+                        @endif
                         <table class="table table-striped">
                             <thead>
                                 <th>ID</th>
@@ -49,9 +59,15 @@
                                             @else
                                                 <td>Admin</td>
                                             @endif
-                                            <td>
-                                                <a href="{{ route('admin.destroy', $admin->id) }}" class="btn btn-warning">Delete</a>
-                                            </td>
+                                            @if(Auth::user()->permission=='higher')
+                                                <td>
+                                                    <a href="{{ route('admin.destroy', $admin->id) }}" class="btn btn-warning">Delete</a>
+                                                </td>
+                                            @else
+                                                <td>
+                                                    OK
+                                                </td>
+                                            @endif
                                         </tr>
                                     @else
                                         <tr>
@@ -164,4 +180,119 @@
         </div>
     </div>
 </div>
+<!-- Modal Password -->
+<div class="modal fade" id="passModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update password
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+
+            <div class="modal-body">
+                
+                {!! Form::open(['route' => ['admin.updatePassAdmin', $me->id], 'id' => 'pass-form', 'method' => 'PUT']) !!}
+
+                    <div class="row form-group{{ $errors->has('old_password') ? ' has-error' : '' }}">
+                        <label for="old_password" class="col-md-4 control-label">Current password</label>
+
+                        <div class="col-md-6">
+                            <input id="old_password" type="password" class="form-control" name="old_password" required>
+
+                            @if ($errors->has('old_password'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('old_password') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row form-group{{ $errors->has('password') ? ' has-error' : '' }}">
+                        <label for="password" class="col-md-4 control-label">New password</label>
+
+                        <div class="col-md-6">
+                            <input id="password" type="password" class="form-control" name="password" required>
+
+                            @if ($errors->has('password'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('password') }}</strong>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label for="password-confirm" class="col-md-4 control-label">Confirm new password</label>
+
+                        <div class="col-md-6">
+                            <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required>
+                        </div>
+                    </div>
+
+                {!! Form::close() !!}
+
+            </div>
+
+            <div class="modal-footer">
+                <a href="{{ route('admin.updatePassAdmin', $me->id) }}"
+                   class="btn btn-primary" 
+                   onclick="event.preventDefault();
+                   document.getElementById('pass-form').submit();">Update password</a>
+            </div>
+        </div>       
+    </div>
+</div>
+<!-- /Modal Password -->
+<!-- Announcement -->
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update email
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+
+            <div class="modal-body">
+                
+            <center><h3><strong>We already sent you an Email to change your password, you have 30 minutes to do it</strong></h3></center>
+
+            </div>
+        </div>       
+    </div>
+</div>
+<!-- /Announcement -->
+@endsection
+
+@section('js')
+<script type="text/javascript">
+    function changeEmail(){
+        $.ajax({
+            type: "POST",
+            url: "/admin/change/email",
+            data: {
+                "_token": "{{ csrf_token() }}",
+            },
+            dataType: 'json',
+            beforeSend: function(){
+                $("#emailModal").modal();
+            },
+            success: function(response){
+                setTimeout(function(){
+                    $('#emailModal').modal('hide');
+                }, 2000);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 console.log(XMLHttpRequest);
+            }
+        });
+    }
+</script>
 @endsection

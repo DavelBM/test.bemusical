@@ -12,8 +12,12 @@ use App\Ask;
 use Cartalyst\Stripe\Stripe;
 use Auth;
 use Hash;
+use App\User;
 use Validator;
-use Illuminate\Contracts\Encryption\DecryptException;
+use Hashids\Hashids;
+use App\Review;
+use Carbon\Carbon;
+use Laracasts\Flash\Flash;
 
 class ClientController extends Controller
 {
@@ -198,20 +202,84 @@ class ClientController extends Controller
         return redirect()->route('client.dashboard');
     }
 
+    public function review($token_encoded)
+    {
+    try
+    {
+        $review = Review::where('token', '=', $token_encoded)->where('sent', 0)->first();
+        $hashids = new Hashids();
+        $array_id_request_client = [];
+        $my_requests = Ask::where('email', Auth::user()->email)->get();
+        foreach ($my_requests as $key) {
+            array_push($array_id_request_client, $key->id);
+        }
+
+        if (in_array($review->client_id, $array_id_request_client)) 
+        {
+            $hashsedtime = Carbon::createFromTimestamp($hashids->decode($token_encoded)[0]);
+            $now = Carbon::now();
+            $elapsed_time = $now->diffInDays($hashsedtime);
+            $user = User::where('id', $review->user()->first()->id)->first();
+            if ($user->type == 'soloist') {
+                $name = $user->info->first_name.' '.$user->info->last_name;
+                $slug = $user->info->slug;
+            } elseif ($user->type == 'ensemble') {
+                $name = $user->ensemble->name;
+                $slug = $user->ensemble->slug;
+            }
+            if ($elapsed_time > 14) {
+                Flash::warning('This token already expired');
+                return redirect()->route('client.dashboard');
+            }else{
+                return view('client.review')
+                        ->with('user', $name)
+                        ->with('slug', $slug)
+                        ->with('date', explode('|', Ask::where('id', $review->client_id)->first()->date))
+                        ->with('token', $token_encoded);
+            }
+        }else{
+            Flash::error('This token does not exists');
+            return redirect()->route('client.dashboard');
+        }
+    }catch(\Exception $e)
+    {
+        Flash::error('Something went wrong');
+        return redirect()->route('client.dashboard');
+    }
+    }
+
+    public function store_review(Request $request)
+    {
+        Validator::make($request->all(), [
+            'score'   => 'required',
+            'review'  => 'required|min:4|max:191',
+            'token'   => 'required'
+        ])->validate();
+
+        Review::where('token', $request->token)->update([
+            'client_id' => Auth::user()->id,
+            'score'     => $request->score,
+            'review'    => $request->review,
+            'sent'      => 1
+        ]);
+
+        Flash::success('Your review has been sent it. Thanks for use our service');
+        return redirect()->route('client.dashboard');
+    }
+
     public static function encode($string) {
         $encrypted = Illuminate\Support\Facades\Crypt::encryptString($string);
-        $data = base64_encode($encrypted);
-        $data = str_replace(array('+','/','='),array('-','_',''),$data);
         return $data;
     }
 
     public static function decode($string) {
-        $data = str_replace(array('-','_'),array('+','/'),$string);
-        $mod4 = strlen($data) % 4;
-        if ($mod4) {
-            $data .= substr('====', $mod4);
+        try
+        {
+            $decrypted = Illuminate\Support\Facades\Crypt::decryptString($string);
+            return $decrypted;
+        }catch(Illuminate\Contracts\Encryption\DecryptException $e)
+        {
+            dd('error');
         }
-        $decrypted = Illuminate\Support\Facades\Crypt::decryptString(base64_decode($data));
-        return $decrypted;
     }
 }

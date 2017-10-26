@@ -8,7 +8,7 @@
 
         <div>
             You can change your email in the next url. It expire in 30 minutes
-            {{ URL::to('/update/email/'.$token) }}.<br/>
+            {{ URL::to($token) }}.<br/>
 
         </div>
 

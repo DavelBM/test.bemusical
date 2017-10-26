@@ -15,6 +15,7 @@
                 <div class="panel-heading">dashboard CLIENT</div>
                     
                 <div class="panel-body">
+                    @include('flash::message')
                     @if(!$errors->isEmpty())
                         <span class="help-block">
                             <strong style="color: red;">We had a problem while we was updating the info, check again</strong>

@@ -53,14 +53,11 @@ class beforeGig extends Command
             $nextgig = Carbon::parse($date_e[0]);
             $elapsed_time = $now->diffInHours($nextgig);
             if ($nextgig->isFuture()) {
-                Log::info($request->user->email);
                 if ($elapsed_time == 24) {
                     $data = ['email' => $request->user->email, 'message' => 'next gig'];
                     $this->SendTextMessage('Bemusical reminder: gig in 24 hours', $request->user->id);
                     $this->_email($data);
                 }
-                Log::info($request->id);
-                Log::info($elapsed_time);
             }
         }
     }
