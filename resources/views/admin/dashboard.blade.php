@@ -11,10 +11,6 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                <form action="/admin/change/email" method="POST">
-                    {{ csrf_field() }}
-                    <button type="submit">Enviar</button>
-                </form>
                 <div class="panel-heading">Welcome {{ Auth::user()->name }}, currently we have {{$number_of_members}} 
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#passModal">
                     Change my password
