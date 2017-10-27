@@ -451,19 +451,19 @@ document.getElementById('linkButton').onclick = function() {
                 console.log(ev);
                 console.log(response);
                 $.each(response.info, function (index, info) {
-                if (response.status == 'OK') {
-                    // Report to the browser that the payment was successful, prompting
-                    // it to close the browser payment interface.
-                    console.log('todo OK');
-                     ev.complete('success');
-                } else {
-                    // Report to the browser that the payment failed, prompting it to
-                    // re-show the payment interface, or show an error message and close
-                    // the payment interface.
-                    console.log('algo mal');
-                    ev.complete('fail');
-                }
-            });
+                    if (info.status == 'OK') {
+                        // Report to the browser that the payment was successful, prompting
+                        // it to close the browser payment interface.
+                        console.log('todo OK');
+                         ev.complete('success');
+                    } else {
+                        // Report to the browser that the payment failed, prompting it to
+                        // re-show the payment interface, or show an error message and close
+                        // the payment interface.
+                        console.log('algo mal');
+                        ev.complete('fail');
+                    }
+                });
             },
             error: function(xhr){
                 console.log('tuvimos un error');
