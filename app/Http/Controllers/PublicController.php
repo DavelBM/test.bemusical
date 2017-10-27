@@ -1372,7 +1372,7 @@ class PublicController extends Controller
 
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
-            $info = [];
+                $info = [];
             // try{
                 $payment_object = new stdClass();
                 $stripe = new Stripe("sk_live_UpYonDuHLboy4ggRXkL0twLO");

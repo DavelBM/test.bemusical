@@ -396,8 +396,8 @@ document.getElementById('linkButton').onclick = function() {
         },
     });
 
-
-    var elements = stripe.elements();
+    var app_stripe = Stripe('{{$p_key}}');
+    var elements = app_stripe.elements();
     var prButton = elements.create('paymentRequestButton', {
         paymentRequest: paymentRequest,
     });
