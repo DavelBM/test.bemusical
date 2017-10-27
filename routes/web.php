@@ -1,5 +1,5 @@
 <?php
-
+use Stripe\Stripe;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -171,6 +171,13 @@ Route::post('/return/answer/confirmed/{id}', 'PublicController@return_confirmed'
 Route::get('/allow/times/{day}', 'PublicController@allowtimes')->name('allow.times');
 Route::post('/query/results', 'PublicController@query')->name('query.results');
 Route::post('/filter/results', 'PublicController@filter')->name('filter.results');
+Route::get('/.well-known/apple-developer-merchantid-domain-association', function () {
+	return response()->file(URL::to('/apple/apple-developer-merchantid-domain-association'));
+	Stripe::setApiKey("sk_live_UpYonDuHLboy4ggRXkL0twLO");
+	ApplePayDomain::create(array(
+		'domain_name' => 'test.bemusical.us'
+	));
+});
 //PUBLIC
 
 /**
