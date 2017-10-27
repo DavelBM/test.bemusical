@@ -387,6 +387,7 @@ document.getElementById('linkButton').onclick = function() {
 
 
     ///////////////////////////////////////////////////////////////
+
     var paymentRequest = stripe.paymentRequest({
         country: 'US',
         currency: 'usd',
@@ -396,8 +397,7 @@ document.getElementById('linkButton').onclick = function() {
         },
     });
 
-    var app_stripe = Stripe('{{$p_key}}');
-    var elements = app_stripe.elements();
+    var elements = stripe.elements();
     var prButton = elements.create('paymentRequestButton', {
         paymentRequest: paymentRequest,
     });
