@@ -35,6 +35,7 @@
                     </button></div>
                     @include('flash::message')
                     <h3><p id="statusPayment" style="color: gray;"></p></h3>
+                    <h4><p id="s" style="color: red;"></p></h4>
                     <!-- <form action="{{ route('general.return.confirmed', $id) }}" method="post">
                             {{ csrf_field() }}
                         <input name="public_token">
@@ -256,7 +257,7 @@
                 error: function(xhr){
                     $('#statusPayment').show();
                     $('#statusPayment').empty();
-                    $('<p/>').html('an error ocurred, please try again').appendTo($('#statusPayment'));
+                    $('<p/>').html('an error with our servers, change your method payment').appendTo($('#statusPayment'));
                 }
             });
         },
@@ -385,39 +386,66 @@ document.getElementById('linkButton').onclick = function() {
     }
 
 
+    ///////////////////////////////////////////////////////////////
+    var paymentRequest = stripe.paymentRequest({
+        country: 'US',
+        currency: 'usd',
+        total: {
+            id: '{{$id}}',
+            label: 'Bemusical: Payment to {{$name_user}}',
+            amount: {{$_price}},
+        },
+    });
 
-var paymentRequest = stripe.paymentRequest({
-  country: 'US',
-  currency: 'usd',
-  total: {
-    label: '{{$id}}. Bemusical: Payment to {{$name_user}}',
-    amount: {{$_price}},
-  },
-});
 
+    var elements = stripe.elements();
+    var prButton = elements.create('paymentRequestButton', {
+        paymentRequest: paymentRequest,
+    });
+    // Check the availability of the Payment Request API first.
+    paymentRequest.canMakePayment().then(function(result) {
+        if (result) {
+            prButton.mount('#payment-request-button');
+        } else {
+            document.getElementById('payment-request-button').style.display = 'none';
+        }
+    });
 
-var elements = stripe.elements();
-var prButton = elements.create('paymentRequestButton', {
-  paymentRequest: paymentRequest,
-});
-// Check the availability of the Payment Request API first.
-paymentRequest.canMakePayment().then(function(result) {
-  if (result) {
-    prButton.mount('#payment-request-button');
-  } else {
-    document.getElementById('payment-request-button').style.display = 'none';
-  }
-});
+    elements.create('paymentRequestButton', {
+        paymentRequest: paymentRequest,
+        style: {
+            paymentRequestButton: {
+              type: 'buy', // default: 'default'
+              theme: 'light', // default: 'dark'
+              height: '64px',
+            },
+        },
+    });
 
-elements.create('paymentRequestButton', {
-  paymentRequest: paymentRequest,
-  style: {
-    paymentRequestButton: {
-      type: 'buy', // default: 'default'
-      theme: 'light', // default: 'dark'
-      height: '64px',
-    },
-  },
-});
+    paymentRequest.on('token', function(ev) {
+    // Send the token to your server to charge it!
+    $("#successModal").modal('hide');
+    fetch('/charges', {
+        method: 'POST',
+        body: JSON.stringify({
+            app_token: ev.token.id,
+        }),
+    })
+    .then(function(response) {
+            if (response.ok) {
+                // Report to the browser that the payment was successful, prompting
+                // it to close the browser payment interface.
+                 $('<p/>').html('success').appendTo($('#s'));
+                ev.complete('success');
+            } else {
+                // Report to the browser that the payment failed, prompting it to
+                // re-show the payment interface, or show an error message and close
+                // the payment interface.
+                $('<p/>').html('fail').appendTo($('#s'));
+                ev.complete('fail');
+            }
+        });
+    });
+    /////////////////////////////////////////////////////////////
 </script>
 @endsection

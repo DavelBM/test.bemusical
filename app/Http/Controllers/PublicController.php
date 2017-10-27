@@ -1370,6 +1370,10 @@ class PublicController extends Controller
             }
         }
 
+        ///////////////ApplePay, Google payment///////////////
+        if ($request->app_token != null) {
+            return;
+        }
 
     }
 
