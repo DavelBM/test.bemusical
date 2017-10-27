@@ -435,37 +435,58 @@ document.getElementById('linkButton').onclick = function() {
         // }).catch(function(error) {
         //   console.log('There has been a problem with your fetch operation: ' + error.message);
         // });
-        console.log('OK');
-        $.ajax({
-                type: "POST",
-                url: "/return/answer/confirmed/{{$id}}",
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    "app_token": ev.token.id
-                },
-                dataType: 'json',
-                beforeSend: function(){
-                    console.log('enviando informacion');
-                },
-                success: function(response){
-                    console.log(response);
-                    if (response.ok) {
-                        // Report to the browser that the payment was successful, prompting
-                        // it to close the browser payment interface.
-                         ev.complete('success');
+        // console.log('OK');
+        // $.ajax({
+        //         type: "POST",
+        //         url: "/return/answer/confirmed/{{$id}}",
+        //         data: {
+        //             "_token": "{{ csrf_token() }}",
+        //             "app_token": ev.token.id
+        //         },
+        //         dataType: 'json',
+        //         beforeSend: function(){
+        //             console.log('enviando informacion');
+        //         },
+        //         success: function(response){
+        //             console.log(response);
+        //             if (response.ok) {
+        //                 // Report to the browser that the payment was successful, prompting
+        //                 // it to close the browser payment interface.
+        //                  ev.complete('success');
 
-                    } else {
-                        // Report to the browser that the payment failed, prompting it to
-                        // re-show the payment interface, or show an error message and close
-                        // the payment interface.
-                        $('<p/>').html(response).appendTo($('#s'));
-                        ev.complete('fail');
-                    }
-                },
-                error: function(xhr){
-                    console.log('tuvimos un error');
-                }
-        });
+        //             } else {
+        //                 // Report to the browser that the payment failed, prompting it to
+        //                 // re-show the payment interface, or show an error message and close
+        //                 // the payment interface.
+        //                 $('<p/>').html(response).appendTo($('#s'));
+        //                 ev.complete('fail');
+        //             }
+        //         },
+        //         error: function(xhr){
+        //             console.log('tuvimos un error');
+        //         }
+        // });
+        console.log('OK');
+        fetch('/return/answer/confirmed/{{$id}}', {
+            method: 'POST',
+            body: JSON.stringify({
+                _token: "{{ csrf_token() }}",
+                app_token: ev.token.id
+            }),
+        }).then(function(response) {
+            console.log(response.Hi);
+            if (response.ok) {
+                // Report to the browser that the payment was successful, prompting
+                // it to close the browser payment interface.
+                 ev.complete('success');
+            } else {
+                // Report to the browser that the payment failed, prompting it to
+                // re-show the payment interface, or show an error message and close
+                // the payment interface.
+                console.log(response);
+                ev.complete('fail');
+            }
+        })
     });
     /////////////////////////////////////////////////////////////
 </script>
