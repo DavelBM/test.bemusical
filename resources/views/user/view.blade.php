@@ -14,10 +14,9 @@
     $get_address_place = explode("address:", $get_data[1]);
     $address_place = $get_address_place[1];
 
-    $start = "";
-    $end = "";
-    $start = $option->start;
-    $end = $option->end;
+    $start = ":";
+    $end = ":";
+
     $start_exploded = explode(':', $start);
     $end_exploded = explode(':', $end);
 @endphp
