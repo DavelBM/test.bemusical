@@ -1387,6 +1387,7 @@ class PublicController extends Controller
                     ]);
 
                     return true;
+        }
 
     }
 
