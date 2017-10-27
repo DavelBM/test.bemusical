@@ -416,8 +416,8 @@ document.getElementById('linkButton').onclick = function() {
     fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
         body: JSON.stringify({
-            "_token": {{ csrf_token() }},
-            "app_token": ev.token.id
+            _token: "{{ csrf_token() }}",
+            app_token: ev.token.id
         }),
     })
     .then(function(response) {
