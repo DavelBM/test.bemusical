@@ -1375,19 +1375,12 @@ class PublicController extends Controller
 
                     $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
                     $token = $request->app_token;
-                    
-                    $customer = $stripe->customers()->create([
-                        'description' => 'prueba apple pay',
-                        'email' => 'appletest@bemusical.us',
-                    ]);
-
-                    $card = $stripe->cards()->create($customer['id'], $token);
 
                     $charge = $stripe->charges()->create([
-                        "customer" => $customer['id'],
+                        "description" => 'hello world',
                         "amount" => '1000',
                         "currency" => "USD",
-                        "description" => "test apple pay",
+                        "src" => $token,
                     ]);
 
                     return true;
