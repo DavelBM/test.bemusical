@@ -1373,18 +1373,9 @@ class PublicController extends Controller
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
             $info = [];
-            // try{
-                
-
-                // Set your secret key: remember to change this to your live secret key in production
-                // See your keys here: https://dashboard.stripe.com/account/apikeys
+            try{
                 \Stripe\Stripe::setApiKey("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
-
-                // Token is created using Checkout or Elements!
-                // Get the payment token ID submitted by the form:
-                $token = $request->app_token;
-
-                // Charge the user's card:
+                $token = $request->app_token.'1';
                 $charge = \Stripe\Charge::create(array(
                   "amount" => 1000,
                   "currency" => "usd",
@@ -1395,19 +1386,37 @@ class PublicController extends Controller
                 $payment_object->status ='OK';
                 $info[] = $payment_object;
                 return response()->json(array('info' => $info), 200);
-            // }catch(ServerErrorException $e) {
-            //     return ['statusE' => 'ServerErrorException'];
-            // }catch(BadRequestException $e) {
-            //     return ['statusE' => 'BadRequestException'];
-            // }catch(UnauthorizedException $e) {
-            //     return ['statusE' => 'UnauthorizedException'];
-            // }catch(InvalidRequestException $e) {
-            //     return ['statusE' => 'InvalidRequestException'];
-            // }catch(NotFoundException $e) {
-            //     return ['statusE' => 'NotFoundException'];
-            // }catch(CardErrorException $e) {
-            //     return ['statusE' => 'CardErrorException'];
-            // }
+            }catch(ServerErrorException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(BadRequestException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(UnauthorizedException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(InvalidRequestException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(NotFoundException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }catch(CardErrorException $e) {
+                $payment_object = new stdClass();
+                $payment_object->status ='ERROR';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
+            }
         }
 
     }
