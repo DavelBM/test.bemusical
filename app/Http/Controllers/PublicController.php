@@ -1380,7 +1380,7 @@ class PublicController extends Controller
                 $stripe = new Stripe("sk_live_UpYonDuHLboy4ggRXkL0twLO");
                 $token = $request->app_token;
                 $charge = $stripe->charges()->create([
-                    "amount" => 100,
+                    "amount" => 10,
                     "currency" => "usd",
                     "description" => "Example charge",
                     "source" => $token,
