@@ -390,6 +390,7 @@ document.getElementById('linkButton').onclick = function() {
     var paymentRequest = stripe.paymentRequest({
         country: 'US',
         currency: 'usd',
+        name: '{{$name}}',
         total: {
             id: '{{$id}}',
             label: 'Bemusical: Payment to {{$name_user}}',
