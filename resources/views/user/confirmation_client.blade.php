@@ -32,7 +32,12 @@
                     </button></div>
                     @include('flash::message')
                     <h3><p id="statusPayment" style="color: gray;"></p></h3>
-                    <div id="payment-request-button"></div>
+                   <!-- A Stripe Element will be inserted here. -->
+                   <script src="https://js.stripe.com/v3/"></script>
+                    <div id="payment-request-button">
+                      <!-- A Stripe Element will be inserted here. -->
+                    </div>
+                    <!-- A Stripe Element will be inserted here. -->
                     <!-- <form action="{{ route('general.return.confirmed', $id) }}" method="post">
                             {{ csrf_field() }}
                         <input name="public_token">
@@ -381,7 +386,9 @@ document.getElementById('linkButton').onclick = function() {
         form.submit();
     }
 
-    var paymentRequest = stripe.paymentRequest({
+
+
+var paymentRequest = stripe.paymentRequest({
   country: 'US',
   currency: 'usd',
   total: {
@@ -390,16 +397,17 @@ document.getElementById('linkButton').onclick = function() {
   },
 });
 
-    var elements = stripe.elements();
 
-
+var elements = stripe.elements();
+var prButton = elements.create('paymentRequestButton', {
+  paymentRequest: paymentRequest,
+});
 // Check the availability of the Payment Request API first.
 paymentRequest.canMakePayment().then(function(result) {
   if (result) {
     prButton.mount('#payment-request-button');
   } else {
-
-    document.getElementById('payment-request-button').innerHTML = 'Not available for this broswer';
+    document.getElementById('payment-request-button').style.display = 'Not available for this broswer';
   }
 });
 
