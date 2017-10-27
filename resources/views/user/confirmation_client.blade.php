@@ -428,9 +428,7 @@ document.getElementById('linkButton').onclick = function() {
     $("#successModal").modal('hide');
     fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
-        body: JSON.stringify({
-            app_token: ev.token.id,
-        }),
+        body: JSON.stringify({app_token: ev.token.id}),
     })
     .then(function(response) {
             if (response.ok) {
