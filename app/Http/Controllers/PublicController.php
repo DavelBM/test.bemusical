@@ -912,7 +912,7 @@ class PublicController extends Controller
                 }
 
                 $payment = Payment::create([
-                    'ask_id'       => $ask->id,
+                    'ask_id'           => $id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
                     '_billing_address' => $request->_s_address,
