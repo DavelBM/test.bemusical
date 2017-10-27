@@ -1372,33 +1372,31 @@ class PublicController extends Controller
 
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
-            // try{
+            try{
                 $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
                 $token = $request->app_token;
 
-                // $charge = $stripe->charges()->create([
-                //     "description" => 'hello world',
-                //     "amount" => '1000',
-                //     "currency" => "USD",
-                //     "src" => $token,
-                // ]);
-                return ['Hi' => 'En app'];
-            //     return ['statusE' => 'OK'];
-            // }catch(ServerErrorException $e) {
-            //     return ['statusE' => 'ServerErrorException'];
-            // }catch(BadRequestException $e) {
-            //     return ['statusE' => 'BadRequestException'];
-            // }catch(UnauthorizedException $e) {
-            //     return ['statusE' => 'UnauthorizedException'];
-            // }catch(InvalidRequestException $e) {
-            //     return ['statusE' => 'InvalidRequestException'];
-            // }catch(NotFoundException $e) {
-            //     return ['statusE' => 'NotFoundException'];
-            // }catch(CardErrorException $e) {
-            //     return ['statusE' => 'CardErrorException'];
-            // }
+                $charge = $stripe->charges()->create([
+                    "description" => 'hello world',
+                    "amount" => '1000',
+                    "currency" => "USD",
+                    "src" => $token,
+                ]);
+                return ['statusE' => 'OK'];
+            }catch(ServerErrorException $e) {
+                return ['statusE' => 'ServerErrorException'];
+            }catch(BadRequestException $e) {
+                return ['statusE' => 'BadRequestException'];
+            }catch(UnauthorizedException $e) {
+                return ['statusE' => 'UnauthorizedException'];
+            }catch(InvalidRequestException $e) {
+                return ['statusE' => 'InvalidRequestException'];
+            }catch(NotFoundException $e) {
+                return ['statusE' => 'NotFoundException'];
+            }catch(CardErrorException $e) {
+                return ['statusE' => 'CardErrorException'];
+            }
         }
-        return [ 'Hi' => 'Afuera' ];
 
     }
 

@@ -459,7 +459,6 @@ document.getElementById('linkButton').onclick = function() {
                         // re-show the payment interface, or show an error message and close
                         // the payment interface.
                         $('<p/>').html(response).appendTo($('#s'));
-                        console.log(response.data);
                         ev.complete('fail');
                     }
                 },
