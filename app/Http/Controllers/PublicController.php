@@ -1372,18 +1372,30 @@ class PublicController extends Controller
 
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
+            try{
+                $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+                $token = $request->app_token;
 
-                    $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
-                    $token = $request->app_token;
-
-                    $charge = $stripe->charges()->create([
-                        "description" => 'hello world',
-                        "amount" => '1000',
-                        "currency" => "USD",
-                        "src" => $token,
-                    ]);
-
-                    return true;
+                $charge = $stripe->charges()->create([
+                    "description" => 'hello world',
+                    "amount" => '1000',
+                    "currency" => "USD",
+                    "src" => $token,
+                ]);
+                return ['status' => 'OK'];
+            }catch(ServerErrorException $e) {
+                return ['status' => 'ServerErrorException'];
+            }catch(BadRequestException $e) {
+                return ['status' => 'BadRequestException'];
+            }catch(UnauthorizedException $e) {
+                return ['status' => 'UnauthorizedException'];
+            }catch(InvalidRequestException $e) {
+                return ['status' => 'InvalidRequestException'];
+            }catch(NotFoundException $e) {
+                return ['status' => 'NotFoundException'];
+            }catch(CardErrorException $e) {
+                return ['status' => 'CardErrorException'];
+            }
         }
 
     }

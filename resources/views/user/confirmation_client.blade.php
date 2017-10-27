@@ -423,6 +423,7 @@ document.getElementById('linkButton').onclick = function() {
             if (response.ok) {
                 // Report to the browser that the payment was successful, prompting
                 // it to close the browser payment interface.
+                console.log(response);
                  $('<p/>').html('success').appendTo($('#s'));
                  $("#successModal").modal('hide');
                  ev.complete('success');
