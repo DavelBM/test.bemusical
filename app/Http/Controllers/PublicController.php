@@ -1382,19 +1382,19 @@ class PublicController extends Controller
                     "currency" => "USD",
                     "src" => $token,
                 ]);
-                return ['status' => 'OK'];
+                return ['statusE' => 'OK'];
             }catch(ServerErrorException $e) {
-                return ['status' => 'ServerErrorException'];
+                return ['statusE' => 'ServerErrorException'];
             }catch(BadRequestException $e) {
-                return ['status' => 'BadRequestException'];
+                return ['statusE' => 'BadRequestException'];
             }catch(UnauthorizedException $e) {
-                return ['status' => 'UnauthorizedException'];
+                return ['statusE' => 'UnauthorizedException'];
             }catch(InvalidRequestException $e) {
-                return ['status' => 'InvalidRequestException'];
+                return ['statusE' => 'InvalidRequestException'];
             }catch(NotFoundException $e) {
-                return ['status' => 'NotFoundException'];
+                return ['statusE' => 'NotFoundException'];
             }catch(CardErrorException $e) {
-                return ['status' => 'CardErrorException'];
+                return ['statusE' => 'CardErrorException'];
             }
         }
 
