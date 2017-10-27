@@ -115,7 +115,7 @@
 
                     <div id="stripeDetails">
                     <div class="col-md-10 col-md-offset-1">
-                        <script src="https://js.stripe.com/v3/"></script>
+                        {{-- <script src="https://js.stripe.com/v3/"></script> --}}
                         <form action="{{ route('general.return.confirmed', $id) }}" method="post" id="payment-form">
                             {{ csrf_field() }}
                             <div class="form-row">
