@@ -411,17 +411,16 @@ document.getElementById('linkButton').onclick = function() {
     });
 
     paymentRequest.on('token', function(ev) {
-    // Send the token to your server to charge it!
-    console.log(ev.token);
-    fetch('/return/answer/confirmed/{{$id}}', {
-        method: 'POST',
-        body: JSON.stringify({
-            _token: "{{ csrf_token() }}",
-            app_token: ev.token.id
-        }),
-    })
-    .then(function(response) {
-        console.log(response.Hi);
+        // Send the token to your server to charge it!
+        console.log(ev.token);
+        fetch('/return/answer/confirmed/{{$id}}', {
+            method: 'POST',
+            body: JSON.stringify({
+                _token: "{{ csrf_token() }}",
+                app_token: ev.token.id
+            }),
+        }).then(function(response) {
+            console.log(response.Hi);
             if (response.ok) {
                 // Report to the browser that the payment was successful, prompting
                 // it to close the browser payment interface.
@@ -440,9 +439,9 @@ document.getElementById('linkButton').onclick = function() {
                 // $("#successModal").modal('hide');
                 ev.complete('fail');
             }
-        });
-    }).catch(function(error) {
-        console.log(error);
+        }).catch(function(error) {
+  console.log('There has been a problem with your fetch operation: ' + error.message);
+});
     });
     /////////////////////////////////////////////////////////////
 </script>
