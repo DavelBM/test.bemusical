@@ -1398,6 +1398,7 @@ class PublicController extends Controller
             //     return ['statusE' => 'CardErrorException'];
             // }
         }
+        return [ 'Hi' => 'Im here' ];
 
     }
 
