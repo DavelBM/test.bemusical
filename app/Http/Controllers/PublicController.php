@@ -733,7 +733,7 @@ class PublicController extends Controller
             }
 
             return view('user.confirmation_client')
-                    ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
+                    ->with('p_key', 'pk_live_Un1v5Salq45ifQohDrekeTPx')
                     ->with('name_user', $name_user)
                     ->with('slug_user', $slug_user)
                     ->with('price', $ask->price)
