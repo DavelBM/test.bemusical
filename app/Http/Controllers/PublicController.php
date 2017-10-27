@@ -1384,12 +1384,12 @@ class PublicController extends Controller
                 $token = $request->app_token;
 
                 // Charge the user's card:
-                // $charge = \Stripe\Charge::create(array(
-                //   "amount" => 1000,
-                //   "currency" => "usd",
-                //   "description" => "Example charge",
-                //   "source" => $token,
-                // ));
+                $charge = \Stripe\Charge::create(array(
+                  "amount" => 1000,
+                  "currency" => "usd",
+                  "description" => "Example charge",
+                  "source" => $token,
+                ));
                 return ['statusE' => 'OK'];
             // }catch(ServerErrorException $e) {
             //     return ['statusE' => 'ServerErrorException'];
