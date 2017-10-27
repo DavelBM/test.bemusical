@@ -1065,7 +1065,7 @@ class PublicController extends Controller
                     $charge = $stripe->charges()->create([
                         "customer" => $customer['id'],
                         // "amount" => $i_d_price[0]*(0.12),
-                        "amount" => 1*(0.12),
+                        "amount" => 5*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
                     ]);
@@ -1087,7 +1087,7 @@ class PublicController extends Controller
                 }else{
                     $charge = $stripe->charges()->create([
                         // "amount" => $i_d_price[0]*(0.12),
-                        "amount" => 1*(0.12),
+                        "amount" => 5*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
