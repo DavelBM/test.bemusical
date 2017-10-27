@@ -174,10 +174,10 @@ Route::post('/query/results', 'PublicController@query')->name('query.results');
 Route::post('/filter/results', 'PublicController@filter')->name('filter.results');
 Route::get('/.well-known/apple-developer-merchantid-domain-association', function () {
 	$pathFile = '/var/www/test.bemusical.us/public/apple/apple-developer-merchantid-domain-association';
-	Stripe::setApiKey("sk_live_UpYonDuHLboy4ggRXkL0twLO");
-	ApplePayDomain::create(array(
-		'domain_name' => 'test.bemusical.us'
-	));
+	// Stripe::setApiKey("sk_live_UpYonDuHLboy4ggRXkL0twLO");
+	// ApplePayDomain::create(array(
+	// 	'domain_name' => 'test.bemusical.us'
+	// ));
 	return response()->file($pathFile);
 });
 //PUBLIC
