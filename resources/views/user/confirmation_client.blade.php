@@ -412,10 +412,12 @@ document.getElementById('linkButton').onclick = function() {
 
     paymentRequest.on('token', function(ev) {
     // Send the token to your server to charge it!
-    $("#successModal").modal('hide');
     fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
-        body: JSON.stringify({app_token: ev.token.id}),
+        body: JSON.stringify({
+            "app_token": ev.token.id,
+            "_token": {{ csrf_token() }},
+        }),
     })
     .then(function(response) {
             if (response.ok) {
@@ -423,7 +425,7 @@ document.getElementById('linkButton').onclick = function() {
                 // it to close the browser payment interface.
                  $('<p/>').html('success').appendTo($('#s'));
                  $("#successModal").modal('hide');
-                ev.complete('success');
+                 ev.complete('success');
             } else {
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
