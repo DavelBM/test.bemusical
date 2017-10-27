@@ -463,6 +463,7 @@ document.getElementById('linkButton').onclick = function() {
                 error: function(xhr){
                     console.log('tuvimos un error');
                 }
+        });
     });
     /////////////////////////////////////////////////////////////
 </script>
