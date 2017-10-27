@@ -863,7 +863,7 @@ class PublicController extends Controller
         //////////////STRIPE////////////////
         if ($request->_s_name != null) {
 
-            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            $stripe = new Stripe('sk_live_UpYonDuHLboy4ggRXkL0twLO');
             $token = $request->stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
             if (Client::where('email', $ask->email)->exists()) {
@@ -888,7 +888,8 @@ class PublicController extends Controller
 
                     $charge = $stripe->charges()->create([
                         "customer" => $customer['id'],
-                        "amount" => $i_d_price[0],
+                        //"amount" => $i_d_price[0],
+                        "amount" => "4000",
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                     ]);
@@ -909,7 +910,8 @@ class PublicController extends Controller
                     ]);
                 }else{
                     $charge = $stripe->charges()->create([
-                        "amount" => $i_d_price[0],
+                        //"amount" => $i_d_price[0],
+                        "amount" => "4000",
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
@@ -1037,7 +1039,7 @@ class PublicController extends Controller
         }
         //////////////CASH////////////////
         if ($request->_c_name != null) {
-            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+            $stripe = new Stripe('sk_live_UpYonDuHLboy4ggRXkL0twLO');
             $token = $request->_c_stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
             if (Client::where('email', $ask->email)->exists()) {
