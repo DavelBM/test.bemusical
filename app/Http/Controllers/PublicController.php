@@ -891,6 +891,21 @@ class PublicController extends Controller
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                     ]);
+
+                    $payment = Payment::create([
+                        'ask_id'           => $ask->id,
+                        'email'            => $ask->email,
+                        'phone'            => $ask->phone,
+                        '_billing_address' => $request->_s_address,
+                        '_billing_zip'     => $card['address_zip'],
+                        '_id_costumer'     => $customer['id'],
+                        '_id_card'         => $card['id'],
+                        '_id_token'        => $token,
+                        '_id_charge'       => $charge['id'],
+                        'amount'           => $i_d_price[0],
+                        'payed'            => 1,
+                        'type'             => 'stripe'
+                    ]);
                 }catch(ServerErrorException $e) {
                     Flash::error('ERORR OCURRRED TRY AGAIN');
                     return redirect()->back();
@@ -910,21 +925,6 @@ class PublicController extends Controller
                     Flash::error('ERORR OCURRRED TRY AGAIN');
                     return redirect()->back();
                 }
-
-                $payment = Payment::create([
-                    'ask_id'           => $id,
-                    'email'            => $ask->email,
-                    'phone'            => $ask->phone,
-                    '_billing_address' => $request->_s_address,
-                    '_billing_zip'     => $card['address_zip'],
-                    '_id_costumer'     => $customer['id'],
-                    '_id_card'         => $card['id'],
-                    '_id_token'        => $token,
-                    '_id_charge'       => $charge['id'],
-                    'amount'           => $i_d_price[0],
-                    'payed'            => 1,
-                    'type'             => 'stripe'
-                ]);
 
                 // THIS IS GENERATED SINCE THE CLIENT INPUTS HIS/HER CARD
                 // $token = $stripe->tokens()->create([
@@ -951,6 +951,15 @@ class PublicController extends Controller
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
                     ]);
+
+                    $payment = Payment::create([
+                        'ask_id'     => $ask->id,
+                        'email'      => $ask->email,
+                        '_id_charge' => $charge['id'],
+                        'amount'     => $i_d_price[0],
+                        'payed'      => 1,
+                        'type'       => 'stripe'
+                    ]);
                 }catch(ServerErrorException $e) {
                     Flash::error('ERORR OCURRRED TRY AGAIN');
                     return redirect()->back();
@@ -970,15 +979,6 @@ class PublicController extends Controller
                     Flash::error('ERORR OCURRRED TRY AGAIN');
                     return redirect()->back();
                 }
-
-                $payment = Payment::create([
-                    'ask_id' => $ask->id,
-                    'email'      => $ask->email,
-                    '_id_charge' => $charge['id'],
-                    'amount'     => $i_d_price[0],
-                    'payed'      => 1,
-                    'type'       => 'stripe'
-                ]);
             }
 
             if($ask->user->type == 'soloist')
@@ -1086,48 +1086,20 @@ class PublicController extends Controller
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
                     ]);
-                }catch(ServerErrorException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }catch(BadRequestException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }catch(UnauthorizedException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }catch(InvalidRequestException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }catch(NotFoundException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }catch(CardErrorException $e) {
-                    Flash::error('ERORR OCURRRED TRY AGAIN');
-                    return redirect()->back();
-                }
 
-                $payment = Payment::create([
-                    'ask_id'       => $ask->id,
-                    'email'            => $ask->email,
-                    'phone'            => $ask->phone,
-                    '_billing_address' => $request->_c_address,
-                    '_billing_zip'     => $card['address_zip'],
-                    '_id_costumer'     => $customer['id'],
-                    '_id_card'         => $card['id'],
-                    '_id_token'        => $token,
-                    '_id_charge'       => $charge['id'],
-                    'amount'           => $i_d_price[0]*(0.12),
-                    'payed'            => 1,
-                    'type'             => 'cash'
-                ]);
-
-            }else{
-                try{
-                    $charge = $stripe->charges()->create([
-                        "amount" => $i_d_price[0]*(0.12),
-                        "currency" => "USD",
-                        "description" => $ask->id.".Bemusical Gig",
-                        "source" => $token,
+                    $payment = Payment::create([
+                        'ask_id'           => $ask->id,
+                        'email'            => $ask->email,
+                        'phone'            => $ask->phone,
+                        '_billing_address' => $request->_c_address,
+                        '_billing_zip'     => $card['address_zip'],
+                        '_id_costumer'     => $customer['id'],
+                        '_id_card'         => $card['id'],
+                        '_id_token'        => $token,
+                        '_id_charge'       => $charge['id'],
+                        'amount'           => $i_d_price[0]*(0.12),
+                        'payed'            => 1,
+                        'type'             => 'cash'
                     ]);
                 }catch(ServerErrorException $e) {
                     Flash::error('ERORR OCURRRED TRY AGAIN');
@@ -1149,14 +1121,42 @@ class PublicController extends Controller
                     return redirect()->back();
                 }
 
-                $payment = Payment::create([
-                    'ask_id' => $ask->id,
-                    'email'      => $ask->email,
-                    '_id_charge' => $charge['id'],
-                    'amount'     => $i_d_price[0]*(0.12),
-                    'payed'      => 1,
-                    'type'       => 'cash'
-                ]);
+            }else{
+                try{
+                    $charge = $stripe->charges()->create([
+                        "amount" => $i_d_price[0]*(0.12),
+                        "currency" => "USD",
+                        "description" => $ask->id.".Bemusical Gig",
+                        "source" => $token,
+                    ]);
+
+                    $payment = Payment::create([
+                        'ask_id'     => $ask->id,
+                        'email'      => $ask->email,
+                        '_id_charge' => $charge['id'],
+                        'amount'     => $i_d_price[0]*(0.12),
+                        'payed'      => 1,
+                        'type'       => 'cash'
+                    ]);
+                }catch(ServerErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(BadRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(UnauthorizedException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(InvalidRequestException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(NotFoundException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }catch(CardErrorException $e) {
+                    Flash::error('ERORR OCURRRED TRY AGAIN');
+                    return redirect()->back();
+                }
             }
 
             if($ask->user->type == 'soloist')
@@ -1312,7 +1312,7 @@ class PublicController extends Controller
                 ]); 
 
                 $payment = Payment::create([
-                    'ask_id'       => $ask->id,
+                    'ask_id'           => $ask->id,
                     'email'            => $ask->email,
                     'phone'            => $ask->phone,
                     '_id_costumer'     => $customer['id'],
