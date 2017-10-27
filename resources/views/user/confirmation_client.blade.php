@@ -430,6 +430,7 @@ document.getElementById('linkButton').onclick = function() {
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
                 // the payment interface.
+                console.log(response);
                 $('<p/>').html('fail').appendTo($('#s'));
                 $("#successModal").modal('hide');
                 ev.complete('fail');
