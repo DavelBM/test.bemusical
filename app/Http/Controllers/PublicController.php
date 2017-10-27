@@ -1373,15 +1373,23 @@ class PublicController extends Controller
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
             // try{
-                $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+                
+
+                // Set your secret key: remember to change this to your live secret key in production
+                // See your keys here: https://dashboard.stripe.com/account/apikeys
+                \Stripe\Stripe::setApiKey("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
+
+                // Token is created using Checkout or Elements!
+                // Get the payment token ID submitted by the form:
                 $token = $request->app_token;
 
-                $charge = $stripe->charges()->create([
-                    "description" => 'hello world',
-                    "amount" => '1000',
-                    "currency" => "USD",
-                    "src" => $token,
-                ]);
+                // Charge the user's card:
+                // $charge = \Stripe\Charge::create(array(
+                //   "amount" => 1000,
+                //   "currency" => "usd",
+                //   "description" => "Example charge",
+                //   "source" => $token,
+                // ));
                 return ['statusE' => 'OK'];
             // }catch(ServerErrorException $e) {
             //     return ['statusE' => 'ServerErrorException'];
