@@ -425,6 +425,7 @@ document.getElementById('linkButton').onclick = function() {
 
     paymentRequest.on('token', function(ev) {
     // Send the token to your server to charge it!
+    console.log('successsuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccess');
     $("#successModal").modal('hide');
     fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
