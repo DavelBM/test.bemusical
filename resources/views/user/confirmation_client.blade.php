@@ -420,20 +420,21 @@ document.getElementById('linkButton').onclick = function() {
         }),
     })
     .then(function(response) {
+        console.log(response.Hi);
             if (response.ok) {
                 // Report to the browser that the payment was successful, prompting
                 // it to close the browser payment interface.
                 console.log(response);
-                 $('<p/>').html('success').appendTo($('#s'));
-                 $("#successModal").modal('hide');
+                 // $('<p/>').html('success').appendTo($('#s'));
+                 // $("#successModal").modal('hide');
                  ev.complete('success');
             } else {
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
                 // the payment interface.
                 console.log(response);
-                $('<p/>').html('fail').appendTo($('#s'));
-                $("#successModal").modal('hide');
+                // $('<p/>').html('fail').appendTo($('#s'));
+                // $("#successModal").modal('hide');
                 ev.complete('fail');
             }
         });
