@@ -1382,7 +1382,7 @@ class PublicController extends Controller
                 //     "currency" => "USD",
                 //     "src" => $token,
                 // ]);
-                return ['Hi' => 'Im here'];
+                return ['Hi' => 'En app'];
             //     return ['statusE' => 'OK'];
             // }catch(ServerErrorException $e) {
             //     return ['statusE' => 'ServerErrorException'];
@@ -1398,7 +1398,7 @@ class PublicController extends Controller
             //     return ['statusE' => 'CardErrorException'];
             // }
         }
-        return [ 'Hi' => 'Im here' ];
+        return [ 'Hi' => 'Afuera' ];
 
     }
 
