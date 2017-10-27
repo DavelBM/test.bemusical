@@ -32,12 +32,6 @@
                     </button></div>
                     @include('flash::message')
                     <h3><p id="statusPayment" style="color: gray;"></p></h3>
-                   <!-- A Stripe Element will be inserted here. -->
-                   <script src="https://js.stripe.com/v3/"></script>
-                    <div id="payment-request-button">
-                      <!-- A Stripe Element will be inserted here. -->
-                    </div>
-                    <!-- A Stripe Element will be inserted here. -->
                     <!-- <form action="{{ route('general.return.confirmed', $id) }}" method="post">
                             {{ csrf_field() }}
                         <input name="public_token">
@@ -115,7 +109,7 @@
 
                     <div id="stripeDetails">
                     <div class="col-md-10 col-md-offset-1">
-                        {{-- <script src="https://js.stripe.com/v3/"></script> --}}
+                        <script src="https://js.stripe.com/v3/"></script>
                         <form action="{{ route('general.return.confirmed', $id) }}" method="post" id="payment-form">
                             {{ csrf_field() }}
                             <div class="form-row">
@@ -145,6 +139,9 @@
                     </div>
                     </div>
 
+                    <div id="payment-request-button">
+                      <!-- A Stripe Element will be inserted here. -->
+                    </div>
                     <!-- <button id="paypal" class="btn btn-block btn-default">
                         PayPal
                     </button>
