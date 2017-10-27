@@ -412,11 +412,12 @@ document.getElementById('linkButton').onclick = function() {
 
     paymentRequest.on('token', function(ev) {
     // Send the token to your server to charge it!
+    console.log(ev.token);
     fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
         body: JSON.stringify({
-            _token: {{ csrf_token() }},
-            app_token: ev.token.id
+            "_token": {{ csrf_token() }},
+            "app_token": ev.token.id
         }),
     })
     .then(function(response) {
@@ -425,10 +426,12 @@ document.getElementById('linkButton').onclick = function() {
                 // Report to the browser that the payment was successful, prompting
                 // it to close the browser payment interface.
                 console.log(response);
+                console.log(this.body);
                  // $('<p/>').html('success').appendTo($('#s'));
                  // $("#successModal").modal('hide');
                  ev.complete('success');
             } else {
+                console.log(this.body);
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
                 // the payment interface.
