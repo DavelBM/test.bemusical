@@ -1375,7 +1375,7 @@ class PublicController extends Controller
             $info = [];
             try{
                 \Stripe\Stripe::setApiKey("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
-                $token = $request->app_token.'1';
+                $token = $request->app_token;
                 $charge = \Stripe\Charge::create(array(
                   "amount" => 1000,
                   "currency" => "usd",

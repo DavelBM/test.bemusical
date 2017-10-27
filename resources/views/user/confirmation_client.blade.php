@@ -411,31 +411,6 @@ document.getElementById('linkButton').onclick = function() {
     });
 
     paymentRequest.on('token', function(ev) {
-        // Send the token to your server to charge it!
-        // console.log('OK');
-        // fetch('/return/answer/confirmed/{{$id}}', {
-        //     method: 'POST',
-        //     body: JSON.stringify({
-        //         _token: "{{ csrf_token() }}",
-        //         app_token: ev.token.id
-        //     }),
-        // }).then(function(response) {
-        //     console.log(response.Hi);
-        //     if (response.ok) {
-        //         // Report to the browser that the payment was successful, prompting
-        //         // it to close the browser payment interface.
-        //          ev.complete('success');
-        //     } else {
-        //         // Report to the browser that the payment failed, prompting it to
-        //         // re-show the payment interface, or show an error message and close
-        //         // the payment interface.
-        //         console.log(response.data);
-        //         ev.complete('fail');
-        //     }
-        // }).catch(function(error) {
-        //   console.log('There has been a problem with your fetch operation: ' + error.message);
-        // });
-        console.log(ev);
         $.ajax({
             type: "POST",
             url: "/return/answer/confirmed/{{$id}}",
@@ -448,18 +423,11 @@ document.getElementById('linkButton').onclick = function() {
                 console.log('enviando informacion');
             },
             success: function(response){
-                console.log(ev);
-                console.log(response);
                 $.each(response.info, function (index, info) {
                     if (info.status == 'OK') {
-                        // Report to the browser that the payment was successful, prompting
-                        // it to close the browser payment interface.
                         console.log('todo OK');
                          ev.complete('success');
                     } else {
-                        // Report to the browser that the payment failed, prompting it to
-                        // re-show the payment interface, or show an error message and close
-                        // the payment interface.
                         console.log('algo mal');
                         ev.complete('fail');
                     }
