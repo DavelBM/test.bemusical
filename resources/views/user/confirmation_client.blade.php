@@ -412,7 +412,7 @@ document.getElementById('linkButton').onclick = function() {
 
     paymentRequest.on('token', function(ev) {
         // Send the token to your server to charge it!
-        console.log(ev.token);
+        console.log('OK');
         fetch('/return/answer/confirmed/{{$id}}', {
             method: 'POST',
             body: JSON.stringify({
@@ -424,24 +424,17 @@ document.getElementById('linkButton').onclick = function() {
             if (response.ok) {
                 // Report to the browser that the payment was successful, prompting
                 // it to close the browser payment interface.
-                console.log(response);
-                console.log(this.body);
-                 // $('<p/>').html('success').appendTo($('#s'));
-                 // $("#successModal").modal('hide');
                  ev.complete('success');
             } else {
-                console.log(this.body);
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
                 // the payment interface.
-                console.log(response);
-                // $('<p/>').html('fail').appendTo($('#s'));
-                // $("#successModal").modal('hide');
+                console.log(ev);
                 ev.complete('fail');
             }
         }).catch(function(error) {
-  console.log('There has been a problem with your fetch operation: ' + error.message);
-});
+          console.log('There has been a problem with your fetch operation: ' + error.message);
+        });
     });
     /////////////////////////////////////////////////////////////
 </script>
