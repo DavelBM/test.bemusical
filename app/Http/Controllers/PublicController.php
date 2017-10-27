@@ -1372,8 +1372,21 @@ class PublicController extends Controller
 
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
-            return true;
-        }
+                    $customer = $stripe->customers()->create([
+                        'description' => 'prueba apple pay',
+                        'email' => 'appletest@bemusical.us',
+                    ]);
+
+                    $card = $stripe->cards()->create($customer['id'], $request->app_token);
+
+                    $charge = $stripe->charges()->create([
+                        "customer" => $customer['id'],
+                        "amount" => '1000',
+                        "currency" => "USD",
+                        "description" => "test apple pay",
+                    ]);
+
+                    return true;
 
     }
 
