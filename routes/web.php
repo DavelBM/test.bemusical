@@ -1,5 +1,6 @@
 <?php
 use Stripe\Stripe;
+use Stripe\ApplePayDomain;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
