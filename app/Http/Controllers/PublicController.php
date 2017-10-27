@@ -1372,6 +1372,7 @@ class PublicController extends Controller
 
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
+            $info = [];
             // try{
                 
 
@@ -1390,7 +1391,10 @@ class PublicController extends Controller
                   "description" => "Example charge",
                   "source" => $token,
                 ));
-                return ['statusE' => 'OK'];
+                $payment_object = new stdClass();
+                $payment_object->status ='OK';
+                $info[] = $payment_object;
+                return response()->json(array('info' => $info), 200);
             // }catch(ServerErrorException $e) {
             //     return ['statusE' => 'ServerErrorException'];
             // }catch(BadRequestException $e) {
