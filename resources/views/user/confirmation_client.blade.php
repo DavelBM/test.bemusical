@@ -441,6 +441,8 @@ document.getElementById('linkButton').onclick = function() {
                 ev.complete('fail');
             }
         });
+    }).catch(function(error) {
+        console.log(error);
     });
     /////////////////////////////////////////////////////////////
 </script>
