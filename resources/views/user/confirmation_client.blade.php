@@ -11,7 +11,10 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                
+                @php
+                    $_s_price = explode('.', $price);
+                    $_price = $_s_price[0].$_s_price[1];
+                @endphp
                 <div class="panel-heading"><center>Hi, {{$name}}</center></div>
 
                 <div class="panel-body">
@@ -139,9 +142,7 @@
                     </div>
                     </div>
 
-                    <div id="payment-request-button">
-                      <!-- A Stripe Element will be inserted here. -->
-                    </div>
+                    <div id="payment-request-button"></div>
                     <!-- <button id="paypal" class="btn btn-block btn-default">
                         PayPal
                     </button>
@@ -390,7 +391,7 @@ var paymentRequest = stripe.paymentRequest({
   currency: 'usd',
   total: {
     label: 'Demo total',
-    amount: 1000,
+    amount: {{$_price}},
   },
 });
 
