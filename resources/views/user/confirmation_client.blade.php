@@ -406,19 +406,8 @@ document.getElementById('linkButton').onclick = function() {
         if (result) {
             prButton.mount('#payment-request-button');
         } else {
-            document.getElementById('payment-request-button').style.display = 'none';
+            document.getElementById('#payment-request-button').style.display = 'none';
         }
-    });
-
-    elements.create('paymentRequestButton', {
-        paymentRequest: paymentRequest,
-        style: {
-            paymentRequestButton: {
-              type: 'buy', // default: 'default'
-              theme: 'light', // default: 'dark'
-              height: '64px',
-            },
-        },
     });
 
     paymentRequest.on('token', function(ev) {
