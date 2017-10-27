@@ -1064,7 +1064,8 @@ class PublicController extends Controller
 
                     $charge = $stripe->charges()->create([
                         "customer" => $customer['id'],
-                        "amount" => $i_d_price[0]*(0.12),
+                        // "amount" => $i_d_price[0]*(0.12),
+                        "amount" => 1*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
                     ]);
@@ -1085,7 +1086,8 @@ class PublicController extends Controller
                     ]);
                 }else{
                     $charge = $stripe->charges()->create([
-                        "amount" => $i_d_price[0]*(0.12),
+                        // "amount" => $i_d_price[0]*(0.12),
+                        "amount" => 1*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
@@ -1380,7 +1382,7 @@ class PublicController extends Controller
                 $stripe = new Stripe("sk_live_UpYonDuHLboy4ggRXkL0twLO");
                 $token = $request->app_token;
                 $charge = $stripe->charges()->create([
-                    "amount" => 10,
+                    "amount" => 1,
                     "currency" => "usd",
                     "description" => "Example charge",
                     "source" => $token,
