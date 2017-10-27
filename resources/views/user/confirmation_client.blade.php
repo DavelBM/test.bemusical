@@ -390,7 +390,7 @@ var paymentRequest = stripe.paymentRequest({
   country: 'US',
   currency: 'usd',
   total: {
-    label: '{{$id}} Bemusical: Payment to {{$name_user}}',
+    label: '{{$id}}. Bemusical: Payment to {{$name_user}}',
     amount: {{$_price}},
   },
 });
@@ -405,7 +405,7 @@ paymentRequest.canMakePayment().then(function(result) {
   if (result) {
     prButton.mount('#payment-request-button');
   } else {
-    document.getElementById('payment-request-button').style.display = 'Not available for this broswer';
+    document.getElementById('payment-request-button').style.display = 'none';
   }
 });
 
@@ -413,9 +413,9 @@ elements.create('paymentRequestButton', {
   paymentRequest: paymentRequest,
   style: {
     paymentRequestButton: {
-      type: 'default' | 'donate' | 'buy', // default: 'default'
-      theme: 'dark' | 'light' | 'light-outline', // default: 'dark'
-      height: '64px', // default: '40px', the width is always '100%'
+      type: 'buy', // default: 'default'
+      theme: 'light', // default: 'dark'
+      height: '64px',
     },
   },
 });
