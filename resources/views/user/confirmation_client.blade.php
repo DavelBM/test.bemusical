@@ -390,7 +390,7 @@ var paymentRequest = stripe.paymentRequest({
   country: 'US',
   currency: 'usd',
   total: {
-    label: 'Demo total',
+    label: '{{$id}} Bemusical: Payment to {{$name_user}}',
     amount: {{$_price}},
   },
 });
