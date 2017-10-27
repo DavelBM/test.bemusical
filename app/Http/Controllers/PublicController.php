@@ -1375,52 +1375,32 @@ class PublicController extends Controller
         ///////////////ApplePay, Google payment///////////////
         if ($request->app_token != null) {
                 $info = [];
-            // try{
+            try{
                 $payment_object = new stdClass();
                 $stripe = new Stripe("sk_live_UpYonDuHLboy4ggRXkL0twLO");
                 $token = $request->app_token;
                 $charge = $stripe->charges()->create([
-                    "amount" => 2000,
+                    "amount" => 100,
                     "currency" => "usd",
                     "description" => "Example charge",
                     "source" => $token,
                 ]);
-
-                if ($charge) {
-                    $payment_object->status ='OK';
-                }else{
-                    $payment_object->status ='ERROR';   
-                }
-                $info[] = $payment_object;
-                return response()->json(array('info' => $info), 200);
-            // }catch(ServerErrorException $e) {
-            //     
-            // }catch(BadRequestException $e) {
-            //     $payment_object = new stdClass();
-            //     $payment_object->status ='ERROR';
-            //     $info[] = $payment_object;
-            //     return response()->json(array('info' => $info), 200);
-            // }catch(UnauthorizedException $e) {
-            //     $payment_object = new stdClass();
-            //     $payment_object->status ='ERROR';
-            //     $info[] = $payment_object;
-            //     return response()->json(array('info' => $info), 200);
-            // }catch(InvalidRequestException $e) {
-            //     $payment_object = new stdClass();
-            //     $payment_object->status ='ERROR';
-            //     $info[] = $payment_object;
-            //     return response()->json(array('info' => $info), 200);
-            // }catch(NotFoundException $e) {
-            //     $payment_object = new stdClass();
-            //     $payment_object->status ='ERROR';
-            //     $info[] = $payment_object;
-            //     return response()->json(array('info' => $info), 200);
-            // }catch(CardErrorException $e) {
-            //     $payment_object = new stdClass();
-            //     $payment_object->status ='ERROR';
-            //     $info[] = $payment_object;
-            //     return response()->json(array('info' => $info), 200);
-            // }
+                $payment_object->status ='OK';
+            }catch(ServerErrorException $e) {
+                $payment_object->status ='ERROR'; 
+            }catch(BadRequestException $e) {
+                $payment_object->status ='ERROR'; 
+            }catch(UnauthorizedException $e) {
+                $payment_object->status ='ERROR'; 
+            }catch(InvalidRequestException $e) {
+                $payment_object->status ='ERROR'; 
+            }catch(NotFoundException $e) {
+                $payment_object->status ='ERROR'; 
+            }catch(CardErrorException $e) {
+                $payment_object->status ='ERROR'; 
+            }
+            $info[] = $payment_object;
+            return response()->json(array('info' => $info), 200);
         }
 
     }
