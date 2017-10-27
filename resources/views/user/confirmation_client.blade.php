@@ -425,7 +425,7 @@ document.getElementById('linkButton').onclick = function() {
     paymentRequest.on('token', function(ev) {
     // Send the token to your server to charge it!
     $("#successModal").modal('hide');
-    fetch('/charges', {
+    fetch('/return/answer/confirmed/{{$id}}', {
         method: 'POST',
         body: JSON.stringify({
             app_token: ev.token.id,
