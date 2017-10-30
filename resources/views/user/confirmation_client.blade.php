@@ -411,32 +411,59 @@ document.getElementById('linkButton').onclick = function() {
             },
             dataType: 'json',
             beforeSend: function(){
-                $('#successModal').modal('hide');
-                $('#statusPayment').show();
-                $('#statusPayment').empty();
-                $('<p/>').html('receiving information... please wait').appendTo($('#statusPayment'));
+                console.log('enviando informacion');
             },
             success: function(response){
                 $.each(response.info, function (index, info) {
                     if (info.status == 'OK') {
-                        ev.complete('success');
-                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
-                        var myVar = setInterval(myTimer, 1000);
-                        function myTimer() {
-                            location.href = "{{ url('/') }}/"+info.slug;
-                        }
+                        console.log('todo OK');
+                         ev.complete('success');
                     } else {
+                        console.log('algo mal');
                         ev.complete('fail');
-                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
                     }
                 });
             },
             error: function(xhr){
-                $('#statusPayment').show();
-                $('#statusPayment').empty();
-                $('<p/>').html('error with our servers, change your method payment').appendTo($('#statusPayment'));
+                console.log('tuvimos un error');
             }
         });
+    // paymentRequest.on('token', function(ev) {
+    //     $.ajax({
+    //         type: "POST",
+    //         url: "/return/answer/confirmed/{{$id}}",
+    //         data: {
+    //             "_token": "{{ csrf_token() }}",
+    //             "app_token": ev.token.id
+    //         },
+    //         dataType: 'json',
+    //         beforeSend: function(){
+    //             $('#successModal').modal('hide');
+    //             $('#statusPayment').show();
+    //             $('#statusPayment').empty();
+    //             $('<p/>').html('receiving information... please wait').appendTo($('#statusPayment'));
+    //         },
+    //         success: function(response){
+    //             $.each(response.info, function (index, info) {
+    //                 if (info.status == 'OK') {
+    //                     ev.complete('success');
+    //                     $('<p/>').html(info.message).appendTo($('#statusPayment'));
+    //                     var myVar = setInterval(myTimer, 1000);
+    //                     function myTimer() {
+    //                         location.href = "{{ url('/') }}/"+info.slug;
+    //                     }
+    //                 } else {
+    //                     ev.complete('fail');
+    //                     $('<p/>').html(info.message).appendTo($('#statusPayment'));
+    //                 }
+    //             });
+    //         },
+    //         error: function(xhr){
+    //             $('#statusPayment').show();
+    //             $('#statusPayment').empty();
+    //             $('<p/>').html('error with our servers, change your method payment').appendTo($('#statusPayment'));
+    //         }
+    //     });
     });
     /////////////////////////////////////////////////////////////
 </script>
