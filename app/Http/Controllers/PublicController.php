@@ -1461,7 +1461,8 @@ class PublicController extends Controller
 
                 if($ask->user->type == 'soloist')
                 {
-                    $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                    $payment_object->message = "soy solista";
+                    // $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
                     // $data = [ 
                     //     'id'      => $ask->user->id,
                     //     'u_email' => $ask->user->email,
@@ -1477,7 +1478,7 @@ class PublicController extends Controller
                 }
                 elseif($ask->user->type == 'ensemble') 
                 {
-                    $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                    // $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
                     // $data = [ 
                     //     'id'      => $ask->user->id,
                     //     'u_email' => $ask->user->email,
@@ -1495,7 +1496,7 @@ class PublicController extends Controller
                 // $this->SendMailApproved($data);
                 // $payment_object->slug = $information->slug;
                 $payment_object->status ='OK';
-                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                // $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
                 $payment_object->status ='ERROR'; 
                 // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
