@@ -1384,35 +1384,86 @@ class PublicController extends Controller
         }
 
         /////////////ApplePay, Google payment///////////////
+        // if ($request->app_token != null) {
+        //         $info = [];
+        //     try{
+        //         $payment_object = new stdClass();
+        //         $stripe = new Stripe("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
+        //         $token = $request->app_token;
+        //         $charge = $stripe->charges()->create([
+        //             "amount" => 1,
+        //             "currency" => "usd",
+        //             "description" => "Example charge",
+        //             "source" => $token,
+        //         ]);
+        //         $payment_object->status ='OK';
+        //     }catch(ServerErrorException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(BadRequestException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(UnauthorizedException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(InvalidRequestException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(NotFoundException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(CardErrorException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }
+        //     $info[] = $payment_object;
+        //     return response()->json(array('info' => $info), 200);
+        // }
+
+
+
         if ($request->app_token != null) {
                 $info = [];
             try{
                 $payment_object = new stdClass();
                 $stripe = new Stripe("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
                 $token = $request->app_token;
+                $ask = Ask::where('id', $id)->firstOrFail();
+                
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+                if (strpos($ask->price, '.')) {
+                    $i_d_price = explode(".", $ask->price);
+                }
+
                 $charge = $stripe->charges()->create([
-                    "amount" => 1,
+                    "amount" => $i_d_price[0],
                     "currency" => "usd",
-                    "description" => "Example charge",
+                    "description" => $ask->id." Bemusical: ".$ask->name,
                     "source" => $token,
                 ]);
+
                 $payment_object->status ='OK';
+                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(BadRequestException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(UnauthorizedException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(InvalidRequestException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(NotFoundException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(CardErrorException $e) {
                 $payment_object->status ='ERROR'; 
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }
             $info[] = $payment_object;
             return response()->json(array('info' => $info), 200);
         }
+
 
 
         // if ($request->app_token != null) {
