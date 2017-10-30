@@ -1390,12 +1390,79 @@ class PublicController extends Controller
                 $payment_object = new stdClass();
                 $stripe = new Stripe("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
                 $token = $request->app_token;
+                $ask = Ask::where('id', $id)->firstOrFail();
+                $user_type = $ask->user->type;
+
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+                if (strpos($ask->price, '.')) {
+                    $i_d_price = explode(".", $ask->price);
+                }
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                // $gig->save();
+
+                // Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
                 $charge = $stripe->charges()->create([
-                    "amount" => 1,
+                    "amount" => $i_d_price[0],
                     "currency" => "usd",
-                    "description" => "Example charge",
+                    "description" => $ask->id." Bemusical: "$ask->name,
                     "source" => $token,
                 ]);
+
+                // $payment = Payment::create([
+                //     'ask_id'     => $ask->id,
+                //     'email'      => $ask->email,
+                //     '_id_charge' => $charge['id'],
+                //     'amount'     => $i_d_price[0],
+                //     'payed'      => 1,
+                //     'type'       => 'app'
+                // ]);
+
+                switch ($user_type) {
+                    case 'soloist':
+                        $user = User_info::select('slug')->where('user_id', $ask->user->id)->get();
+                        $data = [ 
+                            'id'      => $ask->user->id,
+                            'u_email' => $ask->user->email,
+                            'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                            'c_email' => $ask->email,
+                            'c_name'  => $ask->name,
+                            'price'   => $ask->price,
+                            'type'    => 'APP',
+                            'amount'  => $payment->amount,
+                            'day'     => $start_date[1],
+                            'flag'    => $flag_client,
+                        ];
+                        break;
+                    
+                    case 'ensemble':
+                        $user = Ensemble::select('slug')->where('user_id', $ask->user->id)->get();
+                        $data = [ 
+                            'id'      => $ask->user->id,
+                            'u_email' => $ask->user->email,
+                            'u_name'  => $ask->user->ensemble->name,
+                            'c_email' => $ask->email,
+                            'c_name'  => $ask->name,
+                            'price'   => $ask->price,
+                            'type'    => $payment->type,
+                            'amount'  => $payment->amount,
+                            'day'     => $start_date[1],
+                            'flag'    => $flag_client,
+                        ];
+                        break;
+                }
+                $this->SendMailApproved($data);
+
                 $payment_object->status ='OK';
             }catch(ServerErrorException $e) {
                 $payment_object->status ='ERROR'; 
