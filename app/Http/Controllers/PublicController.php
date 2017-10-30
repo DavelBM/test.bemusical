@@ -1459,10 +1459,6 @@ class PublicController extends Controller
                     'type'       => 'paypal',
                 ]);
 
-                if($ask->user->type == 'soloist')
-                {
-                    $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-                    $payment_object->message = $info->slug;
                     // $data = [ 
                     //     'id'      => $ask->user->id,
                     //     'u_email' => $ask->user->email,
@@ -1475,28 +1471,11 @@ class PublicController extends Controller
                     //     'day'     => $start_date[1],
                     //     'flag'    => $flag_client,
                     // ];
-                }
-                elseif($ask->user->type == 'ensemble') 
-                {
-                    // $info = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-                    // $data = [ 
-                    //     'id'      => $ask->user->id,
-                    //     'u_email' => $ask->user->email,
-                    //     'u_name'  => $ask->user->ensemble->name,
-                    //     'c_email' => $ask->email,
-                    //     'c_name'  => $ask->name,
-                    //     'price'   => $ask->price,
-                    //     'type'    => $payment->type,
-                    //     'amount'  => $payment->amount,
-                    //     'day'     => $start_date[1],
-                    //     'flag'    => $flag_client,
-                    // ];
-                }
 
                 // $this->SendMailApproved($data);
                 // $payment_object->slug = $information->slug;
                 $payment_object->status ='OK';
-                // $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
                 $payment_object->status ='ERROR'; 
                 // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
