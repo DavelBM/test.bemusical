@@ -42,6 +42,10 @@
                         <input name="account_ID">
                         <button type="submit">Submit</button>
                     </form> -->
+                    @php
+                        $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+                        $charge = $stripe->charges()->all();
+                    @endphp
                 </div>
             </div>
         </div>
