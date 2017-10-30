@@ -1461,8 +1461,8 @@ class PublicController extends Controller
 
                 if($ask->user->type == 'soloist')
                 {
-                    $payment_object->message = "soy solista";
-                    // $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                    $info = User_info::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
+                    $payment_object->message = $info->slug;
                     // $data = [ 
                     //     'id'      => $ask->user->id,
                     //     'u_email' => $ask->user->email,
