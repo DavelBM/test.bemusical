@@ -45,6 +45,7 @@
                     @php
                         $stripe = new \Cartalyst\Stripe\Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
                         $charge = $stripe->charges()->all();
+                        print_r($charge);
                     @endphp
                 </div>
             </div>
