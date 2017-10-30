@@ -1415,7 +1415,7 @@ class PublicController extends Controller
                 $charge = $stripe->charges()->create([
                     "amount" => $i_d_price[0],
                     "currency" => "usd",
-                    "description" => $ask->id." Bemusical: "$ask->name,
+                    "description" => $ask->id." Bemusical: ".$ask->name,
                     "source" => $token,
                 ]);
 
