@@ -1432,6 +1432,17 @@ class PublicController extends Controller
                     $i_d_price = explode(".", $ask->price);
                 }
 
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                // $gig->save();
+
+                // Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+                
                 $charge = $stripe->charges()->create([
                     "amount" => $i_d_price[0],
                     "currency" => "usd",
