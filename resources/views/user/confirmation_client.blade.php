@@ -417,6 +417,10 @@ document.getElementById('linkButton').onclick = function() {
                 $.each(response.info, function (index, info) {
                     if (info.status == 'OK') {
                         $('<p/>').html(info.message).appendTo($('#statusPayment'));
+                        var myVar = setInterval(myTimer, 1000);
+                        function myTimer() {
+                            location.href = "{{ url('/') }}";
+                        }
                         ev.complete('success');
                     } else {
                         $('<p/>').html(info.message).appendTo($('#statusPayment'));

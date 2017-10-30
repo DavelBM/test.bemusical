@@ -1471,8 +1471,7 @@ class PublicController extends Controller
                          'day'     => $start_date[1],
                          'flag'    => $flag_client];
 
-                // $this->SendMailApproved($data);
-                // $payment_object->slug = $information->slug;
+                $this->SendMailApproved($data);
                 $payment_object->status ='OK';
                 $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
