@@ -1475,8 +1475,7 @@ class PublicController extends Controller
                         'flag'    => $flag_client,
                     ];
 
-                    $this->SendMailApproved($data);
-                    // $payment_object->slug = $info->slug;
+                    // $this->SendMailApproved($data);
                 }
                 elseif($ask->user->type == 'ensemble') 
                 {
@@ -1494,10 +1493,11 @@ class PublicController extends Controller
                         'flag'    => $flag_client,
                     ];
                     
-                    $this->SendMailApproved($data);
-                    // $payment_object->slug = $info->slug;
+                    // $this->SendMailApproved($data);
                 }
 
+
+                // $payment_object->slug = $info->slug;
                 $payment_object->status ='OK';
                 $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
