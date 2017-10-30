@@ -789,7 +789,7 @@ class PublicController extends Controller
             }
 
             return view('user.confirmation_client_cash')
-                    ->with('p_key', 'pk_live_Un1v5Salq45ifQohDrekeTPx')
+                    ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
                     ->with('name_user', $name_user)
                     ->with('slug_user', $slug_user)
                     ->with('price', $ask->price)
@@ -1450,14 +1450,12 @@ class PublicController extends Controller
                 ]);
 
                 $payment = Payment::create([
-                    'ask_id'           => $ask->id,
-                    'email'            => $ask->email,
-                    'phone'            => $ask->phone,
-                    '_id_costumer'     => $customer['id'],
-                    '_id_charge'       => $charge['id'],
-                    'amount'           => $i_d_price[0],
-                    'payed'            => 1,
-                    'type'             => 'transfer'
+                    'ask_id'     => $ask->id,
+                    'email'      => $ask->email,
+                    '_id_charge' => $charge['id'],
+                    'amount'     => $i_d_price[0],
+                    'payed'      => 1,
+                    'type'       => 'app'
                 ]);
 
                 switch ($user_type) {
