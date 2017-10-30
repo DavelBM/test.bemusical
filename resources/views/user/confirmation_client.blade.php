@@ -411,7 +411,7 @@ document.getElementById('linkButton').onclick = function() {
             },
             dataType: 'json',
             beforeSend: function(){
-                console.log('enviando informacion');
+                $('<p/>').html('enviando informacion').appendTo($('#statusPayment'));
             },
             success: function(response){
                 $.each(response.info, function (index, info) {
