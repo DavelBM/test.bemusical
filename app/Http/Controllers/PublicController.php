@@ -1498,22 +1498,28 @@ class PublicController extends Controller
                 $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }catch(BadRequestException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }catch(UnauthorizedException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }catch(InvalidRequestException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }catch(NotFoundException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }catch(CardErrorException $e) {
                 $payment_object->status ='ERROR'; 
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                // $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
+                $payment_object->message = $e;
             }
             $info[] = $payment_object;
             return response()->json(array('info' => $info), 200);

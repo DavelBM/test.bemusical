@@ -416,10 +416,10 @@ document.getElementById('linkButton').onclick = function() {
             success: function(response){
                 $.each(response.info, function (index, info) {
                     if (info.status == 'OK') {
-                        console.log('todo OK');
-                         ev.complete('success');
+                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
+                        ev.complete('success');
                     } else {
-                        console.log('algo mal');
+                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
                         ev.complete('fail');
                     }
                 });
