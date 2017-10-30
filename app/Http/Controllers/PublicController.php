@@ -1450,14 +1450,14 @@ class PublicController extends Controller
                     "source" => $token,
                 ]);
 
-                // $payment = new Payment();
-                // $payment->ask_id     = $ask->id;
-                // $payment->email      = $ask->email;
-                // $payment->_id_charge = $charge['id'];
-                // $payment->amount     = $i_d_price[0];
-                // $payment->payed      = 1;
-                // $payment->type       = 'paypal';
-                // $payment->save();
+                // $payment = Payment::create([
+                //     'ask_id'     => $ask->id,
+                //     'email'      => $ask->email,
+                //     '_id_charge' => $charge['id'],
+                //     'amount'     => $i_d_price[0],
+                //     'payed'      => 1,
+                //     'type'       => 'paypal',
+                // ]);
 
                 // if($ask->user->type == 'soloist')
                 // {
