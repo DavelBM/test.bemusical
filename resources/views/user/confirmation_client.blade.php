@@ -411,7 +411,10 @@ document.getElementById('linkButton').onclick = function() {
             },
             dataType: 'json',
             beforeSend: function(){
-                $('<p/>').html('enviando informacion').appendTo($('#statusPayment'));
+                $('#successModal').modal('hide');
+                    $('#statusPayment').show();
+                    $('#statusPayment').empty();
+                    $('<p/>').html('receiving information... please wait').appendTo($('#statusPayment'));
             },
             success: function(response){
                 $.each(response.info, function (index, info) {
@@ -429,7 +432,9 @@ document.getElementById('linkButton').onclick = function() {
                 });
             },
             error: function(xhr){
-                console.log('tuvimos un error');
+                $('#statusPayment').show();
+                $('#statusPayment').empty();
+                $('<p/>').html('error with our servers, change your method payment').appendTo($('#statusPayment'));
             }
         });
     // paymentRequest.on('token', function(ev) {
