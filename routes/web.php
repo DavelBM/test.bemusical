@@ -24,6 +24,7 @@ Route::put('/user/pass/{user}', 'HomeController@updatePassUser')->name('user.upd
 Route::get('/user/image/destroy/{image}', 'HomeController@destroyImageUser')->name('user.image.destroy');
 Route::get('/user/ask/review/{id}', 'HomeController@ask_review')->name('user.ask.review');
 Route::get('/details/request/{id}', 'HomeController@details_request')->name('details.request');
+Route::get('/user/payments', 'HomeController@payments')->name('user.payments');
 Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'store', 'show', 'edit', 'destroy']]);
 
 //Verification
@@ -55,6 +56,7 @@ Route::get('/admin/{id}/unlock', 'AdminController@unlockuser')->name('admin.unlo
 Route::get('/admin/{id}/nonvisible', 'AdminController@nonvisible')->name('admin.nonvisible');
 Route::get('/admin/{id}/visible', 'AdminController@visible')->name('admin.visible');
 Route::get('/admin/general/requests', 'AdminController@general_requests')->name('admin.general.request');
+Route::get('/admin/received/payments', 'AdminController@payments')->name('admin.payments');
 Route::get('/admin/general/requests/update/{id}', 'AdminController@general_requests_update')->name('admin.general.request.update');
 Route::put('/admin/pass/{admin}', 'AdminController@updatePassAdmin')->name('admin.updatePassAdmin');
 Route::post('/admin/change/email', 'AdminController@change_email')->name('admin.change.email');
@@ -170,6 +172,7 @@ Route::post('/return/answer/confirmed/{id}', 'PublicController@return_confirmed'
 Route::get('/allow/times/{day}', 'PublicController@allowtimes')->name('allow.times');
 Route::post('/query/results', 'PublicController@query')->name('query.results');
 Route::post('/filter/results', 'PublicController@filter')->name('filter.results');
+
 Route::get('/.well-known/apple-developer-merchantid-domain-association', function () {
 	$pathFile = '/var/www/test.bemusical.us/public/apple/apple-developer-merchantid-domain-association';
 	return response()->file($pathFile);

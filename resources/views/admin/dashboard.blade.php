@@ -27,6 +27,9 @@
                         general requests
                     </a>
                 @endif
+                    <a href="{{ route('admin.payments') }}" class="btn btn-primary">
+                        Payments
+                    </a>
                 </div>
 
                     <div class="row panel-body">

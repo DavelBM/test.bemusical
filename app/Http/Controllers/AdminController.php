@@ -7,6 +7,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use App\Http\Requests\updatePassUser;
 use App\Http\Requests\StoreNewAdmin;
+use Cartalyst\Stripe\Stripe;
 use Laracasts\Flash\Flash;
 use App\Admin;
 use App\User;
@@ -22,6 +23,7 @@ use Hash;
 use Auth;
 use Carbon\Carbon;
 use Validator;
+use App\Payment;
 
 class AdminController extends Controller
 {
@@ -344,5 +346,15 @@ class AdminController extends Controller
         });
         Flash::error('You already assigned the event to '.$user->info->first_name);
         return redirect()->route('admin.general.request');
+    }
+
+    public function payments()
+    {
+        $payments = Ask::where('accepted_price', 1)->where('available', 1)->whereNotNull('price')->orderBy('date', 'desc')->get();
+        $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+        
+        return view('admin.payments')
+            ->with('payments', $payments)
+            ->with('stripe', $stripe);
     }
 }

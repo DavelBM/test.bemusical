@@ -128,23 +128,36 @@ class PublicController extends Controller
             }
         }
         elseif (Member::where('token', '=', $code)->where('confirmation', '=', 1)->exists()) {
-            //RETURN VIEW
-            dd('This token was already used');
+            Flash::error('This token already was used');
+            return redirect()->route('login');
         }
         else{
-            //RETURN VIEW
-            dd('We have troubles looking for your request');
+            Flash::error('This token already was used');
+            return redirect()->route('login');
         }
         
     }
 
     public function add_instrument_to_member(Request $request)
     {
-        Member::where('id', $request->id)
-        ->update([
+        $info = Member::where('id', $request->id);
+        
+        $info->update([
             'instrument'   => $request->instrument,
             'confirmation' => 1,
         ]);
+
+        $data = [
+            'name'  => $info->first()->name,
+            'email' => $info->first()->ensemble->email
+        ];
+
+        Mail::send('email.invitation_accepted', $data, function($message) use ($data){
+            $message->from('support@bemusical.us');
+            $message->to($data['email']);
+            $message->subject($data['name'].' accepted your invitation');
+        });
+
         return redirect()->route('user.dashboard'); 
     }
 
@@ -733,7 +746,7 @@ class PublicController extends Controller
             }
 
             return view('user.confirmation_client')
-                    ->with('p_key', 'pk_live_Un1v5Salq45ifQohDrekeTPx')
+                    ->with('p_key', 'pk_test_56MwMMhnoEpoqPocMMcXSZQH')
                     ->with('name_user', $name_user)
                     ->with('slug_user', $slug_user)
                     ->with('price', $ask->price)
@@ -863,7 +876,7 @@ class PublicController extends Controller
         //////////////STRIPE////////////////
         if ($request->_s_name != null) {
 
-            $stripe = new Stripe('sk_live_UpYonDuHLboy4ggRXkL0twLO');
+            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
             $token = $request->stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
             if (Client::where('email', $ask->email)->exists()) {
@@ -888,8 +901,7 @@ class PublicController extends Controller
 
                     $charge = $stripe->charges()->create([
                         "customer" => $customer['id'],
-                        //"amount" => $i_d_price[0],
-                        "amount" => "4000",
+                        "amount" => $i_d_price[0],
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                     ]);
@@ -910,8 +922,7 @@ class PublicController extends Controller
                     ]);
                 }else{
                     $charge = $stripe->charges()->create([
-                        //"amount" => $i_d_price[0],
-                        "amount" => "4000",
+                        "amount" => $i_d_price[0],
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
@@ -1039,7 +1050,7 @@ class PublicController extends Controller
         }
         //////////////CASH////////////////
         if ($request->_c_name != null) {
-            $stripe = new Stripe('sk_live_UpYonDuHLboy4ggRXkL0twLO');
+            $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
             $token = $request->_c_stripeToken;
             $ask = Ask::where('id', $id)->firstOrFail();
             if (Client::where('email', $ask->email)->exists()) {
@@ -1064,8 +1075,7 @@ class PublicController extends Controller
 
                     $charge = $stripe->charges()->create([
                         "customer" => $customer['id'],
-                        // "amount" => $i_d_price[0]*(0.12),
-                        "amount" => 5*(0.12),
+                        "amount" => $i_d_price[0]*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig. Cash payment (12% of ".$i_d_price[0].")",
                     ]);
@@ -1086,8 +1096,7 @@ class PublicController extends Controller
                     ]);
                 }else{
                     $charge = $stripe->charges()->create([
-                        // "amount" => $i_d_price[0]*(0.12),
-                        "amount" => 5*(0.12),
+                        "amount" => $i_d_price[0]*(0.12),
                         "currency" => "USD",
                         "description" => $ask->id.".Bemusical Gig",
                         "source" => $token,
@@ -1368,38 +1377,144 @@ class PublicController extends Controller
                 }
             }catch(ModelNotFoundException $e) {
                 $payment_object->status ='ERROR';
-                $payment_object->message = 'ERORR OCURRRED TRY AGAIN';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
                 $info[] = $payment_object;
                 return response()->json(array('info' => $info), 200);
             }
         }
 
         ///////////////ApplePay, Google payment///////////////
+        // if ($request->app_token != null) {
+        //         $info = [];
+        //     try{
+        //         $payment_object = new stdClass();
+        //         $stripe = new Stripe("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
+        //         $token = $request->app_token;
+        //         $charge = $stripe->charges()->create([
+        //             "amount" => 1,
+        //             "currency" => "usd",
+        //             "description" => "Example charge",
+        //             "source" => $token,
+        //         ]);
+        //         $payment_object->status ='OK';
+        //     }catch(ServerErrorException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(BadRequestException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(UnauthorizedException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(InvalidRequestException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(NotFoundException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }catch(CardErrorException $e) {
+        //         $payment_object->status ='ERROR'; 
+        //     }
+        //     $info[] = $payment_object;
+        //     return response()->json(array('info' => $info), 200);
+        // }
         if ($request->app_token != null) {
-                $info = [];
+            $info = [];
             try{
                 $payment_object = new stdClass();
-                $stripe = new Stripe("sk_live_UpYonDuHLboy4ggRXkL0twLO");
+                $stripe = new Stripe("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
                 $token = $request->app_token;
+
+                $ask = Ask::where('id', $id)->firstOrFail();
+                $user_type = Auth::user()->type;
+
+                $start_date = explode('|', $ask->date);
+                $format_date =Carbon::parse($start_date[0]);
+                $get_data_time = $format_date->addMinutes($ask->duration);
+                $end_date = $get_data_time->toDateTimeString();
+                if (strpos($ask->price, '.')) {
+                    $i_d_price = explode(".", $ask->price);
+                }
+
+                $gig = new Gig();
+                $gig->user_id    = $ask->user_id;
+                $gig->request_id = $ask->id;
+                $gig->title      = $ask->name.'-'.$ask->company;
+                $gig->start      = $start_date[0];
+                $gig->end        = $end_date;
+                $gig->url        = URL::to('/details/request/'.$ask->id);
+                $gig->save(); 
+
+                Ask::where('id', $ask->id)->update(['accepted_price'   => 1]);
+
                 $charge = $stripe->charges()->create([
-                    "amount" => 1,
+                    "amount" => $i_d_price[0],
                     "currency" => "usd",
-                    "description" => "Example charge",
+                    "description" => $ask->id.".Bemusical: ".$ask->name,
                     "source" => $token,
                 ]);
+
+                $payment = Payment::create([
+                    'ask_id'           => $ask->id,
+                    'email'            => $ask->email,
+                    'phone'            => $ask->phone,
+                    '_id_costumer'     => $customer['id'],
+                    '_id_charge'       => $charge['id'],
+                    'amount'           => $i_d_price[0],
+                    'payed'            => 1,
+                    'type'             => 'transfer'
+                ]);
+
+                switch ($user_type) {
+                    case 'soloist':
+                        $user = User_info::select('slug')->where('user_id', Auth::user()->id)->get();
+                        $data = [ 
+                            'id'      => $ask->user->id,
+                            'u_email' => $ask->user->email,
+                            'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                            'c_email' => $ask->email,
+                            'c_name'  => $ask->name,
+                            'price'   => $ask->price,
+                            'type'    => 'APP',
+                            'amount'  => $payment->amount,
+                            'day'     => $start_date[1],
+                            'flag'    => $flag_client,
+                        ];
+                        break;
+                    
+                    case 'ensemble':
+                        $user = Ensemble::select('slug')->where('user_id', Auth::user()->id)->get();
+                        $data = [ 
+                            'id'      => $ask->user->id,
+                            'u_email' => $ask->user->email,
+                            'u_name'  => $ask->user->ensemble->name,
+                            'c_email' => $ask->email,
+                            'c_name'  => $ask->name,
+                            'price'   => $ask->price,
+                            'type'    => $payment->type,
+                            'amount'  => $payment->amount,
+                            'day'     => $start_date[1],
+                            'flag'    => $flag_client,
+                        ];
+                        break;
+                }
+                $this->SendMailApproved($data);
                 $payment_object->status ='OK';
+                $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
+                $payment_object->slug = $user->slug;
             }catch(ServerErrorException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(BadRequestException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(UnauthorizedException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(InvalidRequestException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD'; 
             }catch(NotFoundException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }catch(CardErrorException $e) {
-                $payment_object->status ='ERROR'; 
+                $payment_object->status ='ERROR';
+                $payment_object->message = 'ERORR OCURRRED TRY AGAIN OR CHANGE PAYMENT METHOD';
             }
             $info[] = $payment_object;
             return response()->json(array('info' => $info), 200);

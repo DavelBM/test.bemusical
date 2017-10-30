@@ -144,15 +144,6 @@
                     </div>
 
                     <div id="payment-request-button"></div>
-                    <!-- <button id="paypal" class="btn btn-block btn-default">
-                        PayPal
-                    </button>
-
-                    <div id="paypalDetails">
-                    <div class="col-md-10 col-md-offset-1">
-                        ....PAYPAL....
-                    </div>
-                    </div> -->
 
                     <button id="linkButton" class="btn btn-block btn-default">
                         Bank Transfer
@@ -257,7 +248,7 @@
                 error: function(xhr){
                     $('#statusPayment').show();
                     $('#statusPayment').empty();
-                    $('<p/>').html('an error with our servers, change your method payment').appendTo($('#statusPayment'));
+                    $('<p/>').html('error with our servers, change your method payment').appendTo($('#statusPayment'));
                 }
             });
         },
@@ -420,21 +411,30 @@ document.getElementById('linkButton').onclick = function() {
             },
             dataType: 'json',
             beforeSend: function(){
-                console.log('enviando informacion');
+                $('#successModal').modal('hide');
+                $('#statusPayment').show();
+                $('#statusPayment').empty();
+                $('<p/>').html('receiving information... please wait').appendTo($('#statusPayment'));
             },
             success: function(response){
                 $.each(response.info, function (index, info) {
                     if (info.status == 'OK') {
-                        console.log('todo OK');
-                         ev.complete('success');
+                        ev.complete('success');
+                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
+                        var myVar = setInterval(myTimer, 1000);
+                        function myTimer() {
+                            location.href = "{{ url('/') }}/"+info.slug;
+                        }
                     } else {
-                        console.log('algo mal');
                         ev.complete('fail');
+                        $('<p/>').html(info.message).appendTo($('#statusPayment'));
                     }
                 });
             },
             error: function(xhr){
-                console.log('tuvimos un error');
+                $('#statusPayment').show();
+                $('#statusPayment').empty();
+                $('<p/>').html('error with our servers, change your method payment').appendTo($('#statusPayment'));
             }
         });
     });

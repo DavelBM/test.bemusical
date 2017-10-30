@@ -8,6 +8,7 @@ use App\Http\Requests\updateInfoUser;
 use App\Http\Requests\updateImageUser;
 use App\Http\Requests\updatePassUser;
 use App\Http\Requests\repertoirRequest;
+use Cartalyst\Stripe\Stripe;
 use App\UserRepertoir;
 use App\User_info;
 use App\User;
@@ -1087,5 +1088,13 @@ class HomeController extends Controller
             }
             return view('user.details')->with('request', $ask);
         }
+    }
+
+    public function payments()
+    {
+        $payments = Ask::where('accepted_price', 1)->where('available', 1)->whereNotNull('price')->where('user_id', Auth::user()->id)->orderBy('date', 'desc')->get();
+        
+        return view('user.payments')
+            ->with('payments', $payments);
     }
 }
