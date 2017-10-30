@@ -1493,7 +1493,7 @@ class PublicController extends Controller
                 // }
 
                 // $this->SendMailApproved($data);
-                $payment_object->slug = $info->slug;
+                // $payment_object->slug = $info->slug;
                 $payment_object->status ='OK';
                 $payment_object->message = "REDIRECTING---WE SEND YOU AN EMAIL WITH ALL THE INFORMATION---REDIRECTING";
             }catch(ServerErrorException $e) {
