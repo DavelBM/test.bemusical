@@ -1461,35 +1461,33 @@ class PublicController extends Controller
 
                 if($ask->user->type == 'soloist')
                 {
-                    $info = User_info::select('slug')->where('user_id', $ask->user->id)->firstOrFail();
-                    // $data = [ 
-                    //     'id'      => $ask->user->id,
-                    //     'u_email' => $ask->user->email,
-                    //     'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
-                    //     'c_email' => $ask->email,
-                    //     'c_name'  => $ask->name,
-                    //     'price'   => $ask->price,
-                    //     'type'    => $payment->type,
-                    //     'amount'  => $payment->amount,
-                    //     'day'     => $start_date[1],
-                    //     'flag'    => $flag_client,
-                    // ];
+                    $data = [ 
+                        'id'      => $ask->user->id,
+                        'u_email' => $ask->user->email,
+                        'u_name'  => $ask->user->info->first_name.' '.$ask->user->info->last_name,
+                        'c_email' => $ask->email,
+                        'c_name'  => $ask->name,
+                        'price'   => $ask->price,
+                        'type'    => $payment->type,
+                        'amount'  => $payment->amount,
+                        'day'     => $start_date[1],
+                        'flag'    => $flag_client,
+                    ];
                 }
                 elseif($ask->user->type == 'ensemble') 
                 {
-                    // $information = Ensemble::select('slug')->where('user_id', $ask->user_id)->firstOrFail();
-                    // $data = [ 
-                    //     'id'      => $ask->user->id,
-                    //     'u_email' => $ask->user->email,
-                    //     'u_name'  => $ask->user->ensemble->name,
-                    //     'c_email' => $ask->email,
-                    //     'c_name'  => $ask->name,
-                    //     'price'   => $ask->price,
-                    //     'type'    => $payment->type,
-                    //     'amount'  => $payment->amount,
-                    //     'day'     => $start_date[1],
-                    //     'flag'    => $flag_client,
-                    // ];
+                    $data = [ 
+                        'id'      => $ask->user->id,
+                        'u_email' => $ask->user->email,
+                        'u_name'  => $ask->user->ensemble->name,
+                        'c_email' => $ask->email,
+                        'c_name'  => $ask->name,
+                        'price'   => $ask->price,
+                        'type'    => $payment->type,
+                        'amount'  => $payment->amount,
+                        'day'     => $start_date[1],
+                        'flag'    => $flag_client,
+                    ];
                 }
 
                 // $this->SendMailApproved($data);
