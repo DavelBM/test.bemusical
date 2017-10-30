@@ -1459,18 +1459,18 @@ class PublicController extends Controller
                     'type'       => 'paypal',
                 ]);
 
-                $data = [ 
-                    'id'      => $ask->user->id,
-                    'u_email' => $ask->user->email,
-                    'u_name'  => 'user',
-                    'c_email' => $ask->email,
-                    'c_name'  => $ask->name,
-                    'price'   => $ask->price,
-                    'type'    => $payment->type,
-                    'amount'  => $payment->amount,
-                    'day'     => $start_date[1],
-                    'flag'    => $flag_client,
-                ];
+                // $data = [ 
+                //     'id'      => $ask->user->id,
+                //     'u_email' => $ask->user->email,
+                //     'u_name'  => 'user',
+                //     'c_email' => $ask->email,
+                //     'c_name'  => $ask->name,
+                //     'price'   => $ask->price,
+                //     'type'    => $payment->type,
+                //     'amount'  => $payment->amount,
+                //     'day'     => $start_date[1],
+                //     'flag'    => $flag_client,
+                // ];
 
                 // $this->SendMailApproved($data);
                 // $payment_object->slug = $information->slug;
