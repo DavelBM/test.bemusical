@@ -1,5 +1,5 @@
 <a href="mailto:?subject=bemusical.us&amp;body=I want to show you my owesome profile {{URL::to('/'.$slug)}}" title="Share by Email">
-    <img src="http://png-2.findicons.com/files/icons/573/must_have/48/mail.png">
+    <img src="//png-2.findicons.com/files/icons/573/must_have/48/mail.png">
 </a>
 
 
