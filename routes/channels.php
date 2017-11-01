@@ -18,14 +18,15 @@ Broadcast::channel('App.User.{id}', function ($user, $id) {
 // Broadcast::channel('chatroom', function ($user) {
 //     return $user;
 // });
-Broadcast::channel('chatroom', function ($admin) {
-   Log::info(class_basename($admin));
-   return $admin;
+Broadcast::channel('chatroom', function ($user) {
+   Log::info('soy user '.$user);
+   return $user;
 });
 
 // Broadcast::channel('adminchatroom', function ($user) {
 //     return $user;
 // });
-Broadcast::channel('adminchatroom', function ($user) {
-	return $user;
+Broadcast::channel('adminchatroom', function ($admin) {
+	Log::info('soy admin'.$admin);
+	return $admin;
 });

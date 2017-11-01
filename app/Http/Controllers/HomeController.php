@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;//Exceptions for failOrFail
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Cartalyst\Stripe\Exception\BadRequestException;
+use Cartalyst\Stripe\Exception\UnauthorizedException;
+use Cartalyst\Stripe\Exception\InvalidRequestException;
+use Cartalyst\Stripe\Exception\NotFoundException;
+use Cartalyst\Stripe\Exception\CardErrorException;
+use Cartalyst\Stripe\Exception\ServerErrorException;
 use Illuminate\Http\Request;
 use App\Http\Requests\updateInfoUser;
 use App\Http\Requests\updateImageUser;
@@ -1096,5 +1102,97 @@ class HomeController extends Controller
         
         return view('user.payments')
             ->with('payments', $payments);
+    }
+
+    public function payouts()
+    {
+        // $stripe = new Stripe('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+
+        // $customer = $stripe->customers()->create([
+        //     'email' => 'john@doe.com',
+        // ]);
+
+        // $token = $stripe->tokens()->create([
+        //     'card' => [
+        //         'number'    => '4242424242424242',
+        //         'exp_month' => 10,
+        //         'cvc'       => 314,
+        //         'exp_year'  => 2020,
+        //     ],
+        // ]);
+
+        // $card = $stripe->cards()->create($customer['id'], $token['id']);
+
+
+        // // $balance = $stripe->balance()->current();
+
+        // // \Stripe\Stripe::setApiKey("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
+
+        // // \Stripe\Payout::create(array(
+        // //     "amount" => 1000,
+        // //     "currency" => "usd",
+        // // ), array("stripe_account" => CONNECTED_STRIPE_ACCOUNT_ID));
+        // \Stripe\Stripe::setApiKey('sk_test_e7FsM5lCe5UwmUEB4djNWmtz');
+        // \Stripe\Payout::create(array(
+        //     "amount" => 1000,
+        //     "currency" => "usd",
+        // ), array("stripe_account" => 'cus_Bgr5zOroQR68lr'));
+
+        // dd($account);
+        // dd($customer, $card, $balance);
+
+
+        \Stripe\Stripe::setApiKey("sk_test_e7FsM5lCe5UwmUEB4djNWmtz");
+
+        $acct = \Stripe\Account::create(array(
+            "country" => "US",
+            "type" => "custom"
+        ));
+
+        $card = \Stripe\Token::create(array(
+            "card" => array(
+                "currency" => "usd",
+                "number" => "4000056655665556",
+                "exp_month" => 12,
+                "exp_year" => 2018,
+                "cvc" => "314"
+            )
+        ));
+
+        $account = \Stripe\Account::retrieve($acct['id']);
+
+        $account->external_accounts->create(array("external_account" => $card['id']));
+        $account->legal_entity->dob->day = '01';
+        $account->legal_entity->dob->month = '12';
+        $account->legal_entity->dob->year = '1991';
+        $account->legal_entity->first_name = 'carlos';
+        $account->legal_entity->last_name = 'mendez';
+        $account->legal_entity->type = 'individual';
+        $account->save();
+
+        // $payout = \Stripe\Payout::create(array(
+        //         "amount" => 1000,
+        //         "currency" => "usd",
+        //         "method" => "instant"
+        //     ),
+        //     array("stripe_account" => $account['id'])
+        // );
+        // $account->external_accounts->create(array("external_account" => "tok_visa"));
+
+        // $account = \Stripe\Account::retrieve($acct['id']);
+        // $account->external_accounts->create(array(
+        //     "external_account" => "btok_9CUINZPUJnubtQ",
+        // ));
+
+        // $payout = \Stripe\Payout::create(array(
+        //         "amount" => 1000,
+        //         "currency" => "usd",
+        //         "method" => "instant"
+        //     ),
+        //     array("stripe_account" => $acct['id'])
+        // );
+
+        dd($account);
+        return view('layouts.payouts');
     }
 }

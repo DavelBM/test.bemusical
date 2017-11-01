@@ -25,6 +25,7 @@ Route::get('/user/image/destroy/{image}', 'HomeController@destroyImageUser')->na
 Route::get('/user/ask/review/{id}', 'HomeController@ask_review')->name('user.ask.review');
 Route::get('/details/request/{id}', 'HomeController@details_request')->name('details.request');
 Route::get('/user/payments', 'HomeController@payments')->name('user.payments');
+Route::get('/user/payouts', 'HomeController@payouts')->name('user.payouts');
 Route::resource('/user', 'HomeController',['except' => ['index', 'create', 'store', 'show', 'edit', 'destroy']]);
 
 //Verification
@@ -187,6 +188,8 @@ Route::get('/events/info', 'CalendarController@index')->name('index.calendar');
 Route::get('/events/data', 'CalendarController@get_calendar')->name('get_data.calendar');
 Route::get('/add/calendar/options/{option}', 'CalendarController@calendarOptions')->name('user.calendar.options');
 Route::post('/block/day', 'CalendarController@block_day')->name('user.block.day');
+Route::get('/events/dates/{date}', 'CalendarController@get_dates')->name('user.dates');
+Route::post('/event/destroy/date', 'CalendarController@destroydate')->name('event.destroy.day');
 //CALENDAR
 
 // //PDF

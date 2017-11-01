@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\GigOption;
 use App\Gig;
 use Auth;
+use stdClass;
 
 class CalendarController extends Controller
 {
@@ -256,5 +257,34 @@ class CalendarController extends Controller
             $gig->save();
         }
         return redirect()->route('index.calendar');
+    }
+
+    public function get_dates($date)
+    {
+        $info = [];
+        $object = new stdClass();
+        $gig = Gig::where('user_id', Auth::user()->id)->where('start', 'like', '%'. $date .'%')->get();
+        $object->status = $gig;
+        $info[] = $object;
+        return response()->json(array('info' => $info), 200);
+    }
+
+    public function destroydate(Request $request)
+    {
+        $info = [];
+        $user = Auth::user()->id;
+        $user_date = Gig::select('user_id')->where('id', $request->id);
+        if ($user_date->first()->user_id == $user) { 
+            Gig::where('id', $request->id)->delete();
+            $object = new stdClass();
+            $object->status = 'Deleted';
+            $info[] = $object;
+            return response()->json(array('info' => $info), 200);
+        } else {
+            $object = new stdClass();
+            $object->status = 'Action no permitted';
+            $info[] = $object;
+            return response()->json(array('info' => $info), 200);
+        }
     }
 }

@@ -97,12 +97,12 @@ const app = new Vue({
 
         Echo.join('chatroom')
             .listen('MessagePosted', (e) => {
-                // this.messages.push({
-                //     message: e.message.message,
-                //     time: e.message.time,
-                //     name: e.message.name,
-                //     image: e.message.image
-                // });
+                this.messages.push({
+                    message: e.message.message,
+                    time: e.message.time,
+                    name: e.message.name,
+                    image: e.message.image
+                });
 
                 this.adminmessages.push({
                     message: e.adminmessage.message,

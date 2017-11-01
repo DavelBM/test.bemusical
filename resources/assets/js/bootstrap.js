@@ -49,7 +49,6 @@ window.Pusher = require('pusher-js');
 
 //Uncomment lines
 window.Echo = new Echo({
-	"authEndpoint": "/test.bemusical.us/broadcasting/auth",
     broadcaster: 'pusher',
     key: 'eb5885fcf8ed535d35a9',
     cluster: 'us2',

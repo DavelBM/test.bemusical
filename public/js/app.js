@@ -49493,7 +49493,6 @@ module.exports = Component.exports
 //
 //
 //
-//
 window.twttr = function (d, s, id) {
   var js,
       fjs = d.getElementsByTagName(s)[0],
@@ -49529,7 +49528,7 @@ var render = function() {
         "data-size": "large"
       }
     },
-    [_vm._v("\n\tTweet")]
+    [_vm._v("Tweet")]
   )
 }
 var staticRenderFns = []

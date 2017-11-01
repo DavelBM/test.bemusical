@@ -7,6 +7,7 @@
 @endsection
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
@@ -31,6 +32,7 @@
 </div>
 
 @endsection
+
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -93,10 +95,10 @@
                     <div class="col-md-3"><label for="views">Dead times:</label></div>
                     <div class="col-md-9">
                         <div class="col-md-6">
-                            <label>Before events:<input class="form-control" name="dead_time_before" type="number" id="dead_time_before" value="{{$option-> time_before_event}}"> minutes</label>
+                            <label>Before events:<input class="form-control" name="dead_time_before" type="number" id="dead_time_before" value="{{$option->time_before_event}}"> minutes</label>
                         </div>
                         <div class="col-md-6">
-                            <label>After events:<input class="form-control" name="dead_time_after" type="number" id="dead_time_after" value="{{$option-> time_after_event}}"> minutes</label>
+                            <label>After events:<input class="form-control" name="dead_time_after" type="number" id="dead_time_after" value="{{$option->time_after_event}}"> minutes</label>
                         </div>
                         <p><strong class="text-muted small">By default you will have 30 minutes as min to accept any requests if you need more time fill this inputs with the minutes that you need</strong></p>
                         <p id="options_dead_time"></p>
@@ -141,7 +143,7 @@
             </div>
             <div id="modalBody" class="modal-body">
                 <form class="form-horizontal" method="POST" action="{{ route('user.block.day') }}">
-                            {{ csrf_field() }}
+                    {{ csrf_field() }}
 
                     <div class="form-group">
                         <div class="col-md-4 col-md-offset-4">
@@ -175,7 +177,6 @@
                                 <button type="submit" class="btn btn-primary">
                                     Continue
                                 </button><br>
-                                OR
                             </center>
                         </div>
                     </div>
@@ -186,7 +187,7 @@
 
                 </form>
 
-                <form class="form-horizontal" method="POST" action="{{ route('user.block.day') }}">
+                <form id="formDateFullcalendarFullDay" class="form-horizontal" method="POST" action="{{ route('user.block.day') }}">
                             {{ csrf_field() }}
                     <input type="hidden" id="user_id"  name="user_id" value="{{$user}}">
                     <input type="hidden" id="dateFullcalendarFullDay" name="date" value="">
@@ -201,13 +202,15 @@
                         </div>
                     </div>
                 </form>
+                <p id="myDates"></p>
+                <p id="statusDate"></p>
             </div>
         </div>
     </div>
 </div>
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('vendor/fullcalendar/fullcalendar.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/fullcalendar/fullcalendar.min.css') }}" />
     <style type="text/css">
             
         #loading {
@@ -265,7 +268,8 @@
     var urlcalendar = "{{ url('/') }}";
 
     $(document).ready(function() {
-        
+        var flag = [];
+        var data_info = [];
         $('#calendar').fullCalendar({
             header: {
                 left: 'prev,next today',
@@ -294,17 +298,46 @@
 
             dayClick: function(date, jsEvent, view) {
                 //$(this).css('background-color', '#f3f3f3');
+                var data_info = [];
                 var date_picked = date.format();
+                var url = "/events/dates/"+date_picked;
+                $.get(url, function(data) {
+                    $.each(data.info, function (index, info) {
+                        for (var i = 0; i < info.status.length; i++) {
+                            if (info.status[i].title == 'all day bloked') {
+                                flag.push('B');
+                            }   
+                            data_info.push({id:info.status[i].id, title:info.status[i].title, start:info.status[i].start});
+                        }
+                    });
+
+                    if (flag.length >= 1) {
+                        $('#formDateFullcalendarFullDay').hide();
+                    } else{
+                        $('#formDateFullcalendarFullDay').show();
+                        document.getElementById('myDates').innerHTML = '';
+                        document.getElementById("dateFullcalendarFullDay").value = date_picked;
+                    }
+
+                    if (data_info.length >= 1) {
+                        for (var x = 0; x < data_info.length; x++) {
+                            $('#myDates').prepend('<p id="date_get_'+data_info[x].id+'">'+data_info[x].title+' | '+moment(data_info[x].start).format('LL. h:mm a')+'<button class="btn btn-danger" onclick="destroydate('+data_info[x].id+'); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></p>');
+                        }
+                    } else{
+                        document.getElementById('myDates').innerHTML = 'No dates';
+                    }
+                });
+
                 var date_string = moment(date_picked).format('LL');
                 document.getElementById("date-format-fullcalendar").innerHTML = date_string;
-                document.getElementById("dateFullcalendarFullDay").value = date_picked;
                 document.getElementById("dateFullcalendarPartDay").value = date_picked;
                 
                 $('#modalTitle').html(event.title);
                 $('#modalBody').html(event.description);
                 $('#eventUrl').attr('href',event.url);
                 $('#calendarModal').modal();
-
+                $('#myDates').html('');
+                flag = [];
             },
 
             navLinks: true, // can click day/week names to navigate views
@@ -356,6 +389,37 @@
         }
         
     });
+
+    function destroydate(id){
+        $.ajax({
+            type: "POST",
+            url: "/event/destroy/date",
+            data: {
+                "_token": "{{ csrf_token() }}",
+                "id": id,
+            },
+            dataType: 'json',
+            beforeSend: function(){
+                $('#statusDate').show();
+                $('#statusDate').empty();
+            },
+            success: function(response){
+                $.each(response.info, function (index, info) {
+                    var p2remove = '#date_get_'+id;
+                    $(p2remove).remove();
+                    
+                    $('#statusDate').text(info.status);
+                    setTimeout(function() {
+                        $('#statusDate').fadeOut();
+                    }, 1500 );
+                });
+            },
+            error: function(xhr){
+
+            }
+        });
+        event.preventDefault();
+    }
 
     function mondayFunctionTrue() {
         $('#options_business_days').empty();
